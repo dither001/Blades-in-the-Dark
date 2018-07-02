@@ -75,6 +75,45 @@ public class Rogue {
 	private static final Trauma[] TRAUMA_CONDITIONS = { Trauma.COLD, Trauma.HAUNTED, Trauma.OBSESSED, Trauma.PARANOID,
 			Trauma.RECKLESS, Trauma.SOFT, Trauma.UNSTABLE, Trauma.VICIOUS };
 
+	// approaches
+	private static final Rating[] APPROACHES = { Rating.ATTUNE, Rating.COMMAND, Rating.CONSORT, Rating.FINESSE,
+			Rating.HUNT, Rating.PROWL, Rating.SKIRMISH, Rating.STUDY, Rating.SURVEY, Rating.SWAY, Rating.TINKER,
+			Rating.WRECK };
+
+	// approaches by crew type
+	private static final Rating[] ASSASSIN_APPROACH = { Rating.FINESSE, Rating.HUNT, Rating.PROWL, Rating.SKIRMISH,
+			Rating.STUDY, Rating.TINKER };
+	private static final Rating[] BRAVO_APPROACH = { Rating.COMMAND, Rating.CONSORT, Rating.FINESSE, Rating.SKIRMISH,
+			Rating.SURVEY, Rating.WRECK };
+	private static final Rating[] CULT_APPROACH = { Rating.ATTUNE, Rating.COMMAND, Rating.CONSORT, Rating.PROWL,
+			Rating.STUDY, Rating.TINKER };
+	private static final Rating[] HAWKER_APPROACH = { Rating.COMMAND, Rating.CONSORT, Rating.FINESSE, Rating.SURVEY,
+			Rating.SWAY, Rating.WRECK };
+	private static final Rating[] SHADOW_APPROACH = { Rating.COMMAND, Rating.FINESSE, Rating.PROWL, Rating.SURVEY,
+			Rating.TINKER, Rating.WRECK };
+	private static final Rating[] SMUGGLER_APPROACH = { Rating.CONSORT, Rating.FINESSE, Rating.PROWL, Rating.SURVEY,
+			Rating.SWAY, Rating.TINKER };
+
+	// approaches by plan
+	private static final Rating[] ASSAULT_APPROACHES = { Rating.COMMAND, Rating.HUNT, Rating.SKIRMISH, Rating.SURVEY,
+			Rating.WRECK };
+	private static final Rating[] DECEPTION_APPROACHES = { Rating.CONSORT, Rating.FINESSE, Rating.PROWL, Rating.STUDY,
+			Rating.SURVEY, Rating.SWAY };
+	private static final Rating[] OCCULT_APPROACHES = { Rating.ATTUNE, Rating.COMMAND, Rating.CONSORT, Rating.STUDY,
+			Rating.SWAY, Rating.TINKER };
+	private static final Rating[] SOCIAL_APPROACHES = { Rating.COMMAND, Rating.CONSORT, Rating.FINESSE, Rating.STUDY,
+			Rating.SURVEY, Rating.SWAY };
+	private static final Rating[] STEALTH_APPROACHES = { Rating.FINESSE, Rating.HUNT, Rating.PROWL, Rating.STUDY,
+			Rating.TINKER, Rating.WRECK };
+	private static final Rating[] TRANSPORT_APPROACHES = { Rating.COMMAND, Rating.CONSORT, Rating.FINESSE, Rating.HUNT,
+			Rating.PROWL, Rating.SURVEY, Rating.SWAY };
+
+	// approaches by tension level
+	private static final Rating[] HIGH_TENSION_APPROACH = { Rating.COMMAND, Rating.HUNT, Rating.PROWL, Rating.SKIRMISH,
+			Rating.SWAY, Rating.WRECK };
+	private static final Rating[] LOW_TENSION_APPROACH = { Rating.ATTUNE, Rating.CONSORT, Rating.FINESSE, Rating.STUDY,
+			Rating.SURVEY, Rating.TINKER };
+
 	// instance fields
 	private Crew crew;
 	private String name;
@@ -546,6 +585,120 @@ public class Rogue {
 	private static Rating chooseRenegadeSkill() {
 		Rating[] array = new Rating[] { Rating.FINESSE, Rating.PROWL, Rating.SKIRMISH };
 		return Dice.randomFromArray(array);
+	}
+
+	public static Rating[][] randomBeats() {
+		Rogue.Rating[][] beats = new Rogue.Rating[4][];
+
+		for (int i = 0; i < beats.length; ++i) {
+			beats[i] = (Dice.roll(2) == 1) ? HIGH_TENSION_APPROACH : LOW_TENSION_APPROACH;
+		}
+
+		return beats;
+	}
+
+	public static Rogue.Rating approachByCrewType(Crew.Type crew) {
+		Rogue.Rating[] array = APPROACHES;
+		Rogue.Rating choice = randomApproach();
+
+		if (crew.equals(Crew.Type.ASSASSINS))
+			array = ASSASSIN_APPROACH;
+		else if (crew.equals(Crew.Type.BRAVOS))
+			array = BRAVO_APPROACH;
+		else if (crew.equals(Crew.Type.CULT))
+			array = CULT_APPROACH;
+		else if (crew.equals(Crew.Type.HAWKERS))
+			array = HAWKER_APPROACH;
+		else if (crew.equals(Crew.Type.SHADOWS))
+			array = SHADOW_APPROACH;
+		else if (crew.equals(Crew.Type.SMUGGLERS))
+			array = SMUGGLER_APPROACH;
+
+		choice = array[Dice.roll(array.length) - 1];
+		return choice;
+	}
+
+	public static Rogue.Rating approachByPlan(Score.Plan plan) {
+		Rogue.Rating choice = randomApproach();
+
+		if (plan.equals(Score.Plan.ASSAULT))
+			choice = assaultApproach();
+		else if (plan.equals(Score.Plan.DECEPTION))
+			choice = deceptionApproach();
+		else if (plan.equals(Score.Plan.OCCULT))
+			choice = occultApproach();
+		else if (plan.equals(Score.Plan.SOCIAL))
+			choice = socialApproach();
+		else if (plan.equals(Score.Plan.STEALTH))
+			choice = stealthApproach();
+		else if (plan.equals(Score.Plan.TRANSPORT))
+			choice = transportApproach();
+
+		return choice;
+	}
+
+	public static Rogue.Rating randomApproach() {
+		return Dice.randomFromArray(APPROACHES);
+	}
+
+	public static Rogue.Rating pseudoRandomApproach(Score.Act act, Score.Plan plan, Crew crew, Rogue.Rating[][] beats) {
+		Crew.Type type = crew.getCrewType();
+		Rogue.Rating choice;
+		int dice = Dice.roll(100);
+		if (dice < 21) {
+			// TODO - testing
+			// System.out.println(" " + " " + " What are we doing?");
+			choice = approachByCrewType(crew.getCrewType());
+		} else if (dice < 61) {
+			// TODO - testing
+			// System.out.println(" " + " " + " Stick to the plan.");
+			choice = approachByPlan(plan);
+		} else if (dice < 81) {
+			// TODO - testing
+			// System.out.println(" " + " " + " We don't have time.");
+			Rogue.Rating[] array = APPROACHES;
+
+			if (act.equals(Score.Act.INCITING))
+				array = beats[0];
+			else if (act.equals(Score.Act.RISING))
+				array = beats[1];
+			else if (act.equals(Score.Act.TURNING))
+				array = beats[2];
+			else if (act.equals(Score.Act.FALLING))
+				array = beats[3];
+
+			choice = array[Dice.roll(array.length) - 1];
+		} else {
+			// TODO - testing
+			// System.out.println(" " + " " + " Ninjas attack.");
+			choice = randomApproach();
+		}
+
+		return choice;
+	}
+
+	public static Rogue.Rating assaultApproach() {
+		return Dice.randomFromArray(ASSAULT_APPROACHES);
+	}
+
+	public static Rogue.Rating deceptionApproach() {
+		return Dice.randomFromArray(DECEPTION_APPROACHES);
+	}
+
+	public static Rogue.Rating occultApproach() {
+		return Dice.randomFromArray(OCCULT_APPROACHES);
+	}
+
+	public static Rogue.Rating socialApproach() {
+		return Dice.randomFromArray(SOCIAL_APPROACHES);
+	}
+
+	public static Rogue.Rating stealthApproach() {
+		return Dice.randomFromArray(STEALTH_APPROACHES);
+	}
+
+	public static Rogue.Rating transportApproach() {
+		return Dice.randomFromArray(TRANSPORT_APPROACHES);
 	}
 
 	/*

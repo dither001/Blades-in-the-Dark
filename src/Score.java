@@ -1,6 +1,4 @@
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -19,24 +17,8 @@ public class Score {
 		ACCIDENT, DISAPPEARANCE, MURDER, RANSOM, BATTLE, EXTORTION, SABOTAGE, SMASH_N_GRAB, ACQUISITION, AUGURY, CONSECRATION, SACRIFICE, SALES, SUPPLY, SHOW_OF_FORCE, SOCIALIZE, BURGLARY, ESPIONAGE, ROBBERY, CARGO_ARMS, CARGO_CONTRABAND, CARGO_PEOPLE, CARGO_WEIRD
 	}
 
-	public enum Consequence {
-		MINOR_COMPLICATION, MAJOR_COMPLICATION, SEVERE_COMPLICATION, HARM_1, HARM_2, HARM_3, REDUCED_EFFECT, ESCALATE_RISKY, ESCALATE_DESPERATE, WITHDRAW, LOST_OPPORTUNITY
-	}
-
-	public enum Position {
-		CONTROLLED, RISKY, DESPERATE
-	}
-
-	public enum Effect {
-		EXTREME, GREAT, STANDARD, LIMITED, ZERO
-	}
-
 	public enum Act {
 		INCITING, RISING, TURNING, FALLING, RELEASE
-	}
-
-	public enum Result {
-		CRITICAL, SUCCESS, PARTIAL, FAILURE
 	}
 
 	public enum Entanglement {
@@ -55,9 +37,6 @@ public class Score {
 	private static final String[] DETAILS = { "Point of attack.", "Method of deception.", "Point of infiltration.",
 			"Arcane method.", "Social connection.", "Route & means." };
 
-	private static final Position[] POSITIONS = { Position.CONTROLLED, Position.RISKY, Position.DESPERATE };
-	private static final Effect[] EFFECTS = { Effect.EXTREME, Effect.GREAT, Effect.STANDARD, Effect.LIMITED,
-			Effect.ZERO };
 	private static final Act[] ACTS = { Act.INCITING, Act.RISING, Act.TURNING, Act.FALLING, Act.RELEASE };
 
 	private static final Activity[] ALL_ACTIVITIES = { Activity.ACCIDENT, Activity.DISAPPEARANCE, Activity.MURDER,
@@ -79,58 +58,6 @@ public class Score {
 			Activity.SABOTAGE };
 	private static final Activity[] SMUGGLER_FLAVORS = { Activity.CARGO_ARMS, Activity.CARGO_CONTRABAND,
 			Activity.CARGO_PEOPLE, Activity.CARGO_WEIRD };
-
-	private static final Effect[] INCITING_EFFECTS = { Effect.STANDARD, Effect.LIMITED };
-	private static final Effect[] RISING_EFFECTS = { Effect.STANDARD, Effect.LIMITED };
-	private static final Effect[] TURNING_EFFECTS = { Effect.GREAT, Effect.STANDARD, Effect.LIMITED };
-	private static final Effect[] FALLING_EFFECTS = { Effect.GREAT, Effect.STANDARD };
-
-	// approaches
-	private static final Rogue.Rating[] APPROACHES = { Rogue.Rating.ATTUNE, Rogue.Rating.COMMAND, Rogue.Rating.CONSORT,
-			Rogue.Rating.FINESSE, Rogue.Rating.HUNT, Rogue.Rating.PROWL, Rogue.Rating.SKIRMISH, Rogue.Rating.STUDY,
-			Rogue.Rating.SURVEY, Rogue.Rating.SWAY, Rogue.Rating.TINKER, Rogue.Rating.WRECK };
-
-	// approaches by crew type
-	private static final Rogue.Rating[] ASSASSIN_APPROACH = { Rogue.Rating.FINESSE, Rogue.Rating.HUNT,
-			Rogue.Rating.PROWL, Rogue.Rating.SKIRMISH, Rogue.Rating.STUDY, Rogue.Rating.TINKER };
-	private static final Rogue.Rating[] BRAVO_APPROACH = { Rogue.Rating.COMMAND, Rogue.Rating.CONSORT,
-			Rogue.Rating.FINESSE, Rogue.Rating.SKIRMISH, Rogue.Rating.SURVEY, Rogue.Rating.WRECK };
-	private static final Rogue.Rating[] CULT_APPROACH = { Rogue.Rating.ATTUNE, Rogue.Rating.COMMAND,
-			Rogue.Rating.CONSORT, Rogue.Rating.PROWL, Rogue.Rating.STUDY, Rogue.Rating.TINKER };
-	private static final Rogue.Rating[] HAWKER_APPROACH = { Rogue.Rating.COMMAND, Rogue.Rating.CONSORT,
-			Rogue.Rating.FINESSE, Rogue.Rating.SURVEY, Rogue.Rating.SWAY, Rogue.Rating.WRECK };
-	private static final Rogue.Rating[] SHADOW_APPROACH = { Rogue.Rating.COMMAND, Rogue.Rating.FINESSE,
-			Rogue.Rating.PROWL, Rogue.Rating.SURVEY, Rogue.Rating.TINKER, Rogue.Rating.WRECK };
-	private static final Rogue.Rating[] SMUGGLER_APPROACH = { Rogue.Rating.CONSORT, Rogue.Rating.FINESSE,
-			Rogue.Rating.PROWL, Rogue.Rating.SURVEY, Rogue.Rating.SWAY, Rogue.Rating.TINKER };
-
-	// approaches by plan
-	private static final Rogue.Rating[] ASSAULT_APPROACHES = { Rogue.Rating.COMMAND, Rogue.Rating.HUNT,
-			Rogue.Rating.SKIRMISH, Rogue.Rating.SURVEY, Rogue.Rating.WRECK };
-	private static final Rogue.Rating[] DECEPTION_APPROACHES = { Rogue.Rating.CONSORT, Rogue.Rating.FINESSE,
-			Rogue.Rating.PROWL, Rogue.Rating.STUDY, Rogue.Rating.SURVEY, Rogue.Rating.SWAY };
-	private static final Rogue.Rating[] OCCULT_APPROACHES = { Rogue.Rating.ATTUNE, Rogue.Rating.COMMAND,
-			Rogue.Rating.CONSORT, Rogue.Rating.STUDY, Rogue.Rating.SWAY, Rogue.Rating.TINKER };
-	private static final Rogue.Rating[] SOCIAL_APPROACHES = { Rogue.Rating.COMMAND, Rogue.Rating.CONSORT,
-			Rogue.Rating.FINESSE, Rogue.Rating.STUDY, Rogue.Rating.SURVEY, Rogue.Rating.SWAY };
-	private static final Rogue.Rating[] STEALTH_APPROACHES = { Rogue.Rating.FINESSE, Rogue.Rating.HUNT,
-			Rogue.Rating.PROWL, Rogue.Rating.STUDY, Rogue.Rating.TINKER, Rogue.Rating.WRECK };
-	private static final Rogue.Rating[] TRANSPORT_APPROACHES = { Rogue.Rating.COMMAND, Rogue.Rating.CONSORT,
-			Rogue.Rating.FINESSE, Rogue.Rating.HUNT, Rogue.Rating.PROWL, Rogue.Rating.SURVEY, Rogue.Rating.SWAY };
-
-	// approaches by tension level
-	private static final Rogue.Rating[] HIGH_TENSION_APPROACH = { Rogue.Rating.COMMAND, Rogue.Rating.HUNT,
-			Rogue.Rating.PROWL, Rogue.Rating.SKIRMISH, Rogue.Rating.SWAY, Rogue.Rating.WRECK };
-	private static final Rogue.Rating[] LOW_TENSION_APPROACH = { Rogue.Rating.ATTUNE, Rogue.Rating.CONSORT,
-			Rogue.Rating.FINESSE, Rogue.Rating.STUDY, Rogue.Rating.SURVEY, Rogue.Rating.TINKER };
-
-	// consequences
-	private static final Consequence[] MINOR_CONSEQUENCE = { Consequence.HARM_1, Consequence.MINOR_COMPLICATION,
-			Consequence.ESCALATE_RISKY };
-	private static final Consequence[] MAJOR_CONSEQUENCE = { Consequence.HARM_2, Consequence.MAJOR_COMPLICATION,
-			Consequence.ESCALATE_DESPERATE, Consequence.LOST_OPPORTUNITY };
-	private static final Consequence[] SEVERE_CONSEQUENCE = { Consequence.HARM_3, Consequence.SEVERE_COMPLICATION,
-			Consequence.LOST_OPPORTUNITY };
 
 	// fields
 	private Crew crew;
@@ -203,7 +130,7 @@ public class Score {
 		this.act = Act.INCITING;
 		this.scene = 1;
 		this.tension = 0;
-		this.beats = randomBeats();
+		this.beats = Rogue.randomBeats();
 
 		//
 		this.actions = new ArrayList<Action>();
@@ -214,12 +141,12 @@ public class Score {
 		while (unresolved() && teamRemaining() > 0) {
 			if (scene == 1) {
 				// every mission begins with engagement roll
-				Position start = engagementRoll(dice);
+				Action.Position start = engagementRoll(dice);
 				if (openingMove.expired()) {
-					actions.add(new Action(primaryObjective, start));
+					actions.add(new Action(this, primaryObjective, start));
 
 				} else {
-					actions.add(new Action(openingMove, start));
+					actions.add(new Action(this, openingMove, start));
 
 				}
 			} else {
@@ -234,13 +161,13 @@ public class Score {
 					break;
 
 				} else if (primaryObjective.expired()) {
-					actions.add(new Action(getawayMove, randomPosition()));
+					actions.add(new Action(this, getawayMove, Action.randomPosition()));
 
 				} else if (openingMove.expired()) {
-					actions.add(new Action(primaryObjective, randomPosition()));
+					actions.add(new Action(this, primaryObjective, Action.randomPosition()));
 
 				} else {
-					actions.add(new Action(openingMove, randomPosition()));
+					actions.add(new Action(this, openingMove, Action.randomPosition()));
 
 				}
 			}
@@ -295,28 +222,48 @@ public class Score {
 		return advance;
 	}
 
-	public Position engagementRoll(int dice) {
-		Position position;
+	public int getTension() {
+		return tension;
+	}
+
+	public Crew getCrew() {
+		return crew;
+	}
+
+	public Plan getPlan() {
+		return plan;
+	}
+
+	public Rogue.Rating[][] getBeats() {
+		return beats;
+	}
+
+	public List<Rogue> getTeam() {
+		return team;
+	}
+
+	public Action.Position engagementRoll(int dice) {
+		Action.Position position;
 		int[] results = Dice.fortune(Dice.roll(dice));
 
 		// TODO - testing
 		System.out.println("Engagement roll.");
 		if (results[5] > 1) {
 			// critical result clears the opening
-			position = Position.CONTROLLED;
+			position = Action.Position.CONTROLLED;
 			openingMove.clear();
 
 		} else if (results[5] > 0) {
 			// success results in controlled situation
-			position = Position.CONTROLLED;
+			position = Action.Position.CONTROLLED;
 
 		} else if (results[3] > 0 || results[4] > 0) {
 			// partial results in risky position
-			position = Position.RISKY;
+			position = Action.Position.RISKY;
 
 		} else {
 			// failure results in desperate situation
-			position = Position.DESPERATE;
+			position = Action.Position.DESPERATE;
 
 		}
 
@@ -446,16 +393,6 @@ public class Score {
 		return string;
 	}
 
-	public static Rogue.Rating[][] randomBeats() {
-		Rogue.Rating[][] beats = new Rogue.Rating[4][];
-
-		for (int i = 0; i < beats.length; ++i) {
-			beats[i] = (Dice.roll(2) == 1) ? HIGH_TENSION_APPROACH : LOW_TENSION_APPROACH;
-		}
-
-		return beats;
-	}
-
 	public static Activity randomActivity() {
 		return Dice.randomFromArray(ALL_ACTIVITIES);
 	}
@@ -479,200 +416,12 @@ public class Score {
 		return choice;
 	}
 
-	public static Rogue.Rating approachByCrewType(Crew.Type crew) {
-		Rogue.Rating[] array = APPROACHES;
-		Rogue.Rating choice = randomApproach();
-
-		if (crew.equals(Crew.Type.ASSASSINS))
-			array = ASSASSIN_APPROACH;
-		else if (crew.equals(Crew.Type.BRAVOS))
-			array = BRAVO_APPROACH;
-		else if (crew.equals(Crew.Type.CULT))
-			array = CULT_APPROACH;
-		else if (crew.equals(Crew.Type.HAWKERS))
-			array = HAWKER_APPROACH;
-		else if (crew.equals(Crew.Type.SHADOWS))
-			array = SHADOW_APPROACH;
-		else if (crew.equals(Crew.Type.SMUGGLERS))
-			array = SMUGGLER_APPROACH;
-
-		choice = array[Dice.roll(array.length) - 1];
-		return choice;
-	}
-
-	public static Rogue.Rating approachByPlan(Plan plan) {
-		Rogue.Rating choice = randomApproach();
-
-		if (plan.equals(Plan.ASSAULT))
-			choice = assaultApproach();
-		else if (plan.equals(Plan.DECEPTION))
-			choice = deceptionApproach();
-		else if (plan.equals(Plan.OCCULT))
-			choice = occultApproach();
-		else if (plan.equals(Plan.SOCIAL))
-			choice = socialApproach();
-		else if (plan.equals(Plan.STEALTH))
-			choice = stealthApproach();
-		else if (plan.equals(Plan.TRANSPORT))
-			choice = transportApproach();
-
-		return choice;
-	}
-
-	public static Rogue.Rating randomApproach() {
-		return Dice.randomFromArray(APPROACHES);
-	}
-
-	public static Rogue.Rating pseudoRandomApproach(Act act, Plan plan, Crew crew, Rogue.Rating[][] beats) {
-		Crew.Type type = crew.getCrewType();
-		Rogue.Rating choice;
-		int dice = Dice.roll(100);
-		if (dice < 21) {
-			// TODO - testing
-			// System.out.println(" " + " " + " What are we doing?");
-			choice = approachByCrewType(crew.getCrewType());
-		} else if (dice < 61) {
-			// TODO - testing
-			// System.out.println(" " + " " + " Stick to the plan.");
-			choice = approachByPlan(plan);
-		} else if (dice < 81) {
-			// TODO - testing
-			// System.out.println(" " + " " + " We don't have time.");
-			Rogue.Rating[] array = APPROACHES;
-
-			if (act.equals(Act.INCITING))
-				array = beats[0];
-			else if (act.equals(Act.RISING))
-				array = beats[1];
-			else if (act.equals(Act.TURNING))
-				array = beats[2];
-			else if (act.equals(Act.FALLING))
-				array = beats[3];
-
-			choice = array[Dice.roll(array.length) - 1];
-		} else {
-			// TODO - testing
-			// System.out.println(" " + " " + " Ninjas attack.");
-			choice = randomApproach();
-		}
-
-		return choice;
-	}
-
-	public static Rogue.Rating assaultApproach() {
-		return Dice.randomFromArray(ASSAULT_APPROACHES);
-	}
-
-	public static Rogue.Rating deceptionApproach() {
-		return Dice.randomFromArray(DECEPTION_APPROACHES);
-	}
-
-	public static Rogue.Rating occultApproach() {
-		return Dice.randomFromArray(OCCULT_APPROACHES);
-	}
-
-	public static Rogue.Rating socialApproach() {
-		return Dice.randomFromArray(SOCIAL_APPROACHES);
-	}
-
-	public static Rogue.Rating stealthApproach() {
-		return Dice.randomFromArray(STEALTH_APPROACHES);
-	}
-
-	public static Rogue.Rating transportApproach() {
-		return Dice.randomFromArray(TRANSPORT_APPROACHES);
-	}
-
-	public static Position randomPosition() {
-		return Dice.randomFromArray(POSITIONS);
-	}
-
-	public static Effect effectsByAct(Act act) {
-		Effect choice = randomEffect();
-
-		if (act.equals(Act.INCITING))
-			choice = incitingEffect();
-		else if (act.equals(Act.RISING))
-			choice = risingEffect();
-		else if (act.equals(Act.TURNING))
-			choice = turningEffect();
-		else if (act.equals(Act.FALLING))
-			choice = fallingEffect();
-
-		return choice;
-	}
-
-	public static Effect randomEffect() {
-		return Dice.randomFromArray(EFFECTS);
-	}
-
-	public static Effect incitingEffect() {
-		return Dice.randomFromArray(INCITING_EFFECTS);
-	}
-
-	public static Effect risingEffect() {
-		return Dice.randomFromArray(RISING_EFFECTS);
-	}
-
-	public static Effect turningEffect() {
-		return Dice.randomFromArray(TURNING_EFFECTS);
-	}
-
-	public static Effect fallingEffect() {
-		return Dice.randomFromArray(FALLING_EFFECTS);
-	}
-
 	public static Act randomAct() {
 		return Dice.randomFromArray(ACTS);
 	}
 
 	public static Rogue randomTeamMember(List<Rogue> list) {
 		return Dice.randomFromList(list);
-	}
-
-	public static EnumSet<Consequence> randomMinorConsequenceSet() {
-		int maximum = MINOR_CONSEQUENCE.length;
-		EnumSet<Consequence> set = EnumSet.noneOf(Score.Consequence.class);
-		set.add(randomMinorConsequence());
-		while (Dice.roll(6) == 6 && set.size() < maximum) {
-			set.add(randomMinorConsequence());
-		}
-
-		return set;
-	}
-
-	public static EnumSet<Consequence> randomMajorConsequenceSet() {
-		int maximum = MAJOR_CONSEQUENCE.length;
-		EnumSet<Consequence> set = EnumSet.noneOf(Score.Consequence.class);
-		set.add(randomMajorConsequence());
-		while (Dice.roll(6) == 6 && set.size() < maximum) {
-			set.add(randomMajorConsequence());
-		}
-
-		return set;
-	}
-
-	public static EnumSet<Consequence> randomSevereConsequenceSet() {
-		int maximum = SEVERE_CONSEQUENCE.length;
-		EnumSet<Consequence> set = EnumSet.noneOf(Score.Consequence.class);
-		set.add(randomSevereConsequence());
-		while (Dice.roll(6) == 6 && set.size() < maximum) {
-			set.add(randomSevereConsequence());
-		}
-
-		return set;
-	}
-
-	public static Consequence randomMinorConsequence() {
-		return Dice.randomFromArray(MINOR_CONSEQUENCE);
-	}
-
-	public static Consequence randomMajorConsequence() {
-		return Dice.randomFromArray(MAJOR_CONSEQUENCE);
-	}
-
-	public static Consequence randomSevereConsequence() {
-		return Dice.randomFromArray(SEVERE_CONSEQUENCE);
 	}
 
 	public static void entanglement(int heat, int wantedLevel) {
@@ -760,202 +509,6 @@ public class Score {
 			break;
 		}
 
-	}
-
-	/*
-	 * ACTION - INNER CLASS
-	 * 
-	 */
-	private class Action {
-		// fields
-		Rogue rogue;
-		int dice;
-		Clock clock;
-		Rogue.Rating approach;
-		Position position;
-		Effect effect;
-		boolean pushed;
-		EnumSet<Consequence> consequences;
-
-		//
-		Result result;
-
-		// constructors
-		public Action(Clock clock, Position position) {
-			this(clock, pseudoRandomApproach(act, plan, crew, beats), position, effectsByAct(act));
-		}
-
-		public Action(Clock clock, Rogue.Rating approach, Position position, Effect effect) {
-			/*
-			 * FIXME - there is a bug which causes a crash here once a TPK has occurred
-			 * 
-			 */
-			this.rogue = Rogue.bestRogueForAction(approach, team);
-			Collections.rotate(team, 1);
-
-			this.clock = clock;
-			this.approach = approach;
-			this.position = position;
-			this.effect = effect;
-			this.consequences = EnumSet.noneOf(Score.Consequence.class);
-
-			this.dice = rogue.getRating(approach);
-			int stress = rogue.getStress();
-
-			int pushCheck = dice + stress + rogue.getThreshold();
-			if (pushCheck < 15) {
-				// TODO - testing
-				System.out.println(rogue + " takes 2 stress. (rolled " + pushCheck + ")");
-
-				++dice;
-				rogue.setStress(stress + 2);
-				pushed = true;
-			} else {
-				pushed = false;
-			}
-
-			resolve();
-			// System.out.println(toStringDetailed());
-		}
-
-		// methods
-		public void resolve() {
-			int[] results = { 0, 0, 0, 0, 0, 0 };
-			for (int i = 0; i < dice; ++i) {
-				++results[Dice.roll(6) - 1];
-			}
-
-			// PART ONE
-			if (results[5] > 1) {
-				// A critical is the same regardless of position
-				result = Result.CRITICAL;
-				this.increaseEffect();
-				tension -= 2;
-
-			} else if (results[5] > 0) {
-				// Success is the same regardless of position
-				result = Result.SUCCESS;
-				tension -= 1;
-
-			} else if (position.equals(Position.CONTROLLED) && (results[3] > 0 || results[4] > 0)) {
-				// partial success - CONTROLLED
-				result = Result.PARTIAL;
-				tension += 1;
-
-				consequences = randomMinorConsequenceSet();
-				if (Dice.roll(2) == 1) {
-					consequences.add(Consequence.REDUCED_EFFECT);
-				}
-
-			} else if (position.equals(Position.RISKY) && (results[3] > 0 || results[4] > 0)) {
-				// partial success - RISKY
-				result = Result.PARTIAL;
-				tension += 1;
-
-				consequences = randomMajorConsequenceSet();
-				if (Dice.roll(2) == 1)
-					consequences.add(Consequence.REDUCED_EFFECT);
-			} else if (position.equals(Position.DESPERATE) && (results[3] > 0 || results[4] > 0)) {
-				// partial success - DESPERATE
-				result = Result.PARTIAL;
-				tension += 1;
-
-				consequences = randomSevereConsequenceSet();
-				if (Dice.roll(2) == 1)
-					consequences.add(Consequence.REDUCED_EFFECT);
-			} else if (position.equals(Position.CONTROLLED)) {
-				// failure - CONTROLLED
-				result = Result.FAILURE;
-				tension += 2;
-
-				consequences = randomMinorConsequenceSet();
-				if (Dice.roll(6) > 1)
-					effect = Effect.ZERO;
-			} else if (position.equals(Position.RISKY)) {
-				// failure - RISKY
-				result = Result.FAILURE;
-				tension += 2;
-
-				consequences = randomMajorConsequenceSet();
-				if (Dice.roll(6) > 1)
-					effect = Effect.ZERO;
-			} else if (position.equals(Position.DESPERATE)) {
-				// failure - DESPERATE
-				result = Result.FAILURE;
-				tension += 2;
-
-				consequences = randomSevereConsequenceSet();
-				if (Dice.roll(6) > 1)
-					effect = Effect.ZERO;
-			}
-
-			// REDUCED EFFECT
-			if (consequences.contains(Consequence.REDUCED_EFFECT))
-				decreaseEffect();
-
-			// PART TWO
-			if (effect.equals(Effect.EXTREME)) {
-				clock.countDown(4);
-			} else if (effect.equals(Effect.GREAT)) {
-				clock.countDown(3);
-
-			} else if (effect.equals(Effect.STANDARD)) {
-				clock.countDown(2);
-
-			} else if (effect.equals(Effect.LIMITED)) {
-				clock.countDown(1);
-
-			} else if (effect.equals(Effect.ZERO)) {
-				// FIXME - FOR DEBUG ONLY: NO EFFECT
-
-			}
-			// System.out.println(" " + " " + " Remaining: " + clock.remaining());
-
-			if (rogue.stressedOut()) {
-				System.out.println(rogue + " left for dead.");
-			}
-		}
-
-		public void increaseEffect() {
-			if (effect.equals(Effect.GREAT))
-				effect = Effect.EXTREME;
-			else if (effect.equals(Effect.STANDARD))
-				effect = Effect.GREAT;
-			else if (effect.equals(Effect.LIMITED))
-				effect = Effect.STANDARD;
-			else if (effect.equals(Effect.ZERO))
-				effect = Effect.LIMITED;
-		}
-
-		public void decreaseEffect() {
-			if (effect.equals(Effect.EXTREME))
-				effect = Effect.GREAT;
-			else if (effect.equals(Effect.GREAT))
-				effect = Effect.STANDARD;
-			else if (effect.equals(Effect.STANDARD))
-				effect = Effect.LIMITED;
-			else if (effect.equals(Effect.LIMITED))
-				effect = Effect.ZERO;
-		}
-
-		@Override
-		public String toString() {
-			return String.format("Scene %2d: %s check -%s", scene, approach, result);
-		}
-
-		public String toStringDetailed() {
-			String string = String.format("Scene %2d", scene);
-
-			// standard
-			String checkResult = (result.equals(Result.FAILURE)) ? result + " with " + consequences.toString()
-					: (result.equals(Result.SUCCESS)) ? result + " with " + effect + " effect"
-							: result + " success with " + effect + " effect";
-
-			string = String.format("Scene %2d: %s attempts %s %s check %n   (%d dice) achieves %s", scene,
-					rogue.toString(), position, approach, dice, checkResult);
-
-			return string;
-		}
 	}
 
 	/*
