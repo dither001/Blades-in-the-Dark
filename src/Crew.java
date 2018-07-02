@@ -1153,7 +1153,10 @@ public class Crew {
 		return list;
 	}
 
-	// static methods
+	/*
+	 * STATIC METHODS
+	 * 
+	 */
 	public static List<Crew> getFactions() {
 		return factions;
 	}
@@ -1201,13 +1204,6 @@ public class Crew {
 
 	public static Crew randomFaction() {
 		Crew choice = Dice.randomFromList(factions);
-		// int length = factions.size();
-		// Crew[] array = new Crew[length];
-		// for (int i = 0; i < length; ++i) {
-		// array[i] = factions.get(i);
-		// }
-		//
-		// Crew choice = array[Dice.roll(array.length) - 1];
 		return choice;
 	}
 

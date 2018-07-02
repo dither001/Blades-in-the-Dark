@@ -43,7 +43,10 @@ public class Rogue {
 		PRINCIPLED, SAVAGE, UNRELIABLE, WILD
 	}
 
-	// static fields
+	/*
+	 * STATIC FIELDS
+	 * 
+	 */
 	private static final int MAX_STRESS = 9;
 
 	private static final String[] NAMES = { "Adric", "Aldo", "Amosen", "Andrel", "Arden", "Arlyn", "Arquo", "Arvus",
@@ -127,7 +130,10 @@ public class Rogue {
 	private static final Rating[] LOW_TENSION_APPROACH = { Rating.ATTUNE, Rating.CONSORT, Rating.FINESSE, Rating.STUDY,
 			Rating.SURVEY, Rating.TINKER };
 
-	// instance fields
+	/*
+	 * INSTANCE FIELDS
+	 * 
+	 */
 	private Crew crew;
 	private String name;
 	private Playbook playbook;
@@ -181,6 +187,10 @@ public class Rogue {
 		this.trauma = EnumSet.noneOf(Trauma.class);
 	}
 
+	/*
+	 * INSTANCE METHODS
+	 * 
+	 */
 	public int getAttribute(Attribute attribute) {
 		int value = 0;
 		if (attribute.equals(Attribute.INSIGHT))
@@ -366,7 +376,10 @@ public class Rogue {
 		return string;
 	}
 
-	// static methods
+	/*
+	 * STATIC METHODS
+	 * 
+	 */
 	private static HashMap<Rating, Integer> attributesInit(Playbook playbook, Crew crew) {
 		HashMap<Rating, Integer> init = new HashMap<Rating, Integer>();
 
