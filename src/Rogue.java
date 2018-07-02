@@ -30,6 +30,19 @@ public class Rogue {
 		COLD, HAUNTED, OBSESSED, PARANOID, RECKLESS, SOFT, UNSTABLE, VICIOUS
 	}
 
+	// cohort enums
+	public enum CohortType {
+		ADEPT, ROOK, ROVER, SKULK, THUG, EXPERT
+	}
+
+	public enum CohortEdge {
+		FEARSOME, INDEPENDENT, LOYAL, TENACIOUS
+	}
+
+	public enum CohortFlaw {
+		PRINCIPLED, SAVAGE, UNRELIABLE, WILD
+	}
+
 	// static fields
 	private static final int MAX_STRESS = 9;
 
@@ -699,6 +712,26 @@ public class Rogue {
 
 	public static Rogue.Rating transportApproach() {
 		return Dice.randomFromArray(TRANSPORT_APPROACHES);
+	}
+
+	/*
+	 * COHORTS - INNER CLASS
+	 */
+
+	private class Cohort {
+		CohortType type;
+
+		Cohort(CohortType type) {
+			this.type = type;
+		}
+
+		boolean isExpert() {
+			return (type.equals(CohortType.EXPERT));
+		}
+
+		boolean isGang() {
+			return (type.equals(CohortType.EXPERT) != true);
+		}
 	}
 
 	/*
