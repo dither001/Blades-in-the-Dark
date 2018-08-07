@@ -19,8 +19,16 @@ public class Main {
 			System.out.println(it.next().toStringDetailed());
 			System.out.println();
 		}
-		
-//		workLoop();
+
+		// Locale locale;
+		// for (Iterator<Locale> it = Gang.cluster.localeList().iterator();
+		// it.hasNext();) {
+		// locale = it.next();
+		// System.out.println(locale.toString() + "\n" + locale.residents().toString());
+		// System.out.println();
+		// }
+
+		// workLoop();
 		// rollRogues();
 		// setupActorLadder();
 		// characterAdvance(Class.BARBARIAN);

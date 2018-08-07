@@ -54,6 +54,10 @@ public class Gang implements Faction, Stakeholder {
 			it.next().neighborSetup();
 		}
 
+		//
+		for (Iterator<Gang> it = gangs.values().iterator(); it.hasNext();) {
+			it.next().factionSetup();
+		}
 	}
 
 	/*
@@ -91,7 +95,10 @@ public class Gang implements Faction, Stakeholder {
 	private int level;
 	private int coin;
 	private int experience;
+
+	//
 	private Locale lair;
+	private Set<Locale> turf;
 
 	//
 	private Set<Ship> ships;
@@ -115,14 +122,16 @@ public class Gang implements Faction, Stakeholder {
 		this.experience = 0;
 
 		//
+		this.lair = cluster.findVacancy(Dice.roll(6) - 1);
+		lair.addBuilding(this);
+		this.turf = new HashSet<Locale>();
+
+		//
 		this.ships = new HashSet<Ship>();
 		this.atWar = false;
 		this.heat = 0;
 		this.wantedLevel = 0;
 
-		//
-		this.lair = cluster.findVacancy(Dice.roll(6) - 1);
-		lair.addBuilding(this);
 	}
 
 	@Override
@@ -137,6 +146,19 @@ public class Gang implements Faction, Stakeholder {
 		}
 
 		setShips(Ship.getShips(this));
+	}
+
+	private void factionSetup() {
+		Set<Locale> workingSet = new HashSet<Locale>();
+		workingSet.add(lair);
+
+		//
+		Locale startingTurf = cluster.findStake(workingSet);
+		if (startingTurf != null) {
+			turf.add(startingTurf);
+			startingTurf.addStake(this);
+
+		}
 	}
 
 	@Override
@@ -160,7 +182,7 @@ public class Gang implements Faction, Stakeholder {
 	}
 
 	public String toStringDetailed() {
-		String string = String.format("%s (%s)", name, type);
+		String string = String.format("%s (%s) Lair: %s || Turf: %s", name, type, lair, turf.toString());
 
 		return string + toStringShips();
 	}
@@ -174,9 +196,6 @@ public class Gang implements Faction, Stakeholder {
 			return false;
 
 		Gang g = (Gang) o;
-		// System.out.println(String.format("Compare %s and %s (%s)", toString(),
-		// g.toString(), g.gangID == this.gangID));
-
 		return g.gangID == this.gangID;
 	}
 

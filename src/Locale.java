@@ -39,9 +39,7 @@ public class Locale {
 		ORIGIN_POINTS = new Point[] { new Point(-2, 1), new Point(-2, 0), new Point(-1, 2), new Point(-1, 1),
 				new Point(-1, 0), new Point(-1, -1), new Point(-1, -2), new Point(0, 2), new Point(0, 1),
 				new Point(0, 0), new Point(0, -1), new Point(0, -2), new Point(1, 2), new Point(1, 1), new Point(1, 0),
-				new Point(1, -1), new Point(1, -2), new Point(2, 0), new Point(2, -1)
-
-		};
+				new Point(1, -1), new Point(1, -2), new Point(2, 0), new Point(2, -1) };
 
 	}
 
@@ -53,6 +51,7 @@ public class Locale {
 	private Point origin;
 	private Set<Building> buildings;
 	private Set<Locale> neighbors;
+	private Set<Faction> stakes;
 
 	public Locale(Point origin, Cluster home) {
 		this.home = home;
@@ -60,6 +59,7 @@ public class Locale {
 		this.origin = origin;
 		this.buildings = new HashSet<Building>();
 		this.neighbors = new HashSet<Locale>();
+		this.stakes = new HashSet<Faction>();
 	}
 
 	/*
@@ -80,6 +80,10 @@ public class Locale {
 
 	public int vacancy() {
 		return MAXIMUM_CAPACITY - size();
+	}
+
+	public boolean occupied() {
+		return buildings.size() > 0;
 	}
 
 	public Set<Faction> residents() {
@@ -152,12 +156,25 @@ public class Locale {
 		return candidate;
 	}
 
+	public boolean addStake(Faction faction) {
+		boolean staked = false;
+
+		if (stakes.contains(faction) != true) {
+			stakes.add(faction);
+			staked = true;
+		}
+
+		return staked;
+	}
+
 	public Set<Locale> neighborSet() {
 		return neighbors;
 	}
 
 	public String toString() {
-		String string = String.format("Locale %d (%d, %d) Vacancy: %d", localeID, origin.x, origin.y, vacancy());
+		// String string = String.format("Locale %d (%d, %d) Vacancy: %d", localeID,
+		// origin.x, origin.y, vacancy());
+		String string = String.format("Locale %d", localeID);
 
 		return string;
 	}
@@ -287,6 +304,20 @@ public class Locale {
 			return locale;
 		}
 
+		public Locale findStake(Set<Locale> exclude) {
+			Locale candidate = null;
+
+			List<Locale> list = localeListByStakes();
+			for (Iterator<Locale> it = list.iterator(); it.hasNext();) {
+				candidate = it.next();
+
+				if (candidate.occupied() && exclude.contains(candidate) != true)
+					break;
+			}
+
+			return candidate;
+		}
+
 		public Locale getLocale(int localeID) {
 			Locale locale = null;
 			for (Iterator<Locale> it = localeList().iterator(); it.hasNext();) {
@@ -329,6 +360,22 @@ public class Locale {
 				@Override
 				public int compare(Locale left, Locale right) {
 					return right.vacancy() - left.vacancy();
+				}
+			}
+
+			Collections.sort(list, new sort());
+
+			return list;
+		}
+
+		public List<Locale> localeListByStakes() {
+			List<Locale> list = new ArrayList<Locale>(pointMap.values());
+
+			// anonymous comparator
+			class sort implements Comparator<Locale> {
+				@Override
+				public int compare(Locale left, Locale right) {
+					return left.stakes.size() - right.stakes.size();
 				}
 			}
 
