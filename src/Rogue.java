@@ -5,31 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public class Rogue {
-	public enum Playbook {
-		CUTTER, HOUND, LEECH, LURK, SLIDE, SPIDER, WHISPER
-	}
-
-	public enum Attribute {
-		INSIGHT, PROWESS, RESOLVE
-	}
-
-	public enum Rating {
-		ATTUNE, COMMAND, CONSORT, FINESSE, HUNT, PROWL, SKIRMISH, STUDY, SURVEY, SWAY, TINKER, WRECK
-	}
-
-	public enum Vice {
-		FAITH, GAMBLING, LUXURY, OBLIGATION, PLEASURE, STUPOR, WEIRD
-	}
-
-	public enum Special {
-		VETERAN_1, VETERAN_2, VETERAN_3, BATTLEBORN, BODYGUARD, GHOST_FIGHTER, LEADER, MULE, NOT_TO_BE_TRIFLED_WITH, SAVAGE, VIGOROUS, SHARPSHOOTER, FOCUSED, GHOST_HUNTER_1, GHOST_HUNTER_2, SCOUT, SURVIVOR, TOUGH_AS_NAILS, VENGEFUL, ALCHEMIST, ANALYST, ARTIFICER, FORTITUDE, GHOST_WARD, PHYSICKER, SABOTEUR, VENOMOUS, INFILTRATOR, AMBUSH, DAREDEVIL, THE_DEVILS_FOOTSTEPS, EXPERTISE, GHOST_VEIL, REFLEXES, SHADOW, ROOKS_GAMBIT, CLOAK_DAGGER, GHOST_VOICE, LIKE_LOOKING_INTO_A_MIRROR, SOMETHING_ON_THE_SIDE, MESMERISM, SUBTERFUGE, TRUST_IN_ME, FORESIGHT, CALCULATING, CONNECTED, FUNCTIONING_VICE, GHOST_CONTRACT, JAIL_BIRD, MASTERMIND, WEAVING_THE_WEB, COMPEL, GHOST_MIND, IRON_WILL, OCCULTIST, RITUAL, STRANGE_METHODS, TEMPEST, WARDED
-	}
-
-	public enum Trauma {
-		COLD, HAUNTED, OBSESSED, PARANOID, RECKLESS, SOFT, UNSTABLE, VICIOUS
-	}
-
+public class Rogue implements Actor {
 	// cohort enums
 	public enum CohortType {
 		ADEPT, ROOK, ROVER, SKULK, THUG, EXPERT
@@ -45,7 +21,6 @@ public class Rogue {
 
 	/*
 	 * STATIC FIELDS
-	 * 
 	 */
 	private static final int MAX_STRESS = 9;
 
@@ -57,72 +32,6 @@ public class Rogue {
 			"Orlan", "Phin", "Polonia", "Quess", "Remira", "Ring", "Roethe", "Sesereth", "Sethla", "Skannon", "Stavrul",
 			"Stev", "Syra", "Talitha", "Tesslyn", "Thena", "Timoth", "Tocker", "Una", "Vaurin", "Veleris", "Veretta",
 			"Vestine", "Vey", "Volette", "Vond", "Weaver", "Wester", "Zamira" };
-
-	private static final Playbook[] PLAYBOOKS = { Playbook.CUTTER, Playbook.HOUND, Playbook.LEECH, Playbook.LURK,
-			Playbook.SLIDE, Playbook.SPIDER, Playbook.WHISPER };
-
-	private static final Rating[] RATINGS = { Rating.ATTUNE, Rating.COMMAND, Rating.CONSORT, Rating.FINESSE,
-			Rating.HUNT, Rating.PROWL, Rating.SKIRMISH, Rating.STUDY, Rating.SURVEY, Rating.SWAY, Rating.TINKER,
-			Rating.WRECK };
-	private static final Rating[] INSIGHT = { Rating.HUNT, Rating.STUDY, Rating.SURVEY, Rating.TINKER };
-	private static final Rating[] PROWESS = { Rating.FINESSE, Rating.PROWL, Rating.SKIRMISH, Rating.WRECK };
-	private static final Rating[] RESOLVE = { Rating.ATTUNE, Rating.COMMAND, Rating.CONSORT, Rating.SWAY };
-
-	private static final Vice[] VICES = { Vice.FAITH, Vice.GAMBLING, Vice.LUXURY, Vice.OBLIGATION, Vice.PLEASURE,
-			Vice.STUPOR, Vice.WEIRD };
-
-	private static final Special[] CUTTER_SPECIAL = { Special.BATTLEBORN, Special.BODYGUARD, Special.GHOST_FIGHTER,
-			Special.LEADER, Special.MULE, Special.NOT_TO_BE_TRIFLED_WITH, Special.SAVAGE, Special.VIGOROUS };
-	private static final Special[] HOUND_SPECIAL = { Special.SHARPSHOOTER, Special.FOCUSED, Special.GHOST_HUNTER_1,
-			Special.GHOST_HUNTER_2, Special.SCOUT, Special.SURVIVOR, Special.TOUGH_AS_NAILS, Special.VENGEFUL };
-	private static final Special[] LEECH_SPECIAL = { Special.ALCHEMIST, Special.ANALYST, Special.ARTIFICER,
-			Special.FORTITUDE, Special.GHOST_WARD, Special.PHYSICKER, Special.SABOTEUR, Special.VENOMOUS };
-	private static final Special[] LURK_SPECIAL = { Special.INFILTRATOR, Special.AMBUSH, Special.DAREDEVIL,
-			Special.THE_DEVILS_FOOTSTEPS, Special.EXPERTISE, Special.GHOST_VEIL, Special.REFLEXES, Special.SHADOW };
-	private static final Special[] SLIDE_SPECIAL = { Special.ROOKS_GAMBIT, Special.CLOAK_DAGGER, Special.GHOST_VOICE,
-			Special.LIKE_LOOKING_INTO_A_MIRROR, Special.SOMETHING_ON_THE_SIDE, Special.MESMERISM, Special.SUBTERFUGE,
-			Special.TRUST_IN_ME };
-	private static final Special[] SPIDER_SPECIAL = { Special.FORESIGHT, Special.CALCULATING, Special.CONNECTED,
-			Special.FUNCTIONING_VICE, Special.GHOST_CONTRACT, Special.JAIL_BIRD, Special.MASTERMIND,
-			Special.WEAVING_THE_WEB };
-	private static final Special[] WHISPER_SPECIAL = { Special.COMPEL, Special.GHOST_MIND, Special.IRON_WILL,
-			Special.OCCULTIST, Special.RITUAL, Special.STRANGE_METHODS, Special.TEMPEST, Special.WARDED };
-
-	private static final Trauma[] TRAUMA_CONDITIONS = { Trauma.COLD, Trauma.HAUNTED, Trauma.OBSESSED, Trauma.PARANOID,
-			Trauma.RECKLESS, Trauma.SOFT, Trauma.UNSTABLE, Trauma.VICIOUS };
-
-	// approaches
-	private static final Rating[] APPROACHES = { Rating.ATTUNE, Rating.COMMAND, Rating.CONSORT, Rating.FINESSE,
-			Rating.HUNT, Rating.PROWL, Rating.SKIRMISH, Rating.STUDY, Rating.SURVEY, Rating.SWAY, Rating.TINKER,
-			Rating.WRECK };
-
-	// approaches by crew type
-	private static final Rating[] ASSASSIN_APPROACH = { Rating.FINESSE, Rating.HUNT, Rating.PROWL, Rating.SKIRMISH,
-			Rating.STUDY, Rating.TINKER };
-	private static final Rating[] BRAVO_APPROACH = { Rating.COMMAND, Rating.CONSORT, Rating.FINESSE, Rating.SKIRMISH,
-			Rating.SURVEY, Rating.WRECK };
-	private static final Rating[] CULT_APPROACH = { Rating.ATTUNE, Rating.COMMAND, Rating.CONSORT, Rating.PROWL,
-			Rating.STUDY, Rating.TINKER };
-	private static final Rating[] HAWKER_APPROACH = { Rating.COMMAND, Rating.CONSORT, Rating.FINESSE, Rating.SURVEY,
-			Rating.SWAY, Rating.WRECK };
-	private static final Rating[] SHADOW_APPROACH = { Rating.COMMAND, Rating.FINESSE, Rating.PROWL, Rating.SURVEY,
-			Rating.TINKER, Rating.WRECK };
-	private static final Rating[] SMUGGLER_APPROACH = { Rating.CONSORT, Rating.FINESSE, Rating.PROWL, Rating.SURVEY,
-			Rating.SWAY, Rating.TINKER };
-
-	// approaches by plan
-	private static final Rating[] ASSAULT_APPROACHES = { Rating.COMMAND, Rating.HUNT, Rating.SKIRMISH, Rating.SURVEY,
-			Rating.WRECK };
-	private static final Rating[] DECEPTION_APPROACHES = { Rating.CONSORT, Rating.FINESSE, Rating.PROWL, Rating.STUDY,
-			Rating.SURVEY, Rating.SWAY };
-	private static final Rating[] OCCULT_APPROACHES = { Rating.ATTUNE, Rating.COMMAND, Rating.CONSORT, Rating.STUDY,
-			Rating.SWAY, Rating.TINKER };
-	private static final Rating[] SOCIAL_APPROACHES = { Rating.COMMAND, Rating.CONSORT, Rating.FINESSE, Rating.STUDY,
-			Rating.SURVEY, Rating.SWAY };
-	private static final Rating[] STEALTH_APPROACHES = { Rating.FINESSE, Rating.HUNT, Rating.PROWL, Rating.STUDY,
-			Rating.TINKER, Rating.WRECK };
-	private static final Rating[] TRANSPORT_APPROACHES = { Rating.COMMAND, Rating.CONSORT, Rating.FINESSE, Rating.HUNT,
-			Rating.PROWL, Rating.SURVEY, Rating.SWAY };
 
 	// approaches by tension level
 	private static final Rating[] HIGH_TENSION_APPROACH = { Rating.COMMAND, Rating.HUNT, Rating.PROWL, Rating.SKIRMISH,
@@ -614,7 +523,7 @@ public class Rogue {
 	}
 
 	public static Rating[][] randomBeats() {
-		Rogue.Rating[][] beats = new Rogue.Rating[4][];
+		Rating[][] beats = new Rating[4][];
 
 		for (int i = 0; i < beats.length; ++i) {
 			beats[i] = (Dice.roll(2) == 1) ? HIGH_TENSION_APPROACH : LOW_TENSION_APPROACH;
@@ -623,9 +532,9 @@ public class Rogue {
 		return beats;
 	}
 
-	public static Rogue.Rating approachByCrewType(Crew.Type crew) {
-		Rogue.Rating[] array = APPROACHES;
-		Rogue.Rating choice = randomApproach();
+	public static Rating approachByCrewType(Crew.Type crew) {
+		Rating[] array = APPROACHES;
+		Rating choice = randomApproach();
 
 		if (crew.equals(Crew.Type.ASSASSINS))
 			array = ASSASSIN_APPROACH;
@@ -644,8 +553,8 @@ public class Rogue {
 		return choice;
 	}
 
-	public static Rogue.Rating approachByPlan(Score.Plan plan) {
-		Rogue.Rating choice = randomApproach();
+	public static Rating approachByPlan(Score.Plan plan) {
+		Rating choice = randomApproach();
 
 		if (plan.equals(Score.Plan.ASSAULT))
 			choice = assaultApproach();
@@ -663,18 +572,18 @@ public class Rogue {
 		return choice;
 	}
 
-	public static Rogue.Rating randomApproach() {
+	public static Rating randomApproach() {
 		return Dice.randomFromArray(APPROACHES);
 	}
 
-	public static Rogue.Rating pseudoRandomApproach(Score.Act act, Score.Plan plan, Crew crew, Rogue.Rating[][] beats) {
-		Crew.Type type = crew.getCrewType();
-		Rogue.Rating choice;
+	public static Rating pseudoRandomApproach(Score.Act act, Score.Plan plan, Crew crew, Rating[][] beats) {
+		Crew.Type type = crew.crewType();
+		Rating choice;
 		int dice = Dice.roll(100);
 		if (dice < 21) {
 			// TODO - testing
 			// System.out.println(" " + " " + " What are we doing?");
-			choice = approachByCrewType(crew.getCrewType());
+			choice = approachByCrewType(crew.crewType());
 		} else if (dice < 61) {
 			// TODO - testing
 			// System.out.println(" " + " " + " Stick to the plan.");
@@ -682,7 +591,7 @@ public class Rogue {
 		} else if (dice < 81) {
 			// TODO - testing
 			// System.out.println(" " + " " + " We don't have time.");
-			Rogue.Rating[] array = APPROACHES;
+			Rating[] array = APPROACHES;
 
 			if (act.equals(Score.Act.INCITING))
 				array = beats[0];
@@ -703,27 +612,27 @@ public class Rogue {
 		return choice;
 	}
 
-	public static Rogue.Rating assaultApproach() {
+	public static Rating assaultApproach() {
 		return Dice.randomFromArray(ASSAULT_APPROACHES);
 	}
 
-	public static Rogue.Rating deceptionApproach() {
+	public static Rating deceptionApproach() {
 		return Dice.randomFromArray(DECEPTION_APPROACHES);
 	}
 
-	public static Rogue.Rating occultApproach() {
+	public static Rating occultApproach() {
 		return Dice.randomFromArray(OCCULT_APPROACHES);
 	}
 
-	public static Rogue.Rating socialApproach() {
+	public static Rating socialApproach() {
 		return Dice.randomFromArray(SOCIAL_APPROACHES);
 	}
 
-	public static Rogue.Rating stealthApproach() {
+	public static Rating stealthApproach() {
 		return Dice.randomFromArray(STEALTH_APPROACHES);
 	}
 
-	public static Rogue.Rating transportApproach() {
+	public static Rating transportApproach() {
 		return Dice.randomFromArray(TRANSPORT_APPROACHES);
 	}
 

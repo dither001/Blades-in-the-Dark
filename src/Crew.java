@@ -9,15 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public class Crew {
-	public enum Type {
-		ASSASSINS, BRAVOS, CULT, HAWKERS, SHADOWS, SMUGGLERS
-	}
-
-	public enum Rep {
-		AMBITIOUS, BRUTAL, DARING, HONORABLE, PROFESSIONAL, SAVVY, SUBTLE, STRANGE
-	}
-
+public class Crew implements Faction {
 	public enum District {
 		BARROWCLEFT, BRIGHTSTONE, CHARHOLLOW, CHARTERHALL, COALRIDGE, CROWS_FOOT, THE_DOCKS, DUNSLOUGH, NIGHTMARKET, SILKSHORE, SIX_TOWERS, WHITECROWN
 	}
@@ -26,12 +18,9 @@ public class Crew {
 		UNDERWORLD, INSTITUTION, LABOR_TRADE, CITIZENRY, THE_FRINGE
 	}
 
-	public enum Faction {
-		BARROWCLEFT, BILLHOOKS, BLUECOATS, BRIGADE, BRIGHTSTONE, CABBIES, CHARHOLLOW, CHARTERHALL, CHURCH_OF_ECSTASY, CIRCLE_OF_FLAME, CITY_COUNCIL, COALRIDGE, CROWS, CROWS_FOOT, CYPHERS, DAGGER_ISLES_CONSULATE, DEATHLANDS_SCAVENGERS, DIMMER_SISTERS, DOCKERS, DOCKS, DUNSLOUGH, FOG_HOUNDS, FORGOTTEN_GODS, FOUNDATION, GONDOLIERS, GRAY_CLOAKS, GRINDERS, HIVE, HORDE, IMPERIAL_MILITARY, INK_RAKES, INSPECTORS, IRONHOOK_PRISON, IRUVIAN_CONSULATE, LABORERS, LAMPBLACKS, LEVIATHAN_HUNTERS, LORD_SCURLOCK, LOST, MINISTRY_OF_PRESERVATION, NIGHTMARKET, PATH_OF_ECHOES, RAIL_JACKS, RECONCILED, RED_SASHES, SAILORS, SERVANTS, SEVEROSI_CONSULATE, SILKSHORE, SILVER_NAILS, SIX_TOWERS, SKOVLAN_CONSULATE, SKOVLANDER_REFUGEES, SPARKWRIGHTS, SPIRIT_WARDENS, ULF_IRONBORN, UNSEEN, WEEPING_LADY, WHITECROWN, WRAITHS, VULTURES
-	}
-
 	public enum Claim {
-		LAIR, TURF_1, TURF_2, TURF_3, TURF_4, TURF_5, TURF_6, TRAINING_ROOMS, VICE_DEN, FIXER, INFORMANTS, HAGFISH_FARM, VICTIM_TROPHIES, COVER_OPERATION, PROTECTION_RACKET, INFIRMARY, ENVOY, COVER_IDENTITIES_A, CITY_RECORDS, BARRACKS, TERRORIZED_CITIZENS, FIGHTING_PITS, BLUECOAT_INTIMIDATION, STREET_FENCE, WAREHOUSES, BLUECOAT_CONFEDERATES, CLOISTER, OFFERTORY, ANCIENT_OBELISK, ANCIENT_TOWER, SPIRIT_WELL, ANCIENT_GATE, SANCTUARY, SACRED_NEXUS, ANCIENT_ALTAR, PERSONAL_CLOTHIER, LOCAL_GRAFT, LOOKOUTS, LUXURY_VENUE, FOREIGN_MARKET, SURPLUS_CACHES, COVER_IDENTITIES_B, INTERROGATION_CHAMBER, GAMBLING_DEN, LOYAL_FENCE, TAVERN, DRUG_DEN, COVERT_DROPS, SECRET_PATHWAYS, SIDE_BUSINESS, LUXURY_FENCE, SECRET_ROUTES, FLEET
+		LAIR, TURF_1, TURF_2, TURF_3, TURF_4, TURF_5, TURF_6, //
+		TRAINING_ROOMS, VICE_DEN, FIXER, INFORMANTS, HAGFISH_FARM, VICTIM_TROPHIES, COVER_OPERATION, PROTECTION_RACKET, INFIRMARY, ENVOY, COVER_IDENTITIES_A, CITY_RECORDS, BARRACKS, TERRORIZED_CITIZENS, FIGHTING_PITS, BLUECOAT_INTIMIDATION, STREET_FENCE, WAREHOUSES, BLUECOAT_CONFEDERATES, CLOISTER, OFFERTORY, ANCIENT_OBELISK, ANCIENT_TOWER, SPIRIT_WELL, ANCIENT_GATE, SANCTUARY, SACRED_NEXUS, ANCIENT_ALTAR, PERSONAL_CLOTHIER, LOCAL_GRAFT, LOOKOUTS, LUXURY_VENUE, FOREIGN_MARKET, SURPLUS_CACHES, COVER_IDENTITIES_B, INTERROGATION_CHAMBER, GAMBLING_DEN, LOYAL_FENCE, TAVERN, DRUG_DEN, COVERT_DROPS, SECRET_PATHWAYS, SIDE_BUSINESS, LUXURY_FENCE, SECRET_ROUTES, FLEET
 	}
 
 	public enum Upgrade {
@@ -131,47 +120,10 @@ public class Crew {
 	private static final Upgrade[] SMUGGLERS_UPGRADES = { Upgrade.SMUGGLER_RIGGING, Upgrade.CAMOUFLAGE,
 			Upgrade.ELITE_ROVERS, Upgrade.BARGE, Upgrade.C3_COMPOSED };
 
-	// static fields
-	private static final Type[] ALL_TYPES = { Type.ASSASSINS, Type.BRAVOS, Type.CULT, Type.HAWKERS, Type.SHADOWS,
-			Type.SMUGGLERS };
-	private static final Rep[] ALL_REPS = { Rep.AMBITIOUS, Rep.BRUTAL, Rep.DARING, Rep.HONORABLE, Rep.PROFESSIONAL,
-			Rep.SAVVY, Rep.SUBTLE, Rep.STRANGE };
-	private static final District[] ALL_DISTRICTS = { District.BARROWCLEFT, District.BRIGHTSTONE, District.CHARHOLLOW,
+	//
+	public static final District[] ALL_DISTRICTS = { District.BARROWCLEFT, District.BRIGHTSTONE, District.CHARHOLLOW,
 			District.CHARTERHALL, District.COALRIDGE, District.CROWS_FOOT, District.THE_DOCKS, District.DUNSLOUGH,
 			District.NIGHTMARKET, District.SILKSHORE, District.SIX_TOWERS, District.WHITECROWN };
-	private static final Faction[] ALL_FACTIONS = { Faction.BARROWCLEFT, Faction.BILLHOOKS, Faction.BLUECOATS,
-			Faction.BRIGADE, Faction.BRIGHTSTONE, Faction.CABBIES, Faction.CHARHOLLOW, Faction.CHARTERHALL,
-			Faction.CHURCH_OF_ECSTASY, Faction.CIRCLE_OF_FLAME, Faction.CITY_COUNCIL, Faction.COALRIDGE, Faction.CROWS,
-			Faction.CROWS_FOOT, Faction.CYPHERS, Faction.DAGGER_ISLES_CONSULATE, Faction.DEATHLANDS_SCAVENGERS,
-			Faction.DIMMER_SISTERS, Faction.DOCKERS, Faction.DOCKS, Faction.DUNSLOUGH, Faction.FOG_HOUNDS,
-			Faction.FORGOTTEN_GODS, Faction.FOUNDATION, Faction.GONDOLIERS, Faction.GRAY_CLOAKS, Faction.GRINDERS,
-			Faction.HIVE, Faction.HORDE, Faction.IMPERIAL_MILITARY, Faction.INK_RAKES, Faction.INSPECTORS,
-			Faction.IRONHOOK_PRISON, Faction.IRUVIAN_CONSULATE, Faction.LABORERS, Faction.LAMPBLACKS,
-			Faction.LEVIATHAN_HUNTERS, Faction.LORD_SCURLOCK, Faction.LOST, Faction.MINISTRY_OF_PRESERVATION,
-			Faction.NIGHTMARKET, Faction.PATH_OF_ECHOES, Faction.RAIL_JACKS, Faction.RECONCILED, Faction.RED_SASHES,
-			Faction.SAILORS, Faction.SERVANTS, Faction.SEVEROSI_CONSULATE, Faction.SILKSHORE, Faction.SILVER_NAILS,
-			Faction.SIX_TOWERS, Faction.SKOVLAN_CONSULATE, Faction.SKOVLANDER_REFUGEES, Faction.SPARKWRIGHTS,
-			Faction.SPIRIT_WARDENS, Faction.ULF_IRONBORN, Faction.UNSEEN, Faction.WEEPING_LADY, Faction.WHITECROWN,
-			Faction.WRAITHS, Faction.VULTURES };
-
-	//
-	private static final Faction[] CITIZENRY = { Faction.BARROWCLEFT, Faction.BRIGHTSTONE, Faction.CHARHOLLOW,
-			Faction.CHARTERHALL, Faction.COALRIDGE, Faction.CROWS_FOOT, Faction.DOCKS, Faction.DUNSLOUGH,
-			Faction.NIGHTMARKET, Faction.SILKSHORE, Faction.SIX_TOWERS, Faction.WHITECROWN };
-	private static final Faction[] INSTITUTIONS = { Faction.BLUECOATS, Faction.BRIGADE, Faction.CITY_COUNCIL,
-			Faction.DAGGER_ISLES_CONSULATE, Faction.IMPERIAL_MILITARY, Faction.INSPECTORS, Faction.IRONHOOK_PRISON,
-			Faction.IRUVIAN_CONSULATE, Faction.LEVIATHAN_HUNTERS, Faction.MINISTRY_OF_PRESERVATION,
-			Faction.SEVEROSI_CONSULATE, Faction.SKOVLAN_CONSULATE, Faction.SPARKWRIGHTS, Faction.SPIRIT_WARDENS };
-	private static final Faction[] LABOR_TRADE = { Faction.CABBIES, Faction.CYPHERS, Faction.DOCKERS,
-			Faction.FOUNDATION, Faction.GONDOLIERS, Faction.INK_RAKES, Faction.LABORERS, Faction.RAIL_JACKS,
-			Faction.SAILORS, Faction.SERVANTS };
-	private static final Faction[] THE_FRINGE = { Faction.CHURCH_OF_ECSTASY, Faction.DEATHLANDS_SCAVENGERS,
-			Faction.FORGOTTEN_GODS, Faction.HORDE, Faction.PATH_OF_ECHOES, Faction.RECONCILED,
-			Faction.SKOVLANDER_REFUGEES, Faction.WEEPING_LADY };
-	private static final Faction[] UNDERWORLD = { Faction.BILLHOOKS, Faction.CIRCLE_OF_FLAME, Faction.CROWS,
-			Faction.DIMMER_SISTERS, Faction.FOG_HOUNDS, Faction.GRAY_CLOAKS, Faction.GRINDERS, Faction.HIVE,
-			Faction.LAMPBLACKS, Faction.LORD_SCURLOCK, Faction.LOST, Faction.RED_SASHES, Faction.SILVER_NAILS,
-			Faction.ULF_IRONBORN, Faction.UNSEEN, Faction.WRAITHS, Faction.VULTURES };
 
 	//
 	private static ArrayList<Crew> factions;
@@ -179,67 +131,67 @@ public class Crew {
 	// initialization
 	static {
 		factions = new ArrayList<Crew>();
-		factions.add(new Crew(Faction.BARROWCLEFT, 2, true));
-		factions.add(new Crew(Faction.BILLHOOKS, 2, false));
-		factions.add(new Crew(Faction.BLUECOATS, 3, true));
-		factions.add(new Crew(Faction.BRIGADE, 2, true));
-		factions.add(new Crew(Faction.BRIGHTSTONE, 4, true));
-		factions.add(new Crew(Faction.CABBIES, 2, false));
-		factions.add(new Crew(Faction.CHARHOLLOW, 1, true));
-		factions.add(new Crew(Faction.CHARTERHALL, 4, true));
-		factions.add(new Crew(Faction.CHURCH_OF_ECSTASY, 4, true));
-		factions.add(new Crew(Faction.CIRCLE_OF_FLAME, 3, true));
-		factions.add(new Crew(Faction.CITY_COUNCIL, 5, true));
-		factions.add(new Crew(Faction.COALRIDGE, 2, false));
-		factions.add(new Crew(Faction.CROWS, 2, false));
-		factions.add(new Crew(Faction.CROWS_FOOT, 2, true));
-		factions.add(new Crew(Faction.CYPHERS, 2, true));
-		factions.add(new Crew(Faction.DAGGER_ISLES_CONSULATE, 1, true));
-		factions.add(new Crew(Faction.DEATHLANDS_SCAVENGERS, 2, false));
-		factions.add(new Crew(Faction.DIMMER_SISTERS, 2, true));
-		factions.add(new Crew(Faction.DOCKERS, 3, true));
-		factions.add(new Crew(Faction.DOCKS, 2, true));
-		factions.add(new Crew(Faction.DUNSLOUGH, 1, false));
-		factions.add(new Crew(Faction.FOG_HOUNDS, 1, false));
-		factions.add(new Crew(Faction.FORGOTTEN_GODS, 3, false));
-		factions.add(new Crew(Faction.FOUNDATION, 4, true));
-		factions.add(new Crew(Faction.GONDOLIERS, 3, true));
-		factions.add(new Crew(Faction.GRAY_CLOAKS, 2, true));
-		factions.add(new Crew(Faction.GRINDERS, 2, false));
-		factions.add(new Crew(Faction.HIVE, 4, true));
-		factions.add(new Crew(Faction.HORDE, 3, true));
-		factions.add(new Crew(Faction.IMPERIAL_MILITARY, 6, true));
-		factions.add(new Crew(Faction.INK_RAKES, 2, false));
-		factions.add(new Crew(Faction.INSPECTORS, 3, true));
-		factions.add(new Crew(Faction.IRONHOOK_PRISON, 4, true));
-		factions.add(new Crew(Faction.IRUVIAN_CONSULATE, 3, true));
-		factions.add(new Crew(Faction.LABORERS, 3, false));
-		factions.add(new Crew(Faction.LAMPBLACKS, 2, false));
-		factions.add(new Crew(Faction.LEVIATHAN_HUNTERS, 5, true));
-		factions.add(new Crew(Faction.LORD_SCURLOCK, 3, true));
-		factions.add(new Crew(Faction.LOST, 1, false));
-		factions.add(new Crew(Faction.MINISTRY_OF_PRESERVATION, 5, true));
-		factions.add(new Crew(Faction.NIGHTMARKET, 2, true));
-		factions.add(new Crew(Faction.PATH_OF_ECHOES, 3, true));
-		factions.add(new Crew(Faction.RAIL_JACKS, 2, false));
-		factions.add(new Crew(Faction.RECONCILED, 3, true));
-		factions.add(new Crew(Faction.RED_SASHES, 2, false));
-		factions.add(new Crew(Faction.SAILORS, 3, false));
-		factions.add(new Crew(Faction.SERVANTS, 2, false));
-		factions.add(new Crew(Faction.SEVEROSI_CONSULATE, 1, true));
-		factions.add(new Crew(Faction.SILKSHORE, 2, true));
-		factions.add(new Crew(Faction.SILVER_NAILS, 3, true));
-		factions.add(new Crew(Faction.SIX_TOWERS, 3, false));
-		factions.add(new Crew(Faction.SKOVLAN_CONSULATE, 3, false));
-		factions.add(new Crew(Faction.SKOVLANDER_REFUGEES, 3, false));
-		factions.add(new Crew(Faction.SPARKWRIGHTS, 4, true));
-		factions.add(new Crew(Faction.SPIRIT_WARDENS, 4, true));
-		factions.add(new Crew(Faction.ULF_IRONBORN, 1, true));
-		factions.add(new Crew(Faction.UNSEEN, 4, true));
-		factions.add(new Crew(Faction.WEEPING_LADY, 2, true));
-		factions.add(new Crew(Faction.WHITECROWN, 5, true));
-		factions.add(new Crew(Faction.WRAITHS, 2, false));
-		factions.add(new Crew(Faction.VULTURES, 1, false));
+		factions.add(new Crew(NamedFaction.BARROWCLEFT, 2, true));
+		factions.add(new Crew(NamedFaction.BILLHOOKS, 2, false));
+		factions.add(new Crew(NamedFaction.BLUECOATS, 3, true));
+		factions.add(new Crew(NamedFaction.BRIGADE, 2, true));
+		factions.add(new Crew(NamedFaction.BRIGHTSTONE, 4, true));
+		factions.add(new Crew(NamedFaction.CABBIES, 2, false));
+		factions.add(new Crew(NamedFaction.CHARHOLLOW, 1, true));
+		factions.add(new Crew(NamedFaction.CHARTERHALL, 4, true));
+		factions.add(new Crew(NamedFaction.CHURCH_OF_ECSTASY, 4, true));
+		factions.add(new Crew(NamedFaction.CIRCLE_OF_FLAME, 3, true));
+		factions.add(new Crew(NamedFaction.CITY_COUNCIL, 5, true));
+		factions.add(new Crew(NamedFaction.COALRIDGE, 2, false));
+		factions.add(new Crew(NamedFaction.CROWS, 2, false));
+		factions.add(new Crew(NamedFaction.CROWS_FOOT, 2, true));
+		factions.add(new Crew(NamedFaction.CYPHERS, 2, true));
+		factions.add(new Crew(NamedFaction.DAGGER_ISLES_CONSULATE, 1, true));
+		factions.add(new Crew(NamedFaction.DEATHLANDS_SCAVENGERS, 2, false));
+		factions.add(new Crew(NamedFaction.DIMMER_SISTERS, 2, true));
+		factions.add(new Crew(NamedFaction.DOCKERS, 3, true));
+		factions.add(new Crew(NamedFaction.DOCKS, 2, true));
+		factions.add(new Crew(NamedFaction.DUNSLOUGH, 1, false));
+		factions.add(new Crew(NamedFaction.FOG_HOUNDS, 1, false));
+		factions.add(new Crew(NamedFaction.FORGOTTEN_GODS, 3, false));
+		factions.add(new Crew(NamedFaction.FOUNDATION, 4, true));
+		factions.add(new Crew(NamedFaction.GONDOLIERS, 3, true));
+		factions.add(new Crew(NamedFaction.GRAY_CLOAKS, 2, true));
+		factions.add(new Crew(NamedFaction.GRINDERS, 2, false));
+		factions.add(new Crew(NamedFaction.HIVE, 4, true));
+		factions.add(new Crew(NamedFaction.HORDE, 3, true));
+		factions.add(new Crew(NamedFaction.IMPERIAL_MILITARY, 6, true));
+		factions.add(new Crew(NamedFaction.INK_RAKES, 2, false));
+		factions.add(new Crew(NamedFaction.INSPECTORS, 3, true));
+		factions.add(new Crew(NamedFaction.IRONHOOK_PRISON, 4, true));
+		factions.add(new Crew(NamedFaction.IRUVIAN_CONSULATE, 3, true));
+		factions.add(new Crew(NamedFaction.LABORERS, 3, false));
+		factions.add(new Crew(NamedFaction.LAMPBLACKS, 2, false));
+		factions.add(new Crew(NamedFaction.LEVIATHAN_HUNTERS, 5, true));
+		factions.add(new Crew(NamedFaction.LORD_SCURLOCK, 3, true));
+		factions.add(new Crew(NamedFaction.LOST, 1, false));
+		factions.add(new Crew(NamedFaction.MINISTRY_OF_PRESERVATION, 5, true));
+		factions.add(new Crew(NamedFaction.NIGHTMARKET, 2, true));
+		factions.add(new Crew(NamedFaction.PATH_OF_ECHOES, 3, true));
+		factions.add(new Crew(NamedFaction.RAIL_JACKS, 2, false));
+		factions.add(new Crew(NamedFaction.RECONCILED, 3, true));
+		factions.add(new Crew(NamedFaction.RED_SASHES, 2, false));
+		factions.add(new Crew(NamedFaction.SAILORS, 3, false));
+		factions.add(new Crew(NamedFaction.SERVANTS, 2, false));
+		factions.add(new Crew(NamedFaction.SEVEROSI_CONSULATE, 1, true));
+		factions.add(new Crew(NamedFaction.SILKSHORE, 2, true));
+		factions.add(new Crew(NamedFaction.SILVER_NAILS, 3, true));
+		factions.add(new Crew(NamedFaction.SIX_TOWERS, 3, false));
+		factions.add(new Crew(NamedFaction.SKOVLAN_CONSULATE, 3, false));
+		factions.add(new Crew(NamedFaction.SKOVLANDER_REFUGEES, 3, false));
+		factions.add(new Crew(NamedFaction.SPARKWRIGHTS, 4, true));
+		factions.add(new Crew(NamedFaction.SPIRIT_WARDENS, 4, true));
+		factions.add(new Crew(NamedFaction.ULF_IRONBORN, 1, true));
+		factions.add(new Crew(NamedFaction.UNSEEN, 4, true));
+		factions.add(new Crew(NamedFaction.WEEPING_LADY, 2, true));
+		factions.add(new Crew(NamedFaction.WHITECROWN, 5, true));
+		factions.add(new Crew(NamedFaction.WRAITHS, 2, false));
+		factions.add(new Crew(NamedFaction.VULTURES, 1, false));
 
 	}
 
@@ -291,7 +243,7 @@ public class Crew {
 		// TODO - create additional constructors
 		this.active = true;
 		this.name = "Default";
-		this.type = randomCrewType();
+		this.type = Faction.randomCrewType();
 		this.tier = 0;
 		this.holdStrong = true;
 		this.coin = 2;
@@ -299,7 +251,7 @@ public class Crew {
 
 		//
 		this.rep = new HashSet<Rep>();
-		rep.add(randomReputation());
+		rep.add(Faction.randomReputation());
 
 		//
 		this.claims = new HashMap<Claim, Crew>();
@@ -412,7 +364,7 @@ public class Crew {
 		}
 	}
 
-	public Crew(Faction name, int tier, boolean hold) {
+	public Crew(NamedFaction name, int tier, boolean hold) {
 		/*
 		 * FIXME - I need to add more to faction initialization, but this works
 		 */
@@ -659,22 +611,22 @@ public class Crew {
 		}
 
 		int dice = Dice.roll(100);
-		Faction faction;
+		NamedFaction faction;
 		if (dice < 1 + targets[0]) {
 			System.out.println(1 + targets[0] + " / " + dice);
-			faction = randomCitizenryEnum();
+			faction = Faction.randomCitizenryEnum();
 		} else if (dice < 1 + targets[0] + targets[1]) {
 			System.out.println(1 + targets[0] + targets[1] + " / " + dice);
-			faction = randomInstitutionEnum();
+			faction = Faction.randomInstitutionEnum();
 		} else if (dice < 1 + targets[0] + targets[1] + targets[2]) {
 			System.out.println(1 + targets[0] + targets[1] + targets[2] + " / " + dice);
-			faction = randomLaborTradeEnum();
+			faction = Faction.randomLaborTradeEnum();
 		} else if (dice < 1 + targets[0] + targets[1] + targets[2] + targets[3]) {
 			System.out.println(1 + targets[0] + targets[1] + targets[2] + targets[3] + " / " + dice);
-			faction = randomFringeEnum();
+			faction = Faction.randomFringeEnum();
 		} else {
 			System.out.println(100 + " / " + dice);
-			faction = randomUnderworldEnum();
+			faction = Faction.randomUnderworldEnum();
 		}
 
 		return getCrewByFaction(faction);
@@ -787,18 +739,134 @@ public class Crew {
 		atWar = (shipMap.values().contains(-3)) ? true : false;
 	}
 
+	/*
+	 * NEW METHODS
+	 */
+	@Override
 	public String getName() {
 		return name;
 	}
 
-	public Type getCrewType() {
-		return type;
+	@Override
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public Set<Rep> getReputation() {
 		return rep;
 	}
 
+	public void setReputation(Set<Rep> reputation) {
+		this.rep = (HashSet<Rep>) reputation;
+	}
+
+	@Override
+	public int getLevel() {
+		// TODO
+		return 0;
+	}
+
+	@Override
+	public void setLevel(int level) {
+		// TODO
+	}
+
+	@Override
+	public int getCoin() {
+		return coin;
+	}
+
+	@Override
+	public void setCoin(int coin) {
+		this.coin = coin;
+	}
+
+	@Override
+	public int getExperience() {
+		return exp;
+	}
+
+	@Override
+	public void setExperience(int experience) {
+		this.exp = experience;
+	}
+
+	@Override
+	public Type crewType() {
+		return type;
+	}
+
+	@Override
+	public void setCrewType(Type type) {
+		this.type = type;
+	}
+
+	@Override
+	public int getHeat() {
+		return heat;
+	}
+
+	@Override
+	public void setHeat(int heat) {
+		this.heat = heat;
+
+		// TODO
+		if (heat >= MAX_HEAT)
+			mostWanted = true;
+	}
+
+	@Override
+	public int getWantedLevel() {
+		return wantedLevel;
+	}
+
+	@Override
+	public void setWantedLevel(int wantedLevel) {
+		this.wantedLevel = wantedLevel;
+	}
+
+	@Override
+	public boolean active() {
+		return active;
+	}
+
+	@Override
+	public boolean inactive() {
+		return (active != true);
+	}
+
+	@Override
+	public void activate() {
+		this.active = true;
+	}
+
+	@Override
+	public void deactivate() {
+		this.active = false;
+	}
+
+	public boolean atWar() {
+		return atWar;
+	}
+
+	public boolean atPeace() {
+		return (atWar != true);
+	}
+
+	public Set<Ship> getShips() {
+		// TODO
+		return null;
+	}
+
+	public void setShips(Set<Ship> ships) {
+		// TODO
+
+	}
+
+	/*
+	 * OLD METHODS
+	 * 
+	 */
 	public int getTier() {
 		int crewTier = tier;
 		if (atWar && holdStrong != true)
@@ -809,14 +877,6 @@ public class Crew {
 
 	public void addEXP(int gains) {
 		exp = (exp + gains > 12) ? 12 : exp + gains;
-	}
-
-	public int getCoin() {
-		return coin;
-	}
-
-	public void setCoin(int coin) {
-		this.coin = coin;
 	}
 
 	public void addCoin(int gains) {
@@ -874,42 +934,6 @@ public class Crew {
 		}
 	}
 
-	public boolean isActive() {
-		return active;
-	}
-
-	public boolean isInactive() {
-		return (active != true);
-	}
-
-	public boolean atWar() {
-		return atWar;
-	}
-
-	public boolean atPeace() {
-		return (atWar != true);
-	}
-
-	public int getHeat() {
-		return heat;
-	}
-
-	public void setHeat(int heat) {
-		this.heat = heat;
-
-		// TODO
-		if (heat >= MAX_HEAT)
-			mostWanted = true;
-	}
-
-	public int getWantedLevel() {
-		return wantedLevel;
-	}
-
-	public void setWantedLevel(int wantedLevel) {
-		this.wantedLevel = wantedLevel;
-	}
-
 	public void resolveHeat() {
 		if (heat >= MAX_HEAT) {
 			heat -= MAX_HEAT;
@@ -937,11 +961,11 @@ public class Crew {
 	}
 
 	public Set<Crew> npcAllyGet() {
-		return Ship.crewAllySet(this);
+		return ShipOld.crewAllySet(this);
 	}
 
 	public Set<Crew> npcEnemyGet() {
-		return Ship.crewEnemySet(this);
+		return ShipOld.crewEnemySet(this);
 	}
 
 	public Crew npcRandomEnemyGet() {
@@ -1157,6 +1181,15 @@ public class Crew {
 	 * STATIC METHODS
 	 * 
 	 */
+	public static Crew randomFaction() {
+		Crew choice = Dice.randomFromList(factions);
+		return choice;
+	}
+
+	public static District randomDistrict() {
+		return Dice.randomFromArray(ALL_DISTRICTS);
+	}
+
 	public static List<Crew> getFactions() {
 		return factions;
 	}
@@ -1173,7 +1206,7 @@ public class Crew {
 		return activeFactions;
 	}
 
-	public static Crew getCrewByFaction(Faction faction) {
+	public static Crew getCrewByFaction(NamedFaction faction) {
 		int length = factions.size();
 
 		String name;
@@ -1189,9 +1222,9 @@ public class Crew {
 		return crew;
 	}
 
-	public static Faction getFactionNameByString(String string) {
-		Faction[] array = ALL_FACTIONS;
-		Faction faction = null;
+	public static NamedFaction getFactionNameByString(String string) {
+		NamedFaction[] array = ALL_FACTIONS;
+		NamedFaction faction = null;
 
 		for (int i = 0; i < array.length; ++i) {
 			// ignore "Faction."
@@ -1200,47 +1233,6 @@ public class Crew {
 		}
 
 		return faction;
-	}
-
-	public static Crew randomFaction() {
-		Crew choice = Dice.randomFromList(factions);
-		return choice;
-	}
-
-	public static Faction randomFactionEnum() {
-		return Dice.randomFromArray(ALL_FACTIONS);
-	}
-
-	public static Faction randomCitizenryEnum() {
-		return Dice.randomFromArray(CITIZENRY);
-	}
-
-	public static Faction randomInstitutionEnum() {
-		return Dice.randomFromArray(INSTITUTIONS);
-	}
-
-	public static Faction randomLaborTradeEnum() {
-		return Dice.randomFromArray(LABOR_TRADE);
-	}
-
-	public static Faction randomFringeEnum() {
-		return Dice.randomFromArray(THE_FRINGE);
-	}
-
-	public static Faction randomUnderworldEnum() {
-		return Dice.randomFromArray(UNDERWORLD);
-	}
-
-	public static Type randomCrewType() {
-		return Dice.randomFromArray(ALL_TYPES);
-	}
-
-	public static District randomDistrict() {
-		return Dice.randomFromArray(ALL_DISTRICTS);
-	}
-
-	public static Rep randomReputation() {
-		return Dice.randomFromArray(ALL_REPS);
 	}
 
 	public static Upgrade randomUpgradeByCrewType(Type type) {

@@ -15,7 +15,12 @@ public class Main {
 	public static void main(String[] args) {
 		// TODO
 
-		workLoop();
+		for (Iterator<Gang> it = Gang.orderedGangList().iterator(); it.hasNext();) {
+			System.out.println(it.next().toStringDetailed());
+			System.out.println();
+		}
+		
+//		workLoop();
 		// rollRogues();
 		// setupActorLadder();
 		// characterAdvance(Class.BARBARIAN);

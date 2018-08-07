@@ -52,7 +52,7 @@ public class Action {
 	private Rogue rogue;
 	private int dice;
 	private Clock clock;
-	private Rogue.Rating approach;
+	private Actor.Rating approach;
 	private Position position;
 	private Effect effect;
 	private boolean pushed;
@@ -68,7 +68,7 @@ public class Action {
 				position, randomEffect());
 	}
 
-	public Action(Score score, Clock clock, Rogue.Rating approach, Position position, Effect effect) {
+	public Action(Score score, Clock clock, Actor.Rating approach, Position position, Effect effect) {
 		this.score = score;
 		this.tension = score.getTension();
 		this.team = score.getTeam();

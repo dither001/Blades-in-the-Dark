@@ -82,7 +82,7 @@ public class Score {
 	private Act act;
 	private int scene;
 	private int tension;
-	private Rogue.Rating[][] beats;
+	private Actor.Rating[][] beats;
 
 	private ArrayList<Action> actions;
 
@@ -103,7 +103,7 @@ public class Score {
 		this.target = target;
 		this.goal = goal;
 		this.plan = randomPlan();
-		this.activity = randomActivity(crew.getCrewType());
+		this.activity = randomActivity(crew.crewType());
 
 		if (goal.equals(Goal.CLAIM)) {
 			Crew.Claim candidate;
@@ -111,11 +111,11 @@ public class Score {
 			if (Dice.roll(3) == 1) {
 				candidate = Crew.turfClaim(crew);
 			} else {
-				candidate = Crew.randomClaimByCrew(crew.getCrewType());
+				candidate = Crew.randomClaimByCrew(crew.crewType());
 			}
 
 			while (crew.getClaims().containsKey(candidate)) {
-				candidate = Crew.randomClaimByCrew(crew.getCrewType());
+				candidate = Crew.randomClaimByCrew(crew.crewType());
 			}
 			this.claim = candidate;
 		}
@@ -234,7 +234,7 @@ public class Score {
 		return plan;
 	}
 
-	public Rogue.Rating[][] getBeats() {
+	public Actor.Rating[][] getBeats() {
 		return beats;
 	}
 
@@ -589,7 +589,7 @@ public class Score {
 
 			if (patronage() && window.expired()) {
 				// TODO - testing (appears to work)
-				boolean incite = Ship.shipSet().add(new Ship(client, target, true));
+				boolean incite = ShipOld.shipSet().add(new ShipOld(client, target, true));
 				if (incite) {
 					System.out.println(target + " declared war on " + client);
 				}
