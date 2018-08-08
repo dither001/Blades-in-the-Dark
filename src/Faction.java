@@ -100,6 +100,8 @@ public interface Faction {
 	/*
 	 * 
 	 */
+	public int factionID();
+	
 	public String getName();
 
 	public void setName(String name);

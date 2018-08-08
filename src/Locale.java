@@ -156,12 +156,34 @@ public class Locale {
 		return candidate;
 	}
 
-	public boolean addStake(Faction faction) {
+	public Faction enmityClause(Faction stakeHolder) {
+		Faction resident, oldest = null;
+
+		for (Iterator<Faction> it = residents().iterator(); it.hasNext();) {
+			resident = it.next();
+
+			if (oldest == null)
+				oldest = resident;
+			else if (resident.factionID() < oldest.factionID())
+				oldest = resident;
+
+		}
+
+		return oldest;
+	}
+
+	public boolean addStake(Faction stakeHolder) {
 		boolean staked = false;
 
-		if (stakes.contains(faction) != true) {
-			stakes.add(faction);
+		if (stakes.contains(stakeHolder) != true) {
+			stakes.add(stakeHolder);
 			staked = true;
+		}
+
+		if (staked) {
+			for (Iterator<Faction> it = residents().iterator(); it.hasNext();) {
+				Ship.addShip(stakeHolder, it.next(), 0);
+			}
 		}
 
 		return staked;
@@ -454,8 +476,8 @@ public class Locale {
 			if (o instanceof Point != true)
 				return false;
 
-			Point point = (Point) o;
-			equals = point.x == this.x && point.y == this.x;
+			Point p = (Point) o;
+			equals = p.x == this.x && p.y == this.y;
 
 			return equals;
 		}

@@ -58,6 +58,15 @@ public class Gang implements Faction, Stakeholder {
 		for (Iterator<Gang> it = gangs.values().iterator(); it.hasNext();) {
 			it.next().factionSetup();
 		}
+
+		//
+		Faction current;
+		for (Iterator<Gang> it = gangs.values().iterator(); it.hasNext();) {
+			current = it.next();
+
+			current.setShips(Ship.getShips(current));
+		}
+
 	}
 
 	/*
@@ -141,11 +150,12 @@ public class Gang implements Faction, Stakeholder {
 	}
 
 	private void neighborSetup() {
+		int dice;
 		for (Iterator<Faction> it = lair.residents().iterator(); it.hasNext();) {
-			Ship.addShip(this, it.next());
-		}
+			dice = Dice.roll(3) - 2;
+			Ship.addShip(this, it.next(), dice);
 
-		setShips(Ship.getShips(this));
+		}
 	}
 
 	private void factionSetup() {
@@ -154,10 +164,27 @@ public class Gang implements Faction, Stakeholder {
 
 		//
 		Locale startingTurf = cluster.findStake(workingSet);
+
 		if (startingTurf != null) {
 			turf.add(startingTurf);
 			startingTurf.addStake(this);
 
+			// Faction localBoss = startingTurf.enmityClause(this);
+			// Ship ship = Ship.get(this, localBoss);
+
+			// int dice = Dice.roll(4), score = ship.getScore();
+			// if (dice == 1 && coin > 1) {
+			// coin -= 2;
+			// ship.setScore(score + 1);
+			//
+			// } else if (dice == 2 && coin > 0) {
+			// coin -= 1;
+			// ship.setScore(score);
+			//
+			// } else {
+			// ship.setScore(score - 1);
+			//
+			// }
 		}
 	}
 
@@ -184,7 +211,15 @@ public class Gang implements Faction, Stakeholder {
 	public String toStringDetailed() {
 		String string = String.format("%s (%s) Lair: %s || Turf: %s", name, type, lair, turf.toString());
 
-		return string + toStringShips();
+		String locals = "\nLocals: ";
+		locals += lair.residents().toString();
+
+		String residents = "\nResidents: ";
+		for (Locale el : turf) {
+			residents += el.residents().toString();
+		}
+
+		return string + toStringShips() + locals + residents;
 	}
 
 	@Override
@@ -207,6 +242,11 @@ public class Gang implements Faction, Stakeholder {
 	/*
 	 * 
 	 */
+	@Override
+	public int factionID() {
+		return gangID;
+	}
+
 	@Override
 	public String getName() {
 		return name;

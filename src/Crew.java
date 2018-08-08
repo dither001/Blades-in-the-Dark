@@ -743,6 +743,13 @@ public class Crew implements Faction {
 	 * NEW METHODS
 	 */
 	@Override
+	public int factionID() {
+		// TODO
+		
+		return 0;
+	}
+	
+	@Override
 	public String getName() {
 		return name;
 	}
