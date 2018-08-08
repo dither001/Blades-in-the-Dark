@@ -153,6 +153,18 @@ public interface Faction {
 	/*
 	 * 
 	 */
+	public default boolean transferCoinTo(int amount, Faction other) {
+		boolean transfer = false;
+
+		int myCoin = getCoin(), otherCoin = other.getCoin();
+		if (myCoin >= amount) {
+			setCoin(myCoin - amount);
+			other.setCoin(otherCoin + amount);
+			transfer = true;
+		}
+
+		return transfer;
+	}
 
 	/*
 	 * PLOT OBJECT

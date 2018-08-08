@@ -59,7 +59,7 @@ public class Gang implements Faction, Stakeholder {
 			it.next().factionSetup();
 		}
 
-		//
+		// final step
 		Faction current;
 		for (Iterator<Gang> it = gangs.values().iterator(); it.hasNext();) {
 			current = it.next();
@@ -169,23 +169,25 @@ public class Gang implements Faction, Stakeholder {
 			turf.add(startingTurf);
 			startingTurf.addStake(this);
 
-			// Faction localBoss = startingTurf.enmityClause(this);
-			// Ship ship = Ship.get(this, localBoss);
+			Faction localBoss = startingTurf.enmityClause(this);
+			Ship ship = Ship.get(this, localBoss);
 
-			// int dice = Dice.roll(4), score = ship.getScore();
-			// if (dice == 1 && coin > 1) {
-			// coin -= 2;
-			// ship.setScore(score + 1);
-			//
-			// } else if (dice == 2 && coin > 0) {
-			// coin -= 1;
-			// ship.setScore(score);
-			//
-			// } else {
-			// ship.setScore(score - 1);
-			//
-			// }
+			int dice = Dice.roll(4), score = ship.getScore();
+			if (dice == 1 && coin > 1) {
+				transferCoinTo(2, localBoss);
+				ship.setScore(score + 1);
+
+			} else if (dice == 2 && coin > 0) {
+				transferCoinTo(1, localBoss);
+				ship.setScore(score);
+
+			} else {
+				ship.setScore(score - 1);
+
+			}
 		}
+
+		//
 	}
 
 	@Override
@@ -211,15 +213,14 @@ public class Gang implements Faction, Stakeholder {
 	public String toStringDetailed() {
 		String string = String.format("%s (%s) Lair: %s || Turf: %s", name, type, lair, turf.toString());
 
-		String locals = "\nLocals: ";
-		locals += lair.residents().toString();
+		// String locals = "\nLocals: ";
+		// locals += lair.residents().toString();
 
-		String residents = "\nResidents: ";
-		for (Locale el : turf) {
-			residents += el.residents().toString();
-		}
+		// String residents = "\nResidents: ";
+		// for (Locale el : turf)
+		// residents += el.residents().toString();
 
-		return string + toStringShips() + locals + residents;
+		return string + toStringShips();
 	}
 
 	@Override
