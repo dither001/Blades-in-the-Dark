@@ -70,7 +70,7 @@ public class Score {
 	private Activity activity;
 
 	//
-	Crew.Claim claim;
+	Faction.Claim claim;
 
 	//
 	private Clock window;
@@ -106,16 +106,16 @@ public class Score {
 		this.activity = randomActivity(crew.crewType());
 
 		if (goal.equals(Goal.CLAIM)) {
-			Crew.Claim candidate;
+			Faction.Claim candidate;
 
 			if (Dice.roll(3) == 1) {
-				candidate = Crew.turfClaim(crew);
+				candidate = Faction.turfClaim(crew);
 			} else {
-				candidate = Crew.randomClaimByCrew(crew.crewType());
+				candidate = Faction.randomClaimByCrew(crew.crewType());
 			}
 
 			while (crew.getClaims().containsKey(candidate)) {
-				candidate = Crew.randomClaimByCrew(crew.crewType());
+				candidate = Faction.randomClaimByCrew(crew.crewType());
 			}
 			this.claim = candidate;
 		}

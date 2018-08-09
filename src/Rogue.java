@@ -43,7 +43,7 @@ public class Rogue implements Actor {
 	 * INSTANCE FIELDS
 	 * 
 	 */
-	private Crew crew;
+	private Faction crew;
 	private String name;
 	private Playbook playbook;
 	private HashMap<Rating, Integer> attributes;
@@ -68,8 +68,9 @@ public class Rogue implements Actor {
 	private EnumSet<Trauma> trauma;
 
 	// constructors
-	public Rogue(Crew crew) {
+	public Rogue(Faction crew) {
 		// TODO
+		this.crew = crew;
 		this.name = randomName();
 		this.playbook = randomPlaybook();
 
@@ -229,23 +230,23 @@ public class Rogue implements Actor {
 			return improved;
 		}
 
-		Set<Crew.Upgrade> crewUpgrades = crew.upgradeSet();
+		Set<Faction.Upgrade> crewUpgrades = crew.upgradeSet();
 		int upgrade = attributes.get(rating);
 
 		boolean trainer = false;
 		if (rating.equals(Rating.HUNT) || rating.equals(Rating.STUDY) || rating.equals(Rating.SURVEY)
 				|| rating.equals(Rating.TINKER)) {
-			trainer = crewUpgrades.contains(Crew.Upgrade.TRAINING_INSIGHT);
+			trainer = crewUpgrades.contains(Faction.Upgrade.TRAINING_INSIGHT);
 		}
 
 		if (rating.equals(Rating.FINESSE) || rating.equals(Rating.PROWL) || rating.equals(Rating.SKIRMISH)
 				|| rating.equals(Rating.WRECK)) {
-			trainer = crewUpgrades.contains(Crew.Upgrade.TRAINING_PROWESS);
+			trainer = crewUpgrades.contains(Faction.Upgrade.TRAINING_PROWESS);
 		}
 
 		if (rating.equals(Rating.ATTUNE) || rating.equals(Rating.COMMAND) || rating.equals(Rating.CONSORT)
 				|| rating.equals(Rating.SWAY)) {
-			trainer = crewUpgrades.contains(Crew.Upgrade.TRAINING_RESOLVE);
+			trainer = crewUpgrades.contains(Faction.Upgrade.TRAINING_RESOLVE);
 		}
 
 		if (upgrade + 1 == 2) {
@@ -289,7 +290,7 @@ public class Rogue implements Actor {
 	 * STATIC METHODS
 	 * 
 	 */
-	private static HashMap<Rating, Integer> attributesInit(Playbook playbook, Crew crew) {
+	private static HashMap<Rating, Integer> attributesInit(Playbook playbook, Faction crew) {
 		HashMap<Rating, Integer> init = new HashMap<Rating, Integer>();
 
 		if (playbook.equals(Playbook.CUTTER)) {
@@ -444,46 +445,46 @@ public class Rogue implements Actor {
 		return Dice.randomFromArray(WHISPER_SPECIAL);
 	}
 
-	private static void crewSpecialSkills(Crew crew, Rogue rogue) {
-		Set<Crew.Special> crewSpecials = crew.containsSkillSpecials();
+	private static void crewSpecialSkills(Faction crew, Rogue rogue) {
+		EnumSet<Faction.Special> crewSpecials = crew.skillSpecials();
 
 		Rating rating;
-		if (crewSpecials.contains(Crew.Special.DEADLY)) {
+		if (crewSpecials.contains(Faction.Special.DEADLY)) {
 			rating = chooseDeadlySkill();
 			while (rogue.improveAttribute(rating) != true) {
 				rating = chooseDeadlySkill();
 			}
 		}
 
-		if (crewSpecials.contains(Crew.Special.DANGEROUS)) {
+		if (crewSpecials.contains(Faction.Special.DANGEROUS)) {
 			rating = chooseDangerousSkill();
 			while (rogue.improveAttribute(rating) != true) {
 				rating = chooseDangerousSkill();
 			}
 		}
 
-		if (crewSpecials.contains(Crew.Special.CHOSEN)) {
+		if (crewSpecials.contains(Faction.Special.CHOSEN)) {
 			rating = chooseChosenSkill();
 			while (rogue.improveAttribute(rating) != true) {
 				rating = chooseChosenSkill();
 			}
 		}
 
-		if (crewSpecials.contains(Crew.Special.SILVER_TONGUES)) {
+		if (crewSpecials.contains(Faction.Special.SILVER_TONGUES)) {
 			rating = chooseSilverTongueSkill();
 			while (rogue.improveAttribute(rating) != true) {
 				rating = chooseSilverTongueSkill();
 			}
 		}
 
-		if (crewSpecials.contains(Crew.Special.EVERYONE_STEALS)) {
+		if (crewSpecials.contains(Faction.Special.EVERYONE_STEALS)) {
 			rating = chooseEveryoneStealsSkill();
 			while (rogue.improveAttribute(rating) != true) {
 				rating = chooseEveryoneStealsSkill();
 			}
 		}
 
-		if (crewSpecials.contains(Crew.Special.RENEGADES)) {
+		if (crewSpecials.contains(Faction.Special.RENEGADES)) {
 			rating = chooseRenegadeSkill();
 			while (rogue.improveAttribute(rating) != true) {
 				rating = chooseRenegadeSkill();

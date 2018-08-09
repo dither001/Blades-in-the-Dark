@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -45,26 +46,35 @@ public class Gang implements Faction, Stakeholder {
 		cluster = Locale.cluster();
 		gangs = new HashMap<NamedFaction, Gang>();
 
-		//
+		// creates the faction set
 		for (NamedFaction el : FACTION_ADD_ORDER)
 			gangs.put(el, new Gang(el.toString()));
 
-		//
+		// initializes neighbor ships
 		for (Iterator<Gang> it = gangs.values().iterator(); it.hasNext();) {
 			it.next().neighborSetup();
 		}
 
-		//
+		// claims turf
 		for (Iterator<Gang> it = gangs.values().iterator(); it.hasNext();) {
 			it.next().factionSetup();
 		}
 
-		// final step
+		// finds and assigns ships to each faction
 		Faction current;
 		for (Iterator<Gang> it = gangs.values().iterator(); it.hasNext();) {
 			current = it.next();
 
 			current.setShips(Ship.getShips(current));
+		}
+
+		// initializes upgrades
+		for (Iterator<Gang> it = gangs.values().iterator(); it.hasNext();) {
+			it.next().upgradeSetup();
+		}
+
+		for (Iterator<Gang> it = gangs.values().iterator(); it.hasNext();) {
+			it.next().rosterSetup();
 		}
 
 	}
@@ -101,9 +111,14 @@ public class Gang implements Faction, Stakeholder {
 	private Type type;
 
 	//
+	private Set<Rogue> roster;
+
+	//
 	private int level;
 	private int coin;
 	private int experience;
+	private EnumSet<Special> specials;
+	private Map<Upgrade, Faction> upgrades;
 
 	//
 	private Locale lair;
@@ -126,9 +141,14 @@ public class Gang implements Faction, Stakeholder {
 		this.type = Faction.randomCrewType();
 
 		//
+		this.roster = new HashSet<Rogue>();
+
+		//
 		this.level = 1;
 		this.coin = 2;
 		this.experience = 0;
+		this.specials = EnumSet.noneOf(Special.class);
+		this.upgrades = new HashMap<Upgrade, Faction>();
 
 		//
 		this.lair = cluster.findVacancy(Dice.roll(6) - 1);
@@ -190,6 +210,91 @@ public class Gang implements Faction, Stakeholder {
 		//
 	}
 
+	private void upgradeSetup() {
+		Faction faction = Dice.randomFromSet(ships).getOther(this);
+
+		if (type.equals(Type.ASSASSINS)) {
+			specials.add(Dice.randomFromArray(ASSASSIN_SPECIALS));
+			upgrades.put(Faction.Upgrade.TRAINING_INSIGHT, faction);
+			upgrades.put(Faction.Upgrade.TRAINING_PROWESS, faction);
+
+		} else if (type.equals(Type.BRAVOS)) {
+			// TODO - additional cohort details
+			specials.add(Dice.randomFromArray(BRAVOS_SPECIALS));
+			upgrades.put(Faction.Upgrade.C2_COHORT_1, faction);
+			upgrades.put(Faction.Upgrade.TRAINING_PROWESS, faction);
+
+		} else if (type.equals(Type.CULT)) {
+			// TODO - additional cohort details
+			specials.add(Dice.randomFromArray(CULT_SPECIALS));
+			upgrades.put(Faction.Upgrade.C2_COHORT_1, faction);
+			upgrades.put(Faction.Upgrade.TRAINING_RESOLVE, faction);
+
+		} else if (type.equals(Type.HAWKERS)) {
+			specials.add(Dice.randomFromArray(HAWKERS_SPECIALS));
+			upgrades.put(Faction.Upgrade.SECURE_LAIR_1, faction);
+			upgrades.put(Faction.Upgrade.TRAINING_RESOLVE, faction);
+
+		} else if (type.equals(Type.SHADOWS)) {
+			specials.add(Dice.randomFromArray(SHADOWS_SPECIALS));
+			upgrades.put(Faction.Upgrade.HIDDEN_LAIR, faction);
+			upgrades.put(Faction.Upgrade.TRAINING_PROWESS, faction);
+
+		} else if (type.equals(Type.SMUGGLERS)) {
+			specials.add(Dice.randomFromArray(SMUGGLERS_SPECIALS));
+			upgrades.put(Faction.Upgrade.BOAT_HOUSE_1, faction);
+			upgrades.put(Faction.Upgrade.TRAINING_PROWESS, faction);
+
+		}
+
+		// upgrade one
+		faction = Dice.randomFromSet(ships).getOther(this);
+		Ship ship = Ship.get(this, faction);
+		int score = ship.getScore();
+
+		Upgrade upgrade = Faction.randomUpgradeByCrewType(type);
+		while (upgrades.containsKey(upgrade)) {
+			upgrade = Faction.randomUpgradeByCrewType(type);
+		}
+
+		upgrades.put(upgrade, faction);
+		if (coin > 0 && score < 2 && Dice.roll(2) == 1) {
+			transferCoinTo(1, faction);
+			ship.setScore(score + 2);
+
+		} else {
+			ship.setScore(score + 1);
+
+		}
+
+		// upgrade two
+		faction = Dice.randomFromSet(ships).getOther(this);
+		ship = Ship.get(this, faction);
+		score = ship.getScore();
+
+		while (upgrades.containsKey(upgrade)) {
+			upgrade = Faction.randomUpgradeByCrewType(type);
+		}
+
+		upgrades.put(upgrade, faction);
+		if (coin > 0 && score > -2 && Dice.roll(2) == 1) {
+			transferCoinTo(1, faction);
+			ship.setScore(score - 1);
+
+		} else {
+			ship.setScore(score - 2);
+
+		}
+	}
+
+	public void rosterSetup() {
+		for (int i = Dice.roll(3, 3); i > 0; --i) {
+
+			// starting roster is "3d3" or 3-9 rogues
+			roster.add(new Rogue(this));
+		}
+	}
+
 	@Override
 	public String toString() {
 		// String string = String.format("%s (%2d)", name, gangID);
@@ -211,7 +316,12 @@ public class Gang implements Faction, Stakeholder {
 	}
 
 	public String toStringDetailed() {
-		String string = String.format("%s (%s) Lair: %s || Turf: %s", name, type, lair, turf.toString());
+		String string = String.format("%s (%s) || Coin: %d", name, type, coin);
+
+		String holding = String.format("\nLair: %s || Turf: %s", lair, turf.toString());
+		String rogues = String.format("\n%s", roster.toString());
+		String special = String.format("\n%s", specials.toString());
+		String upgrade = String.format("\n%s", upgrades.toString());
 
 		// String locals = "\nLocals: ";
 		// locals += lair.residents().toString();
@@ -220,7 +330,8 @@ public class Gang implements Faction, Stakeholder {
 		// for (Locale el : turf)
 		// residents += el.residents().toString();
 
-		return string + toStringShips();
+		// return string + holding + special + upgrade + toStringShips();
+		return string + rogues + toStringShips();
 	}
 
 	@Override
@@ -306,6 +417,21 @@ public class Gang implements Faction, Stakeholder {
 	@Override
 	public void setExperience(int experience) {
 		this.experience = experience;
+	}
+
+	@Override
+	public EnumSet<Special> getSpecials() {
+		return specials;
+	}
+
+	@Override
+	public void setSpecials(EnumSet<Special> specials) {
+		this.specials = specials;
+	}
+
+	@Override
+	public Set<Upgrade> upgradeSet() {
+		return upgrades.keySet();
 	}
 
 	@Override
