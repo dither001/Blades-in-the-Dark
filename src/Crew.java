@@ -440,7 +440,7 @@ public class Crew implements Faction {
 			team.add(it.next());
 		}
 
-		Score score = new Score(this, team, client, target, goal);
+		Score score = new Score(this, team, new Plan.Quest(this));
 		// TODO - testing
 		if (client.sameAs(this)) {
 			System.out.println("Crew job. (Goal: " + goal + ")");
@@ -668,6 +668,18 @@ public class Crew implements Faction {
 
 	public void setReputation(Set<Rep> reputation) {
 		this.rep = (HashSet<Rep>) reputation;
+	}
+
+	@Override
+	public Set<Plan.Quest> getPlans() {
+		// TODO
+		return null;
+	}
+
+	@Override
+	public void setPlans(Set<Plan.Quest> plans) {
+		// TODO
+
 	}
 
 	@Override

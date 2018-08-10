@@ -48,11 +48,7 @@ public class Score implements Plan {
 	private ArrayList<Action> actions;
 
 	// constructors
-	public Score(Crew crew, List<Rogue> team, Crew client, Crew target) {
-		this(crew, team, client, target, Goal.CLIMB);
-	}
-
-	public Score(Crew crew, List<Rogue> team, Crew client, Crew target, Goal goal) {
+	public Score(Crew crew, List<Rogue> team, Quest quest) {
 		/*
 		 * TODO - I need to figure out (at some point) how to differentiate between a
 		 * job given by another crew and a job given by a single patron

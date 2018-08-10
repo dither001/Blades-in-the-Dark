@@ -375,6 +375,10 @@ public interface Faction {
 
 	public void setCrewType(Type type);
 
+	public Set<Plan.Quest> getPlans();
+
+	public void setPlans(Set<Plan.Quest> plans);
+
 	public int getLevel();
 
 	public void setLevel(int level);
@@ -495,78 +499,10 @@ public interface Faction {
 	/*
 	 * 
 	 */
-	public default Faction obligations() {
-		Set<Faction> allies, friends, rivals, hostiles, enemies;
-		allies = new HashSet<Faction>();
-		friends = new HashSet<Faction>();
-		rivals = new HashSet<Faction>();
-		hostiles = new HashSet<Faction>();
-		enemies = new HashSet<Faction>();
+	public default void Planning() {
+		Set<Plan.Quest> plans = new HashSet<Plan.Quest>(getPlans());
 
-		Ship ship;
-		int score;
-		Faction faction;
-		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
-			ship = it.next();
-			score = ship.getScore();
-			faction = ship.getOther(this);
-
-			if (score < 2)
-				enemies.add(faction);
-			else if (score == 2)
-				hostiles.add(faction);
-			else if (score == 3 || score == 4 || score == 5)
-				rivals.add(faction);
-			else if (score == 6)
-				friends.add(faction);
-			else if (score > 6)
-				allies.add(faction);
-
-		}
-
-		// obligation setup
-		int[] obs = new int[] { 0, 0, 0, 0, 0, 0 };
-
-		if (enemies.size() > 0)
-			obs[0] = 5;
-
-		if (hostiles.size() > 0)
-			obs[1] = 10;
-
-		if (rivals.size() > 0)
-			obs[2] = 25;
-
-		if (friends.size() > 0)
-			obs[4] = 15;
-
-		if (allies.size() > 0)
-			obs[5] = 20;
-
-		// job board is variable
-		int totalObs = obs[0] + obs[1] + obs[2] + obs[4] + obs[5];
-		if (totalObs < 31)
-			obs[3] = 60 - totalObs;
-		else if (totalObs < 61)
-			obs[3] = 75 - totalObs;
-
-		// selection process
-		int dice = Dice.roll(100);
-		if (dice < obs[0])
-			faction = Dice.randomFromSet(enemies);
-		else if (dice < obs[0] + obs[1])
-			faction = Dice.randomFromSet(hostiles);
-		else if (dice < obs[0] + obs[1] + obs[2])
-			faction = Dice.randomFromSet(rivals);
-		else if (dice < obs[0] + obs[1] + obs[2] + obs[3])
-			faction = this; // FIXME - grab quest from job board
-		else if (dice < obs[0] + obs[1] + obs[2] + obs[3] + obs[4])
-			faction = Dice.randomFromSet(friends);
-		else if (dice < obs[0] + obs[1] + obs[2] + obs[3] + obs[4] + obs[5])
-			faction = Dice.randomFromSet(allies);
-		else
-			faction = this;
-
-		return faction;
+		setPlans(plans);
 	}
 
 	/*
@@ -595,6 +531,113 @@ public interface Faction {
 		}
 
 		return set;
+	}
+
+	/*
+	 * INNER CLASS - OBLIGATIONS
+	 */
+	public static class Obligations {
+		private Faction owner;
+		private Set<Faction> allies, friends, rivals, hostiles, enemies;
+
+		public Obligations(Faction owner) {
+			allies = new HashSet<Faction>();
+			friends = new HashSet<Faction>();
+			rivals = new HashSet<Faction>();
+			hostiles = new HashSet<Faction>();
+			enemies = new HashSet<Faction>();
+
+			//
+			updateObligations();
+		}
+
+		public Set<Faction> allies() {
+			return allies;
+		}
+
+		public Set<Faction> friends() {
+			return friends;
+		}
+
+		public Set<Faction> rivals() {
+			return rivals;
+		}
+
+		public Set<Faction> hostiles() {
+			return hostiles;
+		}
+
+		public Set<Faction> enemies() {
+			return enemies;
+		}
+
+		public void updateObligations() {
+			Ship ship;
+			int score;
+			Faction faction;
+			for (Iterator<Ship> it = owner.getShips().iterator(); it.hasNext();) {
+				ship = it.next();
+				score = ship.getScore();
+				faction = ship.getOther(owner);
+
+				if (score < 2)
+					enemies.add(faction);
+				else if (score == 2)
+					hostiles.add(faction);
+				else if (score == 3 || score == 4 || score == 5)
+					rivals.add(faction);
+				else if (score == 6)
+					friends.add(faction);
+				else if (score > 6)
+					allies.add(faction);
+			}
+		}
+
+		public Faction selectObligation() {
+			int[] obs = new int[] { 0, 0, 0, 0, 0, 0 };
+
+			if (enemies.size() > 0)
+				obs[0] = 5;
+
+			if (hostiles.size() > 0)
+				obs[1] = 10;
+
+			if (rivals.size() > 0)
+				obs[2] = 25;
+
+			if (friends.size() > 0)
+				obs[4] = 15;
+
+			if (allies.size() > 0)
+				obs[5] = 20;
+
+			// job board is variable
+			int totalObs = obs[0] + obs[1] + obs[2] + obs[4] + obs[5];
+			if (totalObs < 31)
+				obs[3] = 60 - totalObs;
+			else if (totalObs < 61)
+				obs[3] = 75 - totalObs;
+
+			// selection process
+			Faction choice;
+			int dice = Dice.roll(100);
+			if (dice < obs[0])
+				choice = Dice.randomFromSet(enemies);
+			else if (dice < obs[0] + obs[1])
+				choice = Dice.randomFromSet(hostiles);
+			else if (dice < obs[0] + obs[1] + obs[2])
+				choice = Dice.randomFromSet(rivals);
+			else if (dice < obs[0] + obs[1] + obs[2] + obs[3])
+				choice = owner; // FIXME - grab quest from job board
+			else if (dice < obs[0] + obs[1] + obs[2] + obs[3] + obs[4])
+				choice = Dice.randomFromSet(friends);
+			else if (dice < obs[0] + obs[1] + obs[2] + obs[3] + obs[4] + obs[5])
+				choice = Dice.randomFromSet(allies);
+			else
+				choice = owner;
+
+			return choice;
+		}
 	}
 
 	/*

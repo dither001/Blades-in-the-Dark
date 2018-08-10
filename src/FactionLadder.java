@@ -155,8 +155,12 @@ public interface FactionLadder {
 		}
 
 		// select action
-		for (Faction el : actors)
-			System.out.println(el.toString() + " acted");
+		Faction client;
+		for (Faction el : actors) {
+			client = el.obligations();
+			System.out.println(el.toString() + " does a job for " + client);
+			
+		}
 
 		// update cooldowns
 		updateCooldown();

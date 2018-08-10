@@ -20,6 +20,7 @@ public class Gang implements Faction, Stakeholder {
 
 	//
 	private Set<Rogue> roster;
+	private Set<Plan.Quest> plans;
 
 	//
 	private int level;
@@ -51,6 +52,7 @@ public class Gang implements Faction, Stakeholder {
 
 		//
 		this.roster = new HashSet<Rogue>();
+		this.plans = new HashSet<Plan.Quest>();
 
 		//
 		this.level = 1;
@@ -305,6 +307,16 @@ public class Gang implements Faction, Stakeholder {
 	@Override
 	public void setCrewType(Type type) {
 		this.type = type;
+	}
+
+	@Override
+	public Set<Plan.Quest> getPlans() {
+		return plans;
+	}
+
+	@Override
+	public void setPlans(Set<Plan.Quest> plans) {
+		this.plans = plans;
 	}
 
 	@Override
