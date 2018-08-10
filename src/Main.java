@@ -15,26 +15,25 @@ public class Main {
 	public static void main(String[] args) {
 		// TODO
 
-		Gang gang;
-		for (Iterator<Faction> it = Gang.orderedGangList().iterator(); it.hasNext();) {
-			gang = (Gang) it.next();
-			System.out.println(gang.toStringDetailed());
-			System.out.println();
-		}
-
-		// Locale locale;
-		// for (Iterator<Locale> it = Gang.cluster.localeList().iterator();
-		// it.hasNext();) {
-		// locale = it.next();
-		// System.out.println(locale.toString() + "\n" + locale.residents().toString());
-		// System.out.println();
-		// }
+		Setting setting = new Setting();
+		setting.update();
 
 		// workLoop();
 		// rollRogues();
 		// setupActorLadder();
 		// characterAdvance(Class.BARBARIAN);
 		// rollCharacter();
+
+	}
+
+	public static void gangDebugPrint() {
+		Setting setting = new Setting();
+		Gang gang;
+		for (Iterator<Faction> it = setting.orderedFactionList().iterator(); it.hasNext();) {
+			gang = (Gang) it.next();
+			System.out.println(gang.toStringDetailed());
+			System.out.println();
+		}
 
 	}
 

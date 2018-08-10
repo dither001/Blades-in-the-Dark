@@ -9,9 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 public interface FactionLadder {
-	/*
-	 * COMPARATOR
-	 */
+	static final int MAX_ACTIVE = 6;
 
 	/*
 	 * INNER CLASS - member STATUS
@@ -152,7 +150,7 @@ public interface FactionLadder {
 	}
 
 	public default Set<Faction> ready() {
-		List<Faction> list = new ArrayList<Faction>();
+		List<Faction> list = new ArrayList<Faction>(currentMemberSet());
 		Map<Faction, Status> map = standings();
 
 		class Sort implements Comparator<Faction> {
@@ -176,7 +174,11 @@ public interface FactionLadder {
 			System.out.println(string);
 		}
 
-		// TODO
-		return null;
+		Set<Faction> set = new HashSet<Faction>();
+		for (int i = 0; i < MAX_ACTIVE; ++i) {
+			set.add(list.get(i));
+		}
+
+		return set;
 	}
 }

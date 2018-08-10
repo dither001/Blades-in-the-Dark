@@ -333,6 +333,29 @@ public interface Faction {
 		return Dice.randomFromArray(SMUGGLER_CLAIMS);
 	}
 
+	public static NamedFaction[] factionAddOrder() {
+		NamedFaction[] addOrder = new NamedFaction[] { NamedFaction.IMPERIAL_MILITARY, NamedFaction.CITY_COUNCIL,
+				NamedFaction.LEVIATHAN_HUNTERS, NamedFaction.MINISTRY_OF_PRESERVATION, NamedFaction.WHITECROWN,
+				NamedFaction.BRIGHTSTONE, NamedFaction.CHARTERHALL, NamedFaction.CHURCH_OF_ECSTASY,
+				NamedFaction.FOUNDATION, NamedFaction.HIVE, NamedFaction.IRONHOOK_PRISON, NamedFaction.SPARKWRIGHTS,
+				NamedFaction.SPIRIT_WARDENS, NamedFaction.UNSEEN, NamedFaction.BLUECOATS, NamedFaction.CIRCLE_OF_FLAME,
+				NamedFaction.DOCKERS, NamedFaction.FORGOTTEN_GODS, NamedFaction.GONDOLIERS, NamedFaction.HORDE,
+				NamedFaction.INSPECTORS, NamedFaction.IRUVIAN_CONSULATE, NamedFaction.LABORERS,
+				NamedFaction.LORD_SCURLOCK, NamedFaction.PATH_OF_ECHOES, NamedFaction.RECONCILED, NamedFaction.SAILORS,
+				NamedFaction.SILVER_NAILS, NamedFaction.SIX_TOWERS, NamedFaction.SKOVLAN_CONSULATE,
+				NamedFaction.SKOVLANDER_REFUGEES, NamedFaction.BARROWCLEFT, NamedFaction.BILLHOOKS,
+				NamedFaction.BRIGADE, NamedFaction.CABBIES, NamedFaction.COALRIDGE, NamedFaction.CROWS,
+				NamedFaction.CROWS_FOOT, NamedFaction.CYPHERS, NamedFaction.DEATHLANDS_SCAVENGERS,
+				NamedFaction.DIMMER_SISTERS, NamedFaction.DOCKS, NamedFaction.GRAY_CLOAKS, NamedFaction.GRINDERS,
+				NamedFaction.INK_RAKES, NamedFaction.LAMPBLACKS, NamedFaction.NIGHTMARKET, NamedFaction.RAIL_JACKS,
+				NamedFaction.RED_SASHES, NamedFaction.SERVANTS, NamedFaction.SILKSHORE, NamedFaction.WEEPING_LADY,
+				NamedFaction.WRAITHS, NamedFaction.CHARHOLLOW, NamedFaction.DAGGER_ISLES_CONSULATE,
+				NamedFaction.DUNSLOUGH, NamedFaction.FOG_HOUNDS, NamedFaction.LOST, NamedFaction.SEVEROSI_CONSULATE,
+				NamedFaction.ULF_IRONBORN, NamedFaction.VULTURES };
+
+		return addOrder;
+	}
+
 	/*
 	 * 
 	 */
@@ -367,7 +390,7 @@ public interface Faction {
 	public void setSpecials(EnumSet<Special> specials);
 
 	public Set<Upgrade> upgradeSet();
-	
+
 	public int getHeat();
 
 	public void setHeat(int heat);

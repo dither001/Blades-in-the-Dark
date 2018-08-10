@@ -12,103 +12,15 @@ import java.util.Objects;
 import java.util.Set;
 
 public class Gang implements Faction, Stakeholder {
-	/*
-	 * STATIC FIELDS
-	 */
-	private static int lifetimeGangs;
-
-	public static Locale.Cluster cluster;
-	private static Map<NamedFaction, Faction> gangs;
-
-	private static NamedFaction[] FACTION_ADD_ORDER = { NamedFaction.IMPERIAL_MILITARY, NamedFaction.CITY_COUNCIL,
-			NamedFaction.LEVIATHAN_HUNTERS, NamedFaction.MINISTRY_OF_PRESERVATION, NamedFaction.WHITECROWN,
-			NamedFaction.BRIGHTSTONE, NamedFaction.CHARTERHALL, NamedFaction.CHURCH_OF_ECSTASY, NamedFaction.FOUNDATION,
-			NamedFaction.HIVE, NamedFaction.IRONHOOK_PRISON, NamedFaction.SPARKWRIGHTS, NamedFaction.SPIRIT_WARDENS,
-			NamedFaction.UNSEEN, NamedFaction.BLUECOATS, NamedFaction.CIRCLE_OF_FLAME, NamedFaction.DOCKERS,
-			NamedFaction.FORGOTTEN_GODS, NamedFaction.GONDOLIERS, NamedFaction.HORDE, NamedFaction.INSPECTORS,
-			NamedFaction.IRUVIAN_CONSULATE, NamedFaction.LABORERS, NamedFaction.LORD_SCURLOCK,
-			NamedFaction.PATH_OF_ECHOES, NamedFaction.RECONCILED, NamedFaction.SAILORS, NamedFaction.SILVER_NAILS,
-			NamedFaction.SIX_TOWERS, NamedFaction.SKOVLAN_CONSULATE, NamedFaction.SKOVLANDER_REFUGEES,
-			NamedFaction.BARROWCLEFT, NamedFaction.BILLHOOKS, NamedFaction.BRIGADE, NamedFaction.CABBIES,
-			NamedFaction.COALRIDGE, NamedFaction.CROWS, NamedFaction.CROWS_FOOT, NamedFaction.CYPHERS,
-			NamedFaction.DEATHLANDS_SCAVENGERS, NamedFaction.DIMMER_SISTERS, NamedFaction.DOCKS,
-			NamedFaction.GRAY_CLOAKS, NamedFaction.GRINDERS, NamedFaction.INK_RAKES, NamedFaction.LAMPBLACKS,
-			NamedFaction.NIGHTMARKET, NamedFaction.RAIL_JACKS, NamedFaction.RED_SASHES, NamedFaction.SERVANTS,
-			NamedFaction.SILKSHORE, NamedFaction.WEEPING_LADY, NamedFaction.WRAITHS, NamedFaction.CHARHOLLOW,
-			NamedFaction.DAGGER_ISLES_CONSULATE, NamedFaction.DUNSLOUGH, NamedFaction.FOG_HOUNDS, NamedFaction.LOST,
-			NamedFaction.SEVEROSI_CONSULATE, NamedFaction.ULF_IRONBORN, NamedFaction.VULTURES };
-
-	/*
-	 * INITIALIZATION
-	 */
-	static {
-		lifetimeGangs = 0;
-		cluster = Locale.cluster();
-		gangs = new HashMap<NamedFaction, Faction>();
-
-		// creates the faction set
-		for (NamedFaction el : FACTION_ADD_ORDER)
-			gangs.put(el, new Gang(el.toString()));
-
-		// initializes neighbor ships
-		Gang gang;
-		for (Iterator<Faction> it = gangs.values().iterator(); it.hasNext();) {
-			gang = (Gang) it.next();
-			gang.neighborSetup();
-		}
-
-		// claims turf
-		for (Iterator<Faction> it = gangs.values().iterator(); it.hasNext();) {
-			gang = (Gang) it.next();
-			gang.factionSetup();
-		}
-
-		// finds and assigns ships to each faction
-		for (Iterator<Faction> it = gangs.values().iterator(); it.hasNext();) {
-			gang = (Gang) it.next();
-			gang.setShips(Ship.getShips(gang));
-		}
-
-		// initializes upgrades
-		for (Iterator<Faction> it = gangs.values().iterator(); it.hasNext();) {
-			gang = (Gang) it.next();
-			gang.upgradeSetup();
-		}
-
-		for (Iterator<Faction> it = gangs.values().iterator(); it.hasNext();) {
-			gang = (Gang) it.next();
-			gang.rosterSetup();
-		}
-
-	}
-
-	/*
-	 * STATIC METHODS
-	 */
-	public static Collection<Faction> getGangs() {
-		return gangs.values();
-	}
-
-	public static List<Faction> orderedGangList() {
-		List<Faction> list = new ArrayList<Faction>(gangs.values());
-
-		class Sort implements Comparator<Faction> {
-			@Override
-			public int compare(Faction left, Faction right) {
-				Gang leftGang = (Gang) left, rightGang = (Gang) right;
-
-				return leftGang.gangID - rightGang.gangID;
-			}
-		}
-
-		Collections.sort(list, new Sort());
-
-		return list;
-	}
+//	public static Collection<Faction> getGangs() {
+//		return gangs.values();
+//	}
 
 	/*
 	 * INSTANCE FIELDS
 	 */
+	private Locale.Cluster home;
+	
 	private boolean active;
 	private int gangID;
 	private String name;
@@ -138,9 +50,10 @@ public class Gang implements Faction, Stakeholder {
 	/*
 	 * CONSTRUCTORS
 	 */
-	public Gang(String name) {
+	public Gang(int gangID, String name, Locale.Cluster home) {
+		this.home = home;
 		this.active = true;
-		this.gangID = lifetimeGangs++;
+		this.gangID = gangID;
 		this.name = name;
 		this.reputation = new HashSet<Rep>();
 		this.type = Faction.randomCrewType();
@@ -156,7 +69,7 @@ public class Gang implements Faction, Stakeholder {
 		this.upgrades = new HashMap<Upgrade, Faction>();
 
 		//
-		this.lair = cluster.findVacancy(Dice.roll(6) - 1);
+		this.lair = home.findVacancy(Dice.roll(6) - 1);
 		lair.addBuilding(this);
 		this.turf = new HashSet<Locale>();
 
@@ -174,7 +87,7 @@ public class Gang implements Faction, Stakeholder {
 
 	}
 
-	private void neighborSetup() {
+	public void neighborSetup() {
 		int dice;
 		for (Iterator<Faction> it = lair.residents().iterator(); it.hasNext();) {
 			dice = Dice.roll(3) - 2;
@@ -183,12 +96,12 @@ public class Gang implements Faction, Stakeholder {
 		}
 	}
 
-	private void factionSetup() {
+	public void factionSetup() {
 		Set<Locale> workingSet = new HashSet<Locale>();
 		workingSet.add(lair);
 
 		//
-		Locale startingTurf = cluster.findStake(workingSet);
+		Locale startingTurf = home.findStake(workingSet);
 
 		if (startingTurf != null) {
 			turf.add(startingTurf);
@@ -215,7 +128,7 @@ public class Gang implements Faction, Stakeholder {
 		//
 	}
 
-	private void upgradeSetup() {
+	public void upgradeSetup() {
 		Faction faction = Dice.randomFromSet(ships).getOther(this);
 
 		if (type.equals(Type.ASSASSINS)) {
