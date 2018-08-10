@@ -29,10 +29,6 @@ public class Ship {
 	/*
 	 * CONSTRUCTORS
 	 */
-//	public Ship(Faction faction1, Faction faction2) {
-//		this(faction1, faction2, 0);
-//	}
-
 	public Ship(Faction faction1, Faction faction2, int score) {
 		this.shipID = lifetimeShips++;
 

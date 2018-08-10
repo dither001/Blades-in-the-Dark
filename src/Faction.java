@@ -427,7 +427,7 @@ public interface Faction {
 		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
 			candidate = it.next();
 
-			if (candidate.getScore() > 2)
+			if (candidate.getScore() > 6)
 				set.add(candidate);
 		}
 
@@ -441,7 +441,7 @@ public interface Faction {
 		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
 			candidate = it.next();
 
-			if (candidate.getScore() > 1)
+			if (candidate.getScore() > 5)
 				set.add(candidate);
 		}
 
@@ -457,7 +457,7 @@ public interface Faction {
 			candidate = it.next();
 
 			score = candidate.getScore();
-			if (score == 1 || score == 0 || score == -1)
+			if (score == 3 || score == 4 || score == 5)
 				set.add(candidate);
 		}
 
@@ -471,7 +471,7 @@ public interface Faction {
 		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
 			candidate = it.next();
 
-			if (candidate.getScore() < -1)
+			if (candidate.getScore() < 3)
 				set.add(candidate);
 		}
 
@@ -485,13 +485,93 @@ public interface Faction {
 		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
 			candidate = it.next();
 
-			if (candidate.getScore() < -2)
+			if (candidate.getScore() < 2)
 				set.add(candidate);
 		}
 
 		return set;
 	}
 
+	/*
+	 * 
+	 */
+	public default Faction obligations() {
+		Set<Faction> allies, friends, rivals, hostiles, enemies;
+		allies = new HashSet<Faction>();
+		friends = new HashSet<Faction>();
+		rivals = new HashSet<Faction>();
+		hostiles = new HashSet<Faction>();
+		enemies = new HashSet<Faction>();
+
+		Ship ship;
+		int score;
+		Faction faction;
+		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
+			ship = it.next();
+			score = ship.getScore();
+			faction = ship.getOther(this);
+
+			if (score < 2)
+				enemies.add(faction);
+			else if (score == 2)
+				hostiles.add(faction);
+			else if (score == 3 || score == 4 || score == 5)
+				rivals.add(faction);
+			else if (score == 6)
+				friends.add(faction);
+			else if (score > 6)
+				allies.add(faction);
+
+		}
+
+		// obligation setup
+		int[] obs = new int[] { 0, 0, 0, 0, 0, 0 };
+
+		if (enemies.size() > 0)
+			obs[0] = 5;
+
+		if (hostiles.size() > 0)
+			obs[1] = 10;
+
+		if (rivals.size() > 0)
+			obs[2] = 25;
+
+		if (friends.size() > 0)
+			obs[4] = 15;
+
+		if (allies.size() > 0)
+			obs[5] = 20;
+
+		// job board is variable
+		int totalObs = obs[0] + obs[1] + obs[2] + obs[4] + obs[5];
+		if (totalObs < 31)
+			obs[3] = 60 - totalObs;
+		else if (totalObs < 61)
+			obs[3] = 75 - totalObs;
+
+		// selection process
+		int dice = Dice.roll(100);
+		if (dice < obs[0])
+			faction = Dice.randomFromSet(enemies);
+		else if (dice < obs[0] + obs[1])
+			faction = Dice.randomFromSet(hostiles);
+		else if (dice < obs[0] + obs[1] + obs[2])
+			faction = Dice.randomFromSet(rivals);
+		else if (dice < obs[0] + obs[1] + obs[2] + obs[3])
+			faction = this; // FIXME - grab quest from job board
+		else if (dice < obs[0] + obs[1] + obs[2] + obs[3] + obs[4])
+			faction = Dice.randomFromSet(friends);
+		else if (dice < obs[0] + obs[1] + obs[2] + obs[3] + obs[4] + obs[5])
+			faction = Dice.randomFromSet(allies);
+		else
+			faction = this;
+
+		return faction;
+	}
+
+	/*
+	 * 
+	 */
 	public default boolean transferCoinTo(int amount, Faction other) {
 		boolean transfer = false;
 

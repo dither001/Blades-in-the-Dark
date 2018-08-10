@@ -542,7 +542,6 @@ public class Crew implements Faction {
 	}
 
 	public Crew clientFriendOrSelf(List<Crew>[] array) {
-		Crew client;
 		int[] obligations = new int[] { 0, 0, 0, 0, 0, 0, 0 };
 
 		if (shipArray[0] > 0)

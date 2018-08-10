@@ -172,21 +172,22 @@ public class Locale {
 		return oldest;
 	}
 
-	public boolean addStake(Faction stakeHolder) {
-		boolean staked = false;
+	public Set<Faction> testAddStake(Faction stakeHolder) {
+		Set<Faction> otherClaims = new HashSet<Faction>();
 
-		if (stakes.contains(stakeHolder) != true) {
+		boolean staked = false;
+		if (residents().size() > 0 && stakes.contains(stakeHolder) != true) {
 			stakes.add(stakeHolder);
 			staked = true;
 		}
 
 		if (staked) {
 			for (Iterator<Faction> it = residents().iterator(); it.hasNext();) {
-				Ship.addShip(stakeHolder, it.next(), 0);
+				otherClaims.add(it.next());
 			}
 		}
 
-		return staked;
+		return otherClaims;
 	}
 
 	public Set<Locale> neighborSet() {

@@ -17,13 +17,11 @@ public class Main {
 
 		Setting setting = new Setting();
 
-		for (int i = 0; i < 10; ++i) {
+		for (int i = 0; i < 15; ++i) {
 			setting.update();
 			System.out.println();
 		}
-		
-		
-		
+
 		// workLoop();
 		// rollRogues();
 		// setupActorLadder();

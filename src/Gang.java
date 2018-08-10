@@ -11,7 +11,7 @@ public class Gang implements Faction, Stakeholder {
 	 * INSTANCE FIELDS
 	 */
 	private Locale.Cluster home;
-	
+
 	private boolean active;
 	private int gangID;
 	private String name;
@@ -81,7 +81,7 @@ public class Gang implements Faction, Stakeholder {
 	public void neighborSetup() {
 		int dice;
 		for (Iterator<Faction> it = lair.residents().iterator(); it.hasNext();) {
-			dice = Dice.roll(3) - 2;
+			dice = Dice.roll(3) + 2;
 			Ship.addShip(this, it.next(), dice);
 
 		}
@@ -92,28 +92,37 @@ public class Gang implements Faction, Stakeholder {
 		workingSet.add(lair);
 
 		//
-		Locale startingTurf = home.findStake(workingSet);
+		Locale startingTurf = null;
+		while (startingTurf == null || startingTurf.testAddStake(this).size() < 1) {
+			startingTurf = home.findStake(workingSet);
+		}
 
-		if (startingTurf != null) {
-			turf.add(startingTurf);
-			startingTurf.addStake(this);
+		//
+		turf.add(startingTurf);
 
-			Faction localBoss = startingTurf.enmityClause(this);
-			Ship ship = Ship.get(this, localBoss);
+		Set<Faction> rivals = new HashSet<Faction>();
+		rivals.addAll(startingTurf.testAddStake(this));
 
-			int dice = Dice.roll(4), score = ship.getScore();
-			if (dice == 1 && coin > 1) {
-				transferCoinTo(2, localBoss);
-				ship.setScore(score + 1);
+		for (Iterator<Faction> it = rivals.iterator(); it.hasNext();) {
+			Ship.addShip(this, it.next(), Dice.roll(3) + 2);
+		}
 
-			} else if (dice == 2 && coin > 0) {
-				transferCoinTo(1, localBoss);
-				ship.setScore(score);
+		//
+		Faction localBoss = startingTurf.enmityClause(this);
+		Ship ship = Ship.get(this, localBoss);
 
-			} else {
-				ship.setScore(score - 1);
+		int dice = Dice.roll(4), score = ship.getScore();
+		if (dice == 1 && coin > 1) {
+			transferCoinTo(2, localBoss);
+			ship.setScore(score + 1);
 
-			}
+		} else if (dice == 2 && coin > 0) {
+			transferCoinTo(1, localBoss);
+			ship.setScore(score);
+
+		} else {
+			ship.setScore(score - 1);
+
 		}
 
 		//
