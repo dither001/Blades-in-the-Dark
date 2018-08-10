@@ -18,7 +18,7 @@ public class Gang implements Faction, Stakeholder {
 	private static int lifetimeGangs;
 
 	public static Locale.Cluster cluster;
-	private static Map<NamedFaction, Gang> gangs;
+	private static Map<NamedFaction, Faction> gangs;
 
 	private static NamedFaction[] FACTION_ADD_ORDER = { NamedFaction.IMPERIAL_MILITARY, NamedFaction.CITY_COUNCIL,
 			NamedFaction.LEVIATHAN_HUNTERS, NamedFaction.MINISTRY_OF_PRESERVATION, NamedFaction.WHITECROWN,
@@ -44,37 +44,40 @@ public class Gang implements Faction, Stakeholder {
 	static {
 		lifetimeGangs = 0;
 		cluster = Locale.cluster();
-		gangs = new HashMap<NamedFaction, Gang>();
+		gangs = new HashMap<NamedFaction, Faction>();
 
 		// creates the faction set
 		for (NamedFaction el : FACTION_ADD_ORDER)
 			gangs.put(el, new Gang(el.toString()));
 
 		// initializes neighbor ships
-		for (Iterator<Gang> it = gangs.values().iterator(); it.hasNext();) {
-			it.next().neighborSetup();
+		Gang gang;
+		for (Iterator<Faction> it = gangs.values().iterator(); it.hasNext();) {
+			gang = (Gang) it.next();
+			gang.neighborSetup();
 		}
 
 		// claims turf
-		for (Iterator<Gang> it = gangs.values().iterator(); it.hasNext();) {
-			it.next().factionSetup();
+		for (Iterator<Faction> it = gangs.values().iterator(); it.hasNext();) {
+			gang = (Gang) it.next();
+			gang.factionSetup();
 		}
 
 		// finds and assigns ships to each faction
-		Faction current;
-		for (Iterator<Gang> it = gangs.values().iterator(); it.hasNext();) {
-			current = it.next();
-
-			current.setShips(Ship.getShips(current));
+		for (Iterator<Faction> it = gangs.values().iterator(); it.hasNext();) {
+			gang = (Gang) it.next();
+			gang.setShips(Ship.getShips(gang));
 		}
 
 		// initializes upgrades
-		for (Iterator<Gang> it = gangs.values().iterator(); it.hasNext();) {
-			it.next().upgradeSetup();
+		for (Iterator<Faction> it = gangs.values().iterator(); it.hasNext();) {
+			gang = (Gang) it.next();
+			gang.upgradeSetup();
 		}
 
-		for (Iterator<Gang> it = gangs.values().iterator(); it.hasNext();) {
-			it.next().rosterSetup();
+		for (Iterator<Faction> it = gangs.values().iterator(); it.hasNext();) {
+			gang = (Gang) it.next();
+			gang.rosterSetup();
 		}
 
 	}
@@ -82,17 +85,19 @@ public class Gang implements Faction, Stakeholder {
 	/*
 	 * STATIC METHODS
 	 */
-	public static Collection<Gang> getGangs() {
+	public static Collection<Faction> getGangs() {
 		return gangs.values();
 	}
 
-	public static List<Gang> orderedGangList() {
-		List<Gang> list = new ArrayList<Gang>(gangs.values());
+	public static List<Faction> orderedGangList() {
+		List<Faction> list = new ArrayList<Faction>(gangs.values());
 
-		class Sort implements Comparator<Gang> {
+		class Sort implements Comparator<Faction> {
 			@Override
-			public int compare(Gang left, Gang right) {
-				return left.gangID - right.gangID;
+			public int compare(Faction left, Faction right) {
+				Gang leftGang = (Gang) left, rightGang = (Gang) right;
+
+				return leftGang.gangID - rightGang.gangID;
 			}
 		}
 

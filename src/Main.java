@@ -15,8 +15,10 @@ public class Main {
 	public static void main(String[] args) {
 		// TODO
 
-		for (Iterator<Gang> it = Gang.orderedGangList().iterator(); it.hasNext();) {
-			System.out.println(it.next().toStringDetailed());
+		Gang gang;
+		for (Iterator<Faction> it = Gang.orderedGangList().iterator(); it.hasNext();) {
+			gang = (Gang) it.next();
+			System.out.println(gang.toStringDetailed());
 			System.out.println();
 		}
 
