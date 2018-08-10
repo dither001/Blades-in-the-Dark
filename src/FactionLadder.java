@@ -41,7 +41,7 @@ public interface FactionLadder {
 			this.active = active;
 
 			//
-			this.rank = 0;
+			this.rank = 1;
 			this.cooldown = 0;
 			this.fame = 0;
 			this.infamy = 0;
@@ -96,7 +96,8 @@ public interface FactionLadder {
 		}
 
 		int getCooldown() {
-			return cooldown;
+			// turnsSinceLastAction / ((lowestRank - rank > 0) ? lowestRank - rank : 1)
+			return cooldown / rank;
 		}
 
 		void setCooldown(int cooldown) {
@@ -138,7 +139,39 @@ public interface FactionLadder {
 	/*
 	 * DEFAULT METHODS
 	 */
-	public default void updateCooldowns() {
+	public default void updateLadder() {
+		// turns taken
+
+		// update time
+
+		// done! -> get ready
+		Set<Faction> actors = ready();
+
+		// done! -> set busy
+		Status status;
+		for (Faction el : actors) {
+			status = standings().get(el);
+			status.makeBusy();
+		}
+
+		// select action
+		for (Faction el : actors)
+			System.out.println(el.toString() + " acted");
+
+		// update cooldowns
+		updateCooldown();
+
+		// release actors
+		for (Faction el : actors) {
+			status = standings().get(el);
+			status.setCooldown(0);
+			status.release();
+		}
+
+		System.out.println("- - - - - -");
+	}
+
+	public default void updateCooldown() {
 		Status current;
 		for (Iterator<Status> it = standingValueSet().iterator(); it.hasNext();) {
 			current = it.next();
@@ -150,6 +183,8 @@ public interface FactionLadder {
 	}
 
 	public default Set<Faction> ready() {
+		Set<Faction> set = new HashSet<Faction>();
+
 		List<Faction> list = new ArrayList<Faction>(currentMemberSet());
 		Map<Faction, Status> map = standings();
 
@@ -157,27 +192,30 @@ public interface FactionLadder {
 			@Override
 			public int compare(Faction left, Faction right) {
 
-				return map.get(right).cooldown - map.get(right).cooldown;
+				return map.get(right).cooldown - map.get(left).cooldown;
 			}
 		}
 
 		Collections.sort(list, new Sort());
 
-		Faction faction;
-		int cooldown;
-		String string;
-		for (Iterator<Faction> it = list.iterator(); it.hasNext();) {
-			// FIXME - testing
-			faction = it.next();
-			cooldown = map.get(faction).cooldown;
-			string = String.format("(%2d) %s", cooldown, faction.toString());
-			System.out.println(string);
-		}
+		// Faction faction;
+		// int cooldown;
+		// String string;
+		// for (Iterator<Faction> it = list.iterator(); it.hasNext();) {
+		// faction = it.next();
+		// cooldown = map.get(faction).cooldown;
+		// string = String.format("(%2d) %s", cooldown, faction.toString());
+		// System.out.println(string);
+		// }
 
-		Set<Faction> set = new HashSet<Faction>();
+		//
 		for (int i = 0; i < MAX_ACTIVE; ++i) {
 			set.add(list.get(i));
 		}
+
+		// for (Iterator<Faction> it = set.iterator(); it.hasNext();) {
+		// System.out.println(it.next());
+		// }
 
 		return set;
 	}

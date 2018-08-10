@@ -3,20 +3,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public class Score {
-	public enum Goal {
-		// CLIMB from "social climb;" SHAKE from "shaking someone else"
-		ASSIST, CLIMB, CLAIM, SHAKE
-	}
-
-	public enum Plan {
-		ASSAULT, DECEPTION, STEALTH, OCCULT, SOCIAL, TRANSPORT
-	}
-
-	public enum Activity {
-		ACCIDENT, DISAPPEARANCE, MURDER, RANSOM, BATTLE, EXTORTION, SABOTAGE, SMASH_N_GRAB, ACQUISITION, AUGURY, CONSECRATION, SACRIFICE, SALES, SUPPLY, SHOW_OF_FORCE, SOCIALIZE, BURGLARY, ESPIONAGE, ROBBERY, CARGO_ARMS, CARGO_CONTRABAND, CARGO_PEOPLE, CARGO_WEIRD
-	}
-
+public class Score implements Plan {
 	public enum Act {
 		INCITING, RISING, TURNING, FALLING, RELEASE
 	}
@@ -31,33 +18,7 @@ public class Score {
 
 	// static fields
 	private static final int ACTIONS_PER_SCORE = 20;
-
-	private static final Plan[] ALL_PLANS = { Plan.ASSAULT, Plan.DECEPTION, Plan.STEALTH, Plan.OCCULT, Plan.SOCIAL,
-			Plan.TRANSPORT };
-	private static final String[] DETAILS = { "Point of attack.", "Method of deception.", "Point of infiltration.",
-			"Arcane method.", "Social connection.", "Route & means." };
-
-	private static final Act[] ACTS = { Act.INCITING, Act.RISING, Act.TURNING, Act.FALLING, Act.RELEASE };
-
-	private static final Activity[] ALL_ACTIVITIES = { Activity.ACCIDENT, Activity.DISAPPEARANCE, Activity.MURDER,
-			Activity.RANSOM, Activity.BATTLE, Activity.EXTORTION, Activity.SABOTAGE, Activity.SMASH_N_GRAB,
-			Activity.ACQUISITION, Activity.AUGURY, Activity.CONSECRATION, Activity.SACRIFICE, Activity.SALES,
-			Activity.SUPPLY, Activity.SHOW_OF_FORCE, Activity.SOCIALIZE, Activity.BURGLARY, Activity.ESPIONAGE,
-			Activity.ROBBERY, Activity.CARGO_ARMS, Activity.CARGO_CONTRABAND, Activity.CARGO_PEOPLE,
-			Activity.CARGO_WEIRD };
-
-	private static final Activity[] ASSASSIN_FLAVORS = { Activity.ACCIDENT, Activity.DISAPPEARANCE, Activity.MURDER,
-			Activity.RANSOM };
-	private static final Activity[] BRAVO_FLAVORS = { Activity.BATTLE, Activity.EXTORTION, Activity.SABOTAGE,
-			Activity.SMASH_N_GRAB };
-	private static final Activity[] CULT_FLAVORS = { Activity.ACQUISITION, Activity.AUGURY, Activity.CONSECRATION,
-			Activity.SACRIFICE };
-	private static final Activity[] HAWKER_FLAVORS = { Activity.SALES, Activity.SUPPLY, Activity.SHOW_OF_FORCE,
-			Activity.SOCIALIZE };
-	private static final Activity[] SHADOW_FLAVORS = { Activity.BURGLARY, Activity.ESPIONAGE, Activity.ROBBERY,
-			Activity.SABOTAGE };
-	private static final Activity[] SMUGGLER_FLAVORS = { Activity.CARGO_ARMS, Activity.CARGO_CONTRABAND,
-			Activity.CARGO_PEOPLE, Activity.CARGO_WEIRD };
+	public static final Act[] ACTS = { Act.INCITING, Act.RISING, Act.TURNING, Act.FALLING, Act.RELEASE };
 
 	// fields
 	private Crew crew;
@@ -66,7 +27,7 @@ public class Score {
 	private Crew client;
 	private Crew target;
 	private Goal goal;
-	private Plan plan;
+	private Approach plan;
 	private Activity activity;
 
 	//
@@ -102,8 +63,8 @@ public class Score {
 		this.client = client;
 		this.target = target;
 		this.goal = goal;
-		this.plan = randomPlan();
-		this.activity = randomActivity(crew.crewType());
+		this.plan = Plan.randomPlan();
+		this.activity = Plan.randomActivity(crew.crewType());
 
 		if (goal.equals(Goal.CLAIM)) {
 			Faction.Claim candidate;
@@ -230,7 +191,7 @@ public class Score {
 		return crew;
 	}
 
-	public Plan getPlan() {
+	public Approach getPlan() {
 		return plan;
 	}
 
@@ -353,14 +314,14 @@ public class Score {
 
 	@Override
 	public String toString() {
-		String string = String.format("name %s [%s] %s", plan, detail(plan), activity);
+		String string = String.format("name %s [%s] %s", plan, Plan.detail(plan), activity);
 		string += "\nTarget: " + target.toString();
 
 		return string;
 	}
 
 	public String toStringDetailed() {
-		String string = String.format("name %s [%s] %s || Team size: %d %n%s %nTarget: %s", plan, detail(plan),
+		String string = String.format("name %s [%s] %s || Team size: %d %n%s %nTarget: %s", plan, Plan.detail(plan),
 				activity, team.size(), team.toString(), target.toString());
 
 		return string;
@@ -370,52 +331,6 @@ public class Score {
 	 * STATIC METHODS
 	 * 
 	 */
-	public static Plan randomPlan() {
-		return Dice.randomFromArray(ALL_PLANS);
-	}
-
-	private static String detail(Plan plan) {
-		String string = "";
-
-		if (plan.equals(Plan.ASSAULT))
-			string = DETAILS[0];
-		else if (plan.equals(Plan.DECEPTION))
-			string = DETAILS[1];
-		else if (plan.equals(Plan.STEALTH))
-			string = DETAILS[2];
-		else if (plan.equals(Plan.OCCULT))
-			string = DETAILS[3];
-		else if (plan.equals(Plan.SOCIAL))
-			string = DETAILS[4];
-		else if (plan.equals(Plan.TRANSPORT))
-			string = DETAILS[5];
-
-		return string;
-	}
-
-	public static Activity randomActivity() {
-		return Dice.randomFromArray(ALL_ACTIVITIES);
-	}
-
-	public static Activity randomActivity(Crew.Type crew) {
-		Activity[] array = ALL_ACTIVITIES;
-		if (crew.equals(Crew.Type.ASSASSINS))
-			array = ASSASSIN_FLAVORS;
-		else if (crew.equals(Crew.Type.BRAVOS))
-			array = BRAVO_FLAVORS;
-		else if (crew.equals(Crew.Type.CULT))
-			array = CULT_FLAVORS;
-		else if (crew.equals(Crew.Type.HAWKERS))
-			array = HAWKER_FLAVORS;
-		else if (crew.equals(Crew.Type.SHADOWS))
-			array = SHADOW_FLAVORS;
-		else if (crew.equals(Crew.Type.SMUGGLERS))
-			array = SMUGGLER_FLAVORS;
-
-		Activity choice = array[Dice.roll(array.length) - 1];
-		return choice;
-	}
-
 	public static Act randomAct() {
 		return Dice.randomFromArray(ACTS);
 	}
@@ -519,6 +434,7 @@ public class Score {
 		int heat;
 
 		Crew crew;
+
 		public Downtime(Score score) {
 			this.crew = score.crew;
 			ArrayList<Rogue> team = score.team;
@@ -732,6 +648,6 @@ public class Score {
 			entanglement(heat, wantedLevel);
 
 		}
-		
+
 	}
 }

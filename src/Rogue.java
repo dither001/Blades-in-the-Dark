@@ -554,20 +554,20 @@ public class Rogue implements Actor {
 		return choice;
 	}
 
-	public static Rating approachByPlan(Score.Plan plan) {
+	public static Rating approachByPlan(Score.Approach plan) {
 		Rating choice = randomApproach();
 
-		if (plan.equals(Score.Plan.ASSAULT))
+		if (plan.equals(Score.Approach.ASSAULT))
 			choice = assaultApproach();
-		else if (plan.equals(Score.Plan.DECEPTION))
+		else if (plan.equals(Score.Approach.DECEPTION))
 			choice = deceptionApproach();
-		else if (plan.equals(Score.Plan.OCCULT))
+		else if (plan.equals(Score.Approach.OCCULT))
 			choice = occultApproach();
-		else if (plan.equals(Score.Plan.SOCIAL))
+		else if (plan.equals(Score.Approach.SOCIAL))
 			choice = socialApproach();
-		else if (plan.equals(Score.Plan.STEALTH))
+		else if (plan.equals(Score.Approach.STEALTH))
 			choice = stealthApproach();
-		else if (plan.equals(Score.Plan.TRANSPORT))
+		else if (plan.equals(Score.Approach.TRANSPORT))
 			choice = transportApproach();
 
 		return choice;
@@ -577,7 +577,7 @@ public class Rogue implements Actor {
 		return Dice.randomFromArray(APPROACHES);
 	}
 
-	public static Rating pseudoRandomApproach(Score.Act act, Score.Plan plan, Crew crew, Rating[][] beats) {
+	public static Rating pseudoRandomApproach(Score.Act act, Score.Approach plan, Crew crew, Rating[][] beats) {
 		Crew.Type type = crew.crewType();
 		Rating choice;
 		int dice = Dice.roll(100);

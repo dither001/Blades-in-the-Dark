@@ -16,8 +16,14 @@ public class Main {
 		// TODO
 
 		Setting setting = new Setting();
-		setting.update();
 
+		for (int i = 0; i < 10; ++i) {
+			setting.update();
+			System.out.println();
+		}
+		
+		
+		
 		// workLoop();
 		// rollRogues();
 		// setupActorLadder();

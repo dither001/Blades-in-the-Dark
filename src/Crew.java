@@ -140,7 +140,7 @@ public class Crew implements Faction {
 	private HashSet<Crew> huntingGroundsBoss;
 	private int huntingGroundSize;
 	private String operation;
-	private HashSet<Score.Activity> favoredOps;
+	// private HashSet<Score.Activity> favoredOps;
 
 	// constructors
 	public Crew() {
@@ -172,8 +172,8 @@ public class Crew implements Faction {
 
 		//
 		this.huntingGroundSize = 1;
-		this.favoredOps = new HashSet<Score.Activity>();
-		favoredOps.add(Score.randomActivity(type));
+		// this.favoredOps = new HashSet<Score.Activity>();
+		// favoredOps.add(Score.randomActivity(type));
 
 		// setup ships
 		shipMap = new HashMap<Crew, Integer>();
@@ -332,8 +332,8 @@ public class Crew implements Faction {
 	}
 
 	private void updateTurf() {
-		Faction.Claim[] array = new Faction.Claim[] { Faction.Claim.TURF_1, Faction.Claim.TURF_2, Faction.Claim.TURF_3, Faction.Claim.TURF_4, Faction.Claim.TURF_5,
-				Faction.Claim.TURF_6 };
+		Faction.Claim[] array = new Faction.Claim[] { Faction.Claim.TURF_1, Faction.Claim.TURF_2, Faction.Claim.TURF_3,
+				Faction.Claim.TURF_4, Faction.Claim.TURF_5, Faction.Claim.TURF_6 };
 		int counter = 0;
 		for (Faction.Claim el : array) {
 			if (claims.containsKey(el))
@@ -649,10 +649,10 @@ public class Crew implements Faction {
 	@Override
 	public int factionID() {
 		// TODO
-		
+
 		return 0;
 	}
-	
+
 	@Override
 	public String getName() {
 		return name;
@@ -711,7 +711,7 @@ public class Crew implements Faction {
 	public void setSpecials(EnumSet<Special> specials) {
 		this.specials = specials;
 	}
-	
+
 	@Override
 	public Set<Upgrade> upgradeSet() {
 		return upgrades.keySet();

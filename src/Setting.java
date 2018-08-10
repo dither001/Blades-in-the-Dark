@@ -2,13 +2,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 public class Setting {
-
 	/*
 	 * INSTANCE FIELDS
 	 */
@@ -17,58 +16,62 @@ public class Setting {
 
 	//
 	private int lifetimeGangs;
-	private Map<Faction.NamedFaction, Faction> factions;
+	private Set<Faction> factions;
 
 	/*
 	 * CONSTRUCTORS
 	 */
 	public Setting() {
+		/*
+		 * FIXME - this array represents will need to be replaced with the
+		 * randomly-generated content when I abstract stuff for CharGen
+		 */
+		Faction.NamedFaction[] array = Faction.factionAddOrder();
+
+		//
 		this.cluster = Locale.cluster();
 		this.cityscape = new Cityscape();
 		this.lifetimeGangs = 0;
 
 		//
-		this.factions = new HashMap<Faction.NamedFaction, Faction>();
+		this.factions = new HashSet<Faction>();
 
-		// creates the faction set
-		Faction.NamedFaction[] array = Faction.factionAddOrder();
-
+		// creates the faction map
 		for (int i = 0; i < array.length; ++i) {
-			factions.put(array[i], new Gang(lifetimeGangs++, array[i].toString(), cluster));
+			factions.add(new Gang(lifetimeGangs++, array[i].toString(), cluster));
 		}
 
 		// initializes neighbor ships
 		Gang gang;
-		for (Iterator<Faction> it = factions.values().iterator(); it.hasNext();) {
+		for (Iterator<Faction> it = factions.iterator(); it.hasNext();) {
 			gang = (Gang) it.next();
 			gang.neighborSetup();
 		}
 
 		// claims turf
-		for (Iterator<Faction> it = factions.values().iterator(); it.hasNext();) {
+		for (Iterator<Faction> it = factions.iterator(); it.hasNext();) {
 			gang = (Gang) it.next();
 			gang.factionSetup();
 		}
 
 		// finds and assigns ships to each faction
-		for (Iterator<Faction> it = factions.values().iterator(); it.hasNext();) {
+		for (Iterator<Faction> it = factions.iterator(); it.hasNext();) {
 			gang = (Gang) it.next();
 			gang.setShips(Ship.getShips(gang));
 		}
 
 		// initializes upgrades
-		for (Iterator<Faction> it = factions.values().iterator(); it.hasNext();) {
+		for (Iterator<Faction> it = factions.iterator(); it.hasNext();) {
 			gang = (Gang) it.next();
 			gang.upgradeSetup();
 		}
 
-		for (Iterator<Faction> it = factions.values().iterator(); it.hasNext();) {
+		for (Iterator<Faction> it = factions.iterator(); it.hasNext();) {
 			gang = (Gang) it.next();
 			gang.rosterSetup();
 		}
 
-		Collection<Faction> c = factions.values();
-		cityscape.addAllCurrentMembers(c);
+		cityscape.addAllCurrentMembers(factions);
 	}
 
 	/*
@@ -79,7 +82,7 @@ public class Setting {
 	}
 
 	public List<Faction> orderedFactionList() {
-		List<Faction> list = new ArrayList<Faction>(factions.values());
+		List<Faction> list = new ArrayList<Faction>(factions);
 
 		class Sort implements Comparator<Faction> {
 			@Override

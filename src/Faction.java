@@ -1,5 +1,7 @@
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 public interface Faction {
@@ -418,6 +420,78 @@ public interface Faction {
 	/*
 	 * 
 	 */
+	public default Set<Ship> allies() {
+		Set<Ship> set = new HashSet<Ship>();
+
+		Ship candidate;
+		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
+			candidate = it.next();
+
+			if (candidate.getScore() > 2)
+				set.add(candidate);
+		}
+
+		return set;
+	}
+
+	public default Set<Ship> friends() {
+		Set<Ship> set = new HashSet<Ship>();
+
+		Ship candidate;
+		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
+			candidate = it.next();
+
+			if (candidate.getScore() > 1)
+				set.add(candidate);
+		}
+
+		return set;
+	}
+
+	public default Set<Ship> rivals() {
+		Set<Ship> set = new HashSet<Ship>();
+
+		Ship candidate;
+		int score;
+		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
+			candidate = it.next();
+
+			score = candidate.getScore();
+			if (score == 1 || score == 0 || score == -1)
+				set.add(candidate);
+		}
+
+		return set;
+	}
+
+	public default Set<Ship> hostiles() {
+		Set<Ship> set = new HashSet<Ship>();
+
+		Ship candidate;
+		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
+			candidate = it.next();
+
+			if (candidate.getScore() < -1)
+				set.add(candidate);
+		}
+
+		return set;
+	}
+
+	public default Set<Ship> enemies() {
+		Set<Ship> set = new HashSet<Ship>();
+
+		Ship candidate;
+		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
+			candidate = it.next();
+
+			if (candidate.getScore() < -2)
+				set.add(candidate);
+		}
+
+		return set;
+	}
+
 	public default boolean transferCoinTo(int amount, Faction other) {
 		boolean transfer = false;
 
@@ -454,7 +528,7 @@ public interface Faction {
 		// Motive - Reward
 		// Opportunity
 		Score.Goal goal;
-		Score.Plan plan;
+		Score.Approach plan;
 		Score.Activity activity;
 
 		// - - - - - -

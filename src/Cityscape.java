@@ -8,15 +8,6 @@ import java.util.Set;
 
 public class Cityscape implements FactionLadder {
 	/*
-	 * STATIC FIELDS
-	 */
-	private static Set<Cityscape> ladders;
-
-	static {
-		ladders = new HashSet<Cityscape>();
-	}
-
-	/*
 	 * INSTANCE FIELDS
 	 */
 	private Faction leader;
@@ -42,13 +33,8 @@ public class Cityscape implements FactionLadder {
 	 * INSTANCE METHODS
 	 */
 	public void update() {
-		/*
-		 * TODO - updates cooldown of all active members; active doesn't mean current,
-		 * neither does former mean inactive, for what may seem like unintuitive
-		 * reasons. "You never really stop being a marine," et cetera.
-		 */
-		updateCooldowns();
-		ready();
+
+		updateLadder();
 	}
 
 	/*
@@ -142,7 +128,7 @@ public class Cityscape implements FactionLadder {
 			if (standing.containsKey(faction) != true) {
 				Status status = new Status(faction);
 				standing.put(faction, status);
-				status.setCooldown(0);				
+				status.setCooldown(0);
 			}
 		}
 
