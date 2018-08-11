@@ -501,8 +501,19 @@ public interface Faction {
 	/*
 	 * 
 	 */
-	public default void Planning() {
+	public default void makePlans() {
 		Set<Plan.Quest> plans = new HashSet<Plan.Quest>(getPlans());
+
+		// ABC = Always Be Climbing
+		for (Iterator<Faction> it = getObligations().rivals().iterator(); it.hasNext();) {
+			plans.add(new Plan.Quest(this, it.next(), Plan.Goal.CLIMB));
+
+		}
+
+		for (Iterator<Faction> it = getObligations().enemies().iterator(); it.hasNext();) {
+			plans.add(new Plan.Quest(this, it.next(), Plan.Goal.SHAKE));
+
+		}
 
 		setPlans(plans);
 	}

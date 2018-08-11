@@ -176,7 +176,24 @@ public class Locale {
 		Set<Faction> otherClaims = new HashSet<Faction>();
 
 		boolean staked = false;
-		if (residents().size() > 0 && stakes.contains(stakeHolder) != true) {
+		if (stakes.contains(stakeHolder) != true) {
+			staked = true;
+		}
+
+		if (staked) {
+			for (Iterator<Faction> it = residents().iterator(); it.hasNext();) {
+				otherClaims.add(it.next());
+			}
+		}
+
+		return otherClaims;
+	}
+
+	public Set<Faction> addStake(Faction stakeHolder) {
+		Set<Faction> otherClaims = new HashSet<Faction>();
+
+		boolean staked = false;
+		if (stakes.contains(stakeHolder) != true) {
 			stakes.add(stakeHolder);
 			staked = true;
 		}

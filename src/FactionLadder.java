@@ -152,14 +152,20 @@ public interface FactionLadder {
 		for (Faction el : actors) {
 			status = standings().get(el);
 			status.makeBusy();
+
 		}
 
 		// select action
 		Faction client;
 		for (Faction el : actors) {
-			System.out.println(el.getObligations().toString());
-//			System.out.println(el.toString() + " does a job for " + client);
-			
+			// System.out.println(el.getObligations().toString());
+			client = el.getObligations().selectObligation();
+
+			if (el.equals(client))
+				System.out.println(el.toString() + " does a personal job");
+			else
+				System.out.println(el.toString() + " does a job for " + client);
+
 		}
 
 		// update cooldowns
@@ -170,6 +176,11 @@ public interface FactionLadder {
 			status = standings().get(el);
 			status.setCooldown(0);
 			status.release();
+		}
+
+		// update plans for the next round
+		for (Iterator<Faction> it = standingKeySet().iterator(); it.hasNext();) {
+			it.next().makePlans();
 		}
 
 		System.out.println("- - - - - -");

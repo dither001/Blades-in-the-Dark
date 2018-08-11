@@ -106,8 +106,7 @@ public class Gang implements Faction, Stakeholder {
 		//
 		turf.add(startingTurf);
 
-		Set<Faction> rivals = new HashSet<Faction>();
-		rivals.addAll(startingTurf.testAddStake(this));
+		Set<Faction> rivals = new HashSet<Faction>(startingTurf.addStake(this));
 
 		for (Iterator<Faction> it = rivals.iterator(); it.hasNext();) {
 			Ship.addShip(this, it.next(), Dice.roll(3) + 2);
@@ -224,7 +223,7 @@ public class Gang implements Faction, Stakeholder {
 	public void obligationSetup() {
 		this.obligations = new Obligations(this);
 	}
-	
+
 	@Override
 	public String toString() {
 		// String string = String.format("%s (%2d)", name, gangID);
