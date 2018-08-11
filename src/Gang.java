@@ -35,6 +35,8 @@ public class Gang implements Faction, Stakeholder {
 
 	//
 	private Set<Ship> ships;
+	private Obligations obligations;
+	//
 	private boolean atWar;
 	private int heat;
 	private int wantedLevel;
@@ -68,6 +70,8 @@ public class Gang implements Faction, Stakeholder {
 
 		//
 		this.ships = new HashSet<Ship>();
+
+		//
 		this.atWar = false;
 		this.heat = 0;
 		this.wantedLevel = 0;
@@ -205,6 +209,8 @@ public class Gang implements Faction, Stakeholder {
 			ship.setScore(score - 2);
 
 		}
+
+		setShips(ships);
 	}
 
 	public void rosterSetup() {
@@ -215,6 +221,10 @@ public class Gang implements Faction, Stakeholder {
 		}
 	}
 
+	public void obligationSetup() {
+		this.obligations = new Obligations(this);
+	}
+	
 	@Override
 	public String toString() {
 		// String string = String.format("%s (%2d)", name, gangID);
@@ -424,4 +434,8 @@ public class Gang implements Faction, Stakeholder {
 		this.ships = ships;
 	}
 
+	@Override
+	public Obligations getObligations() {
+		return obligations;
+	};
 }

@@ -157,8 +157,8 @@ public interface FactionLadder {
 		// select action
 		Faction client;
 		for (Faction el : actors) {
-			client = el.obligations();
-			System.out.println(el.toString() + " does a job for " + client);
+			System.out.println(el.getObligations().toString());
+//			System.out.println(el.toString() + " does a job for " + client);
 			
 		}
 

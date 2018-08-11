@@ -421,6 +421,8 @@ public interface Faction {
 
 	public void setShips(Set<Ship> ships);
 
+	public Obligations getObligations();
+
 	/*
 	 * 
 	 */
@@ -541,6 +543,8 @@ public interface Faction {
 		private Set<Faction> allies, friends, rivals, hostiles, enemies;
 
 		public Obligations(Faction owner) {
+			this.owner = owner;
+
 			allies = new HashSet<Faction>();
 			friends = new HashSet<Faction>();
 			rivals = new HashSet<Faction>();
@@ -549,6 +553,18 @@ public interface Faction {
 
 			//
 			updateObligations();
+		}
+
+		public String toString() {
+			String string = "";
+
+			string += "\nAllies: " + allies.toString();
+			string += "\nFriends: " + friends.toString();
+			string += "\nRivals: " + rivals.toString();
+			string += "\nHostiles: " + hostiles.toString();
+			string += "\nEnemies: " + enemies.toString();
+
+			return string;
 		}
 
 		public Set<Faction> allies() {

@@ -20,6 +20,7 @@ public class Main {
 		for (int i = 0; i < 15; ++i) {
 			setting.update();
 			System.out.println();
+
 		}
 
 		// workLoop();

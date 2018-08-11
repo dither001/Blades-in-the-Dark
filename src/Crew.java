@@ -782,22 +782,32 @@ public class Crew implements Faction {
 		this.active = false;
 	}
 
+	@Override
 	public boolean atWar() {
 		return atWar;
 	}
 
+	@Override
 	public boolean atPeace() {
 		return (atWar != true);
 	}
 
+	@Override
 	public Set<Ship> getShips() {
 		// TODO
 		return null;
 	}
 
+	@Override
 	public void setShips(Set<Ship> ships) {
 		// TODO
 
+	}
+
+	@Override
+	public Obligations getObligations() {
+		// TODO
+		return null;
 	}
 
 	/*

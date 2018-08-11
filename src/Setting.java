@@ -70,6 +70,11 @@ public class Setting {
 			gang.rosterSetup();
 		}
 
+		for (Iterator<Faction> it = factions.iterator(); it.hasNext();) {
+			gang = (Gang) it.next();
+			gang.obligationSetup();
+		}
+
 		cityscape.addAllCurrentMembers(factions);
 	}
 
