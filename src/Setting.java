@@ -75,6 +75,11 @@ public class Setting {
 			gang.obligationSetup();
 		}
 
+		for (Iterator<Faction> it = factions.iterator(); it.hasNext();) {
+			gang = (Gang) it.next();
+			gang.makePlans();
+		}
+
 		cityscape.addAllCurrentMembers(factions);
 	}
 

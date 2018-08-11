@@ -1,6 +1,6 @@
 
 public interface Plan {
-	
+
 	public enum Goal {
 		// CLIMB from "social climb;" SHAKE from "shaking someone else"
 		ASSIST, CLIMB, CLAIM, SHAKE
@@ -187,6 +187,13 @@ public interface Plan {
 			this.activity = activity;
 		}
 
+		public String toString() {
+			// String string = String.format("Client: %s || Target: %s || Goal: %s", client,
+			// target, goal);
+
+			return String.format("%s|%s|%s", client, target, goal);
+		}
+
 		@Override
 		public boolean equals(Object o) {
 			if (o == this)
@@ -198,16 +205,29 @@ public interface Plan {
 			Quest q = (Quest) o;
 			boolean sameClient = false, sameTarget = false, sameGoal = false;
 
-			if (q.client.equals(this.client) != true)
+			if (q.client.equals(this.client))
 				sameClient = true;
 
-			if (q.target.equals(this.target) != true)
+			if (q.target.equals(this.target))
 				sameTarget = true;
 
-			if (q.goal.equals(this.goal) != true)
+			if (q.goal.equals(this.goal))
 				sameGoal = true;
 
 			return sameClient && sameTarget && sameGoal;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = 13, c = client.hashCode();
+
+			if (target != null)
+				c += target.hashCode();
+
+			if (goal != null)
+				c += goal.hashCode();
+
+			return 37 * result + c;
 		}
 
 	}

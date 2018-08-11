@@ -158,6 +158,7 @@ public interface FactionLadder {
 		// select action
 		Faction client;
 		for (Faction el : actors) {
+			System.out.println("Plans: " + el.getPlans().size());
 			// System.out.println(el.getObligations().toString());
 			client = el.getObligations().selectObligation();
 
