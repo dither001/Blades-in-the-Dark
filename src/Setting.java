@@ -37,7 +37,7 @@ public class Setting {
 
 		// creates the faction map
 		for (int i = 0; i < array.length; ++i) {
-			factions.add(new Gang(lifetimeGangs++, array[i].toString(), cluster));
+			factions.add(new Gang(lifetimeGangs++, array[i].toString(), factions, cluster));
 		}
 
 		// initializes neighbor ships

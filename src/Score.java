@@ -21,11 +21,11 @@ public class Score implements Plan {
 	public static final Act[] ACTS = { Act.INCITING, Act.RISING, Act.TURNING, Act.FALLING, Act.RELEASE };
 
 	// fields
-	private Crew crew;
+	private Faction crew;
 	private ArrayList<Rogue> team;
 
-	private Crew client;
-	private Crew target;
+	private Faction client;
+	private Faction target;
 	private Goal goal;
 	private Approach plan;
 	private Activity activity;
@@ -48,7 +48,7 @@ public class Score implements Plan {
 	private ArrayList<Action> actions;
 
 	// constructors
-	public Score(Crew crew, List<Rogue> team, Quest quest) {
+	public Score(Faction crew, List<Rogue> team, Quest quest) {
 		/*
 		 * TODO - I need to figure out (at some point) how to differentiate between a
 		 * job given by another crew and a job given by a single patron
@@ -56,26 +56,26 @@ public class Score implements Plan {
 		this.crew = crew;
 		this.team = new ArrayList<Rogue>(team);
 
-		this.client = client;
-		this.target = target;
-		this.goal = goal;
+		this.client = quest.getClient();
+		this.target = quest.getTarget();
+		this.goal = quest.getGoal();
 		this.plan = Plan.randomPlan();
 		this.activity = Plan.randomActivity(crew.crewType());
 
-		if (goal.equals(Goal.CLAIM)) {
-			Faction.Claim candidate;
-
-			if (Dice.roll(3) == 1) {
-				candidate = Faction.turfClaim(crew);
-			} else {
-				candidate = Faction.randomClaimByCrew(crew.crewType());
-			}
-
-			while (crew.getClaims().containsKey(candidate)) {
-				candidate = Faction.randomClaimByCrew(crew.crewType());
-			}
-			this.claim = candidate;
-		}
+		// if (goal.equals(Goal.CLAIM)) {
+		// Faction.Claim candidate;
+		//
+		// if (Dice.roll(3) == 1) {
+		// candidate = Faction.turfClaim(crew);
+		// } else {
+		// candidate = Faction.randomClaimByCrew(crew.crewType());
+		// }
+		//
+		// while (crew.getClaims().containsKey(candidate)) {
+		// candidate = Faction.randomClaimByCrew(crew.crewType());
+		// }
+		// this.claim = candidate;
+		// }
 
 		//
 		this.window = new Clock(Clock.Length.FOUR);
@@ -183,7 +183,7 @@ public class Score implements Plan {
 		return tension;
 	}
 
-	public Crew getCrew() {
+	public Faction getCrew() {
 		return crew;
 	}
 
@@ -252,7 +252,7 @@ public class Score implements Plan {
 	}
 
 	public boolean patronage() {
-		return (crew.sameAs(client) != true);
+		return (crew.equals(client) != true);
 	}
 
 	public boolean unresolved() {
@@ -426,127 +426,176 @@ public class Score implements Plan {
 	 * DOWNTIME - INNER CLASS
 	 */
 	private class Downtime {
-		ArrayList<Crew> changes;
 		int heat;
 
-		Crew crew;
+		Faction crew;
 
 		public Downtime(Score score) {
 			this.crew = score.crew;
 			ArrayList<Rogue> team = score.team;
 
 			//
-			Crew client = score.client;
-			Crew target = score.target;
+			Faction client = score.client;
+			Faction target = score.target;
 			Goal goal = score.goal;
 
-			/*
-			 * TODO - this ArrayList is to keep track of EACH faction status that changes;
-			 * eventually when I rewrite the system, there will be no such thing as a
-			 * "zero reputation," because "everyone knows everybody." All that changes is
-			 * which SIDE of the friend/enemy spectrum characters fall on at present
-			 */
-			changes = new ArrayList<Crew>();
-
 			// starting heat
-			this.heat = Dice.roll(4) + Dice.roll(target.getTier() / 2) - 2;
+			this.heat = Dice.roll(4) + Dice.roll(target.getLevel() / 4) - 2;
 
-			if (primaryObjective.expired() && goal.equals(Goal.ASSIST)) {
-				String hold = (client.holdStrong()) ? "strong" : "weak";
-				String report = String.format("%s (tier %d, hold %s) is stronger.", client, client.getTier(), hold);
-				System.out.println(report);
-				client.strengthenHold();
+			// if (primaryObjective.expired() && goal.equals(Goal.ASSIST)) {
+			// String hold = (client.holdStrong()) ? "strong" : "weak";
+			// String report = String.format("%s (tier %d, hold %s) is stronger.", client,
+			// client.getTier(), hold);
+			// System.out.println(report);
+			// client.strengthenHold();
+			//
+			// hold = (client.holdStrong()) ? "strong" : "weak";
+			// System.out.println("New tier/hold: " + client.getTier() + " / " + hold);
+			// System.out.println();
+			// }
 
-				hold = (client.holdStrong()) ? "strong" : "weak";
-				System.out.println("New tier/hold: " + client.getTier() + " / " + hold);
-				System.out.println();
-			}
-
-			if (primaryObjective.expired() && goal.equals(Goal.CLAIM)) {
-				String report = String.format("Seized %s from %s", claim, target);
-				System.out.println(report);
-				crew.getClaims().put(claim, target);
-
-				changes.add(target);
-				crew.decreaseShip(target);
-				System.out.println(target + " status decreased");
-				System.out.println();
-			} else if (goal.equals(Goal.CLAIM)) {
-				target.getClaims().put(claim, target);
-			}
+			// if (primaryObjective.expired() && goal.equals(Goal.CLAIM)) {
+			// String report = String.format("Seized %s from %s", claim, target);
+			// System.out.println(report);
+			// crew.getClaims().put(claim, target);
+			//
+			// changes.add(target);
+			// crew.decreaseShip(target);
+			// System.out.println(target + " status decreased");
+			// System.out.println();
+			// } else if (goal.equals(Goal.CLAIM)) {
+			// target.getClaims().put(claim, target);
+			// }
 
 			if (primaryObjective.expired() && goal.equals(Goal.SHAKE)) {
-				String hold = (target.holdStrong()) ? "strong" : "weak";
-				String report = String.format("%s (tier %d, hold %s) is weaker.", target, target.getTier(), hold);
+				int level = target.getLevel();
+				String report = String.format("%s (level %d) has been weakened.", target, target.getLevel());
 				System.out.println(report);
-				target.weakenHold();
 
-				hold = (target.holdStrong()) ? "strong" : "weak";
-				System.out.println("New tier/hold: " + target.getTier() + " / " + hold);
+				target.setLevel(level - 1);
+				System.out.println("New level: " + target.getLevel());
 				System.out.println();
 			}
+
+			//
+			Ship ship = Ship.get(crew, client);
+			int trust;
 
 			// resolve client status
 			if (patronage() && primaryObjective.expired()) {
-				changes.add(client);
-				crew.increaseShip(client);
+				if (ship != null) {
+					trust = ship.getScore();
+					ship.setScore(trust + 1);
+
+				} else {
+					trust = 1;
+					ship = new Ship(crew, client, trust);
+
+				}
+
 				// TODO - testing
 				System.out.println("Client (" + client.toString() + ") satisfied");
+
 			} else if (patronage() && window.expired()) {
-				changes.add(client);
-				crew.decreaseShip(client);
+				if (ship != null) {
+					trust = ship.getScore();
+					ship.setScore(trust - 1);
+
+				} else {
+					trust = -1;
+					ship = new Ship(crew, client, trust);
+
+				}
+
 				// TODO - testing
 				System.out.println("Client (" + client.toString() + ") disappointed");
+
 			}
 
 			if (patronage() && window.expired()) {
-				// TODO - testing (appears to work)
-				boolean incite = ShipOld.shipSet().add(new ShipOld(client, target, true));
-				if (incite) {
-					System.out.println(target + " declared war on " + client);
+				ship = Ship.get(client, target);
+				if (ship != null) {
+					trust = ship.getScore();
+					ship.setScore(trust - 1);
+
+				} else {
+					trust = -1;
+					ship = new Ship(client, target, trust);
+
 				}
+
+				// TODO - testing (appears to work)
+				System.out.println("Relations worsened between " + target + " and " + client);
 			}
 
 			// additional reputation changes
-			Set<Crew> enemies = target.npcEnemyGet();
-			Crew targetEnemy;
-			for (Iterator<Crew> it = enemies.iterator(); it.hasNext();) {
-				// FIXME - testing
-				targetEnemy = it.next();
+			Set<Faction> enemies = target.enemies();
+			Faction current;
+			for (Iterator<Faction> it = enemies.iterator(); it.hasNext();) {
+				current = it.next();
 
-				if (targetEnemy.notSameAs(client) && Dice.roll(3) == 1) {
+				if (current.equals(crew) != true && Dice.roll(3) == 1) {
 					// enemies of the target like you
-					changes.add(targetEnemy);
-					crew.increaseShip(targetEnemy);
-					System.out.println(targetEnemy + " status increased");
+					ship = Ship.get(crew, current);
+
+					if (ship != null) {
+						trust = ship.getScore();
+						ship.setScore(trust + 1);
+
+					} else {
+						trust = 1;
+						ship = new Ship(crew, client, trust);
+
+					}
+
+					System.out.println(current + " status increased");
 				}
 			}
 
-			Set<Crew> allies = target.npcAllyGet();
-			Crew targetAlly;
-			for (Iterator<Crew> it = allies.iterator(); it.hasNext();) {
-				// FIXME - testing
-				targetAlly = it.next();
+			Set<Faction> allies = target.allies();
+			for (Iterator<Faction> it = allies.iterator(); it.hasNext();) {
+				current = it.next();
 
-				if (targetAlly.notSameAs(client) && Dice.roll(3) == 1) {
+				if (current.equals(crew) != true && Dice.roll(3) == 1) {
 					// allies of the target don't like you
-					changes.add(targetAlly);
-					crew.decreaseShip(targetAlly);
-					System.out.println(targetAlly + " status decreased");
+					ship = Ship.get(crew, current);
+
+					if (ship != null) {
+						trust = ship.getScore();
+						ship.setScore(trust - 1);
+
+					} else {
+						trust = -1;
+						ship = new Ship(crew, client, trust);
+
+					}
+
+					System.out.println(current + " status decreased");
 				}
 			}
 
 			// rep boost
-			int crewTier = crew.getTier();
-			int targetTier = target.getTier();
+			int crewTier = crew.getLevel() / 2;
+			int targetTier = target.getLevel() / 2;
 			int exp = (targetTier - crewTier + 2 < 1) ? 0 : targetTier - crewTier + 2;
 			if (exp > 0) {
-				changes.add(target);
-				crew.decreaseShip(target);
+				ship = Ship.get(crew, target);
+
+				if (ship != null) {
+					trust = ship.getScore();
+					ship.setScore(trust - 1);
+
+				} else {
+					trust = -1;
+					ship = new Ship(crew, client, trust);
+
+				}
+
 				System.out.println(target + " status decreased");
 
 				//
-				crew.addEXP(exp);
+				int crewEXP = crew.getExperience();
+				crew.setExperience(crewEXP + exp);
 				System.out.println("Rep gained: " + exp);
 			}
 
@@ -590,8 +639,9 @@ public class Score implements Plan {
 
 						System.out.println(rogue + " received " + bonus);
 					}
+
 					// any remainder goes to the crew
-					crew.addCoin(payoff);
+					crew.setCoin(crewCoin + payoff);
 					System.out.println(payoff + " went to the crew.");
 
 				} else if (crewCoin + payoff >= teamSize) {
@@ -619,7 +669,7 @@ public class Score implements Plan {
 					}
 				} else {
 					// not enough coin to distribute; all of it goes to the crew
-					crew.addCoin(payoff);
+					crew.setCoin(crewCoin + payoff);
 
 				}
 			}
@@ -634,14 +684,14 @@ public class Score implements Plan {
 			}
 
 			// assign heat
-			System.out.println("Received " + heat + " heat from score.");
-			crew.setHeat(crew.getHeat() + heat);
-			crew.resolveHeat();
+			// System.out.println("Received " + heat + " heat from score.");
+			// crew.setHeat(crew.getHeat() + heat);
+			// crew.resolveHeat();
 
 			// entanglements
-			int heat = crew.getHeat();
-			int wantedLevel = crew.getWantedLevel();
-			entanglement(heat, wantedLevel);
+			// int heat = crew.getHeat();
+			// int wantedLevel = crew.getWantedLevel();
+			// entanglement(heat, wantedLevel);
 
 		}
 

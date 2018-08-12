@@ -14,9 +14,12 @@ public class Cityscape implements FactionLadder {
 
 	//
 	private int lifetimeMembers;
-	private Map<Faction, Status> standing;
 	private Set<Faction> currentMembers;
 	private Set<Faction> formerMembers;
+	private Map<Faction, Status> standing;
+
+	//
+	private Set<Plan.Quest> questBoard;
 
 	/*
 	 * CONSTRUCTORS
@@ -27,6 +30,9 @@ public class Cityscape implements FactionLadder {
 		//
 		this.currentMembers = new HashSet<Faction>();
 		this.standing = new HashMap<Faction, Status>();
+
+		//
+		this.questBoard = new HashSet<Plan.Quest>();
 	}
 
 	/*
@@ -181,6 +187,11 @@ public class Cityscape implements FactionLadder {
 	@Override
 	public Collection<Status> standingValueSet() {
 		return standing.values();
+	}
+
+	@Override
+	public Set<Plan.Quest> quests() {
+		return questBoard;
 	}
 
 }

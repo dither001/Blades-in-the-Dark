@@ -5,7 +5,7 @@ import java.util.Scanner;
 import java.util.Vector;
 
 public class Main {
-	private static int PCS_TO_ROLL = 50;
+	private static int PCS_TO_ROLL = 5;
 	private static int SPELLBOOK_LEVEL = 17;
 
 	//
@@ -15,13 +15,7 @@ public class Main {
 	public static void main(String[] args) {
 		// TODO
 
-		Setting setting = new Setting();
-
-		for (int i = 0; i < 15; ++i) {
-			setting.update();
-			System.out.println();
-
-		}
+		factionJobTest(1);
 
 		// workLoop();
 		// rollRogues();
@@ -29,6 +23,16 @@ public class Main {
 		// characterAdvance(Class.BARBARIAN);
 		// rollCharacter();
 
+	}
+
+	public static void factionJobTest(int turns) {
+		Setting setting = new Setting();
+
+		for (int i = 0; i < turns; ++i) {
+			setting.update();
+			System.out.println();
+
+		}
 	}
 
 	public static void gangDebugPrint() {

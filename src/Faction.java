@@ -363,6 +363,8 @@ public interface Faction {
 	 */
 	public int factionID();
 
+	public Set<Faction> factions();
+	
 	public String getName();
 
 	public void setName(String name);
@@ -421,81 +423,29 @@ public interface Faction {
 
 	public void setShips(Set<Ship> ships);
 
-	public Obligations getObligations();
+	public Obligations obligations();
 
 	/*
 	 * 
 	 */
-	public default Set<Ship> allies() {
-		Set<Ship> set = new HashSet<Ship>();
-
-		Ship candidate;
-		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
-			candidate = it.next();
-
-			if (candidate.getScore() > 6)
-				set.add(candidate);
-		}
-
-		return set;
+	public default Set<Faction> allies() {
+		return obligations().allies();
 	}
 
-	public default Set<Ship> friends() {
-		Set<Ship> set = new HashSet<Ship>();
-
-		Ship candidate;
-		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
-			candidate = it.next();
-
-			if (candidate.getScore() > 5)
-				set.add(candidate);
-		}
-
-		return set;
+	public default Set<Faction> friends() {
+		return obligations().friends();
 	}
 
-	public default Set<Ship> rivals() {
-		Set<Ship> set = new HashSet<Ship>();
-
-		Ship candidate;
-		int score;
-		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
-			candidate = it.next();
-
-			score = candidate.getScore();
-			if (score == 3 || score == 4 || score == 5)
-				set.add(candidate);
-		}
-
-		return set;
+	public default Set<Faction> rivals() {
+		return obligations().rivals();
 	}
 
-	public default Set<Ship> hostiles() {
-		Set<Ship> set = new HashSet<Ship>();
-
-		Ship candidate;
-		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
-			candidate = it.next();
-
-			if (candidate.getScore() < 3)
-				set.add(candidate);
-		}
-
-		return set;
+	public default Set<Faction> hostiles() {
+		return obligations().hostiles();
 	}
 
-	public default Set<Ship> enemies() {
-		Set<Ship> set = new HashSet<Ship>();
-
-		Ship candidate;
-		for (Iterator<Ship> it = getShips().iterator(); it.hasNext();) {
-			candidate = it.next();
-
-			if (candidate.getScore() < 2)
-				set.add(candidate);
-		}
-
-		return set;
+	public default Set<Faction> enemies() {
+		return obligations().enemies();
 	}
 
 	/*
@@ -505,19 +455,19 @@ public interface Faction {
 		Set<Plan.Quest> plans = new HashSet<Plan.Quest>(getPlans());
 
 		// ABC = Always Be Climbing
-		for (Iterator<Faction> it = getObligations().rivals().iterator(); it.hasNext();) {
+		for (Iterator<Faction> it = obligations().rivals().iterator(); it.hasNext();) {
 			plans.add(new Plan.Quest(this, it.next(), Plan.Goal.CLIMB));
 
 		}
 
-		for (Iterator<Faction> it = getObligations().enemies().iterator(); it.hasNext();) {
+		for (Iterator<Faction> it = obligations().enemies().iterator(); it.hasNext();) {
 			plans.add(new Plan.Quest(this, it.next(), Plan.Goal.SHAKE));
 
 		}
 
 		setPlans(plans);
 	}
-
+	
 	/*
 	 * 
 	 */
@@ -655,7 +605,7 @@ public interface Faction {
 			else if (dice < obs[0] + obs[1] + obs[2])
 				choice = Dice.randomFromSet(rivals);
 			else if (dice < obs[0] + obs[1] + obs[2] + obs[3])
-				choice = owner; // FIXME - grab quest from job board
+				choice = Dice.randomFromSet(owner.factions());
 			else if (dice < obs[0] + obs[1] + obs[2] + obs[3] + obs[4])
 				choice = Dice.randomFromSet(friends);
 			else if (dice < obs[0] + obs[1] + obs[2] + obs[3] + obs[4] + obs[5])

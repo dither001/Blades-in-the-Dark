@@ -11,6 +11,7 @@ public class Gang implements Faction, Stakeholder {
 	 * INSTANCE FIELDS
 	 */
 	private Locale.Cluster home;
+	private Set<Faction> gangs;
 
 	private boolean active;
 	private int gangID;
@@ -44,8 +45,11 @@ public class Gang implements Faction, Stakeholder {
 	/*
 	 * CONSTRUCTORS
 	 */
-	public Gang(int gangID, String name, Locale.Cluster home) {
+	public Gang(int gangID, String name, Set<Faction> gangs, Locale.Cluster home) {
+		this.gangs = gangs;
 		this.home = home;
+		
+		//
 		this.active = true;
 		this.gangID = gangID;
 		this.name = name;
@@ -289,6 +293,11 @@ public class Gang implements Faction, Stakeholder {
 	}
 
 	@Override
+	public Set<Faction> factions() {
+		return gangs;
+	}
+
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -434,7 +443,7 @@ public class Gang implements Faction, Stakeholder {
 	}
 
 	@Override
-	public Obligations getObligations() {
+	public Obligations obligations() {
 		return obligations;
 	};
 }

@@ -577,8 +577,8 @@ public class Rogue implements Actor {
 		return Dice.randomFromArray(APPROACHES);
 	}
 
-	public static Rating pseudoRandomApproach(Score.Act act, Score.Approach plan, Crew crew, Rating[][] beats) {
-		Crew.Type type = crew.crewType();
+	public static Rating pseudoRandomApproach(Score.Act act, Score.Approach plan, Faction crew, Rating[][] beats) {
+		// Crew.Type type = crew.crewType();
 		Rating choice;
 		int dice = Dice.roll(100);
 		if (dice < 21) {

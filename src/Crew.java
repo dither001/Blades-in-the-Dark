@@ -653,6 +653,11 @@ public class Crew implements Faction {
 	}
 
 	@Override
+	public Set<Faction> factions() {
+		return null;
+	}
+
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -805,7 +810,7 @@ public class Crew implements Faction {
 	}
 
 	@Override
-	public Obligations getObligations() {
+	public Obligations obligations() {
 		// TODO
 		return null;
 	}

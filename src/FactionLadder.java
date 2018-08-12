@@ -136,10 +136,19 @@ public interface FactionLadder {
 
 	public Collection<Status> standingValueSet();
 
+	public Set<Plan.Quest> quests();
+
 	/*
 	 * DEFAULT METHODS
 	 */
 	public default void updateLadder() {
+		// post jobs
+		quests().clear();
+		for (Iterator<Faction> it = currentMemberSet().iterator(); it.hasNext();) {
+			quests().addAll(it.next().getPlans());
+
+		}
+
 		// turns taken
 
 		// update time
@@ -156,17 +165,30 @@ public interface FactionLadder {
 		}
 
 		// select action
+		Set<Plan.Quest> quests;
+		Plan.Quest quest;
 		Faction client;
 		for (Faction el : actors) {
-			System.out.println("Plans: " + el.getPlans().size());
+			// System.out.println("Plans: " + el.getPlans().size());
 			// System.out.println(el.getObligations().toString());
-			client = el.getObligations().selectObligation();
+			client = el.obligations().selectObligation();
 
-			if (el.equals(client))
+			if (el.equals(client)) {
+				quest = Dice.randomFromSet(el.getPlans());
+
 				System.out.println(el.toString() + " does a personal job");
-			else
-				System.out.println(el.toString() + " does a job for " + client);
+				System.out.println(quest);
+				System.out.println();
 
+			} else {
+				quests = filterForFaction(client, el);
+				quest = Dice.randomFromSet(quests);
+
+				System.out.println(el.toString() + " takes a job from " + client);
+				System.out.println(quest);
+				System.out.println();
+
+			}
 		}
 
 		// update cooldowns
@@ -180,7 +202,7 @@ public interface FactionLadder {
 		}
 
 		// update plans for the next round
-		for (Iterator<Faction> it = standingKeySet().iterator(); it.hasNext();) {
+		for (Iterator<Faction> it = currentMemberSet().iterator(); it.hasNext();) {
 			it.next().makePlans();
 		}
 
@@ -214,24 +236,24 @@ public interface FactionLadder {
 
 		Collections.sort(list, new Sort());
 
-		// Faction faction;
-		// int cooldown;
-		// String string;
-		// for (Iterator<Faction> it = list.iterator(); it.hasNext();) {
-		// faction = it.next();
-		// cooldown = map.get(faction).cooldown;
-		// string = String.format("(%2d) %s", cooldown, faction.toString());
-		// System.out.println(string);
-		// }
-
 		//
 		for (int i = 0; i < MAX_ACTIVE; ++i) {
 			set.add(list.get(i));
 		}
 
-		// for (Iterator<Faction> it = set.iterator(); it.hasNext();) {
-		// System.out.println(it.next());
-		// }
+		return set;
+	}
+
+	public default Set<Plan.Quest> filterForFaction(Faction faction, Faction exception) {
+		Set<Plan.Quest> set = new HashSet<Plan.Quest>();
+
+		Plan.Quest candidate;
+		for (Iterator<Plan.Quest> it = quests().iterator(); it.hasNext();) {
+			candidate = it.next();
+
+			if (candidate.getClient().equals(faction) && candidate.getTarget() != exception)
+				set.add(candidate);
+		}
 
 		return set;
 	}
