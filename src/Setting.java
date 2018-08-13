@@ -37,7 +37,7 @@ public class Setting {
 
 		// creates the faction map
 		for (int i = 0; i < array.length; ++i) {
-			factions.add(new Gang(lifetimeGangs++, array[i].toString(), factions, cluster));
+			factions.add(new Gang(lifetimeGangs++, array[i].toString(), this, cluster));
 		}
 
 		// initializes neighbor ships
@@ -77,7 +77,7 @@ public class Setting {
 
 		for (Iterator<Faction> it = factions.iterator(); it.hasNext();) {
 			gang = (Gang) it.next();
-			gang.makePlans();
+			gang.scheme();
 		}
 
 		cityscape.addAllCurrentMembers(factions);
@@ -90,6 +90,14 @@ public class Setting {
 		cityscape.update();
 	}
 
+	public Set<Faction> factions() {
+		return factions;
+	}
+	
+	public Set<Plan.Quest> quests() {
+		return cityscape.quests();
+	}
+	
 	public List<Faction> orderedFactionList() {
 		List<Faction> list = new ArrayList<Faction>(factions);
 

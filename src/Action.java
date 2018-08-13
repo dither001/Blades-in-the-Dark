@@ -92,7 +92,7 @@ public class Action {
 		int pushCheck = dice + stress + rogue.getThreshold();
 		if (pushCheck < 15) {
 			// TODO - testing
-			System.out.println(rogue + " takes 2 stress. (rolled " + pushCheck + ")");
+//			System.out.println(rogue + " takes 2 stress. (rolled " + pushCheck + ")");
 
 			++dice;
 			rogue.setStress(stress + 2);
@@ -198,9 +198,9 @@ public class Action {
 		}
 		// System.out.println(" " + " " + " Remaining: " + clock.remaining());
 
-		if (rogue.stressedOut()) {
-			System.out.println(rogue + " left for dead.");
-		}
+//		if (rogue.stressedOut()) {
+//			System.out.println(rogue + " left for dead.");
+//		}
 	}
 
 	public void increaseEffect() {

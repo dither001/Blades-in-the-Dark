@@ -1,9 +1,12 @@
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 public interface Plan {
 
 	public enum Goal {
 		// CLIMB from "social climb;" SHAKE from "shaking someone else"
-		ASSIST, CLIMB, CLAIM, SHAKE
+		ASSIST, CLIMB, CLAIM, RECRUIT, SHAKE
 	}
 
 	public enum Approach {
@@ -94,6 +97,20 @@ public interface Plan {
 			array = SMUGGLER_FLAVORS;
 
 		return Dice.randomFromArray(array);
+	}
+
+	public static Set<Quest> filterForFaction(Faction faction, Faction exception, Set<Quest> quests) {
+		Set<Plan.Quest> set = new HashSet<Plan.Quest>();
+
+		Plan.Quest candidate;
+		for (Iterator<Plan.Quest> it = quests.iterator(); it.hasNext();) {
+			candidate = it.next();
+
+			if (candidate.getClient().equals(faction) && candidate.getTarget() != exception)
+				set.add(candidate);
+		}
+
+		return set;
 	}
 
 	/*

@@ -136,19 +136,10 @@ public interface FactionLadder {
 
 	public Collection<Status> standingValueSet();
 
-	public Set<Plan.Quest> quests();
-
 	/*
 	 * DEFAULT METHODS
 	 */
 	public default void updateLadder() {
-		// post jobs
-		quests().clear();
-		for (Iterator<Faction> it = currentMemberSet().iterator(); it.hasNext();) {
-			quests().addAll(it.next().getPlans());
-
-		}
-
 		// turns taken
 
 		// update time
@@ -165,30 +156,8 @@ public interface FactionLadder {
 		}
 
 		// select action
-		Set<Plan.Quest> quests;
-		Plan.Quest quest;
-		Faction client;
 		for (Faction el : actors) {
-			// System.out.println("Plans: " + el.getPlans().size());
-			// System.out.println(el.getObligations().toString());
-			client = el.obligations().selectObligation();
-
-			if (el.equals(client)) {
-				quest = Dice.randomFromSet(el.getPlans());
-
-				System.out.println(el.toString() + " does a personal job");
-				System.out.println(quest);
-				System.out.println();
-
-			} else {
-				quests = filterForFaction(client, el);
-				quest = Dice.randomFromSet(quests);
-
-				System.out.println(el.toString() + " takes a job from " + client);
-				System.out.println(quest);
-				System.out.println();
-
-			}
+			el.action();
 		}
 
 		// update cooldowns
@@ -201,12 +170,15 @@ public interface FactionLadder {
 			status.release();
 		}
 
+		// advance factions
+		for (Faction el : activeMemberSet())
+			el.advance();
+
 		// update plans for the next round
 		for (Iterator<Faction> it = currentMemberSet().iterator(); it.hasNext();) {
-			it.next().makePlans();
+			it.next().scheme();
 		}
 
-		System.out.println("- - - - - -");
 	}
 
 	public default void updateCooldown() {
@@ -220,12 +192,26 @@ public interface FactionLadder {
 		}
 	}
 
-	public default Set<Faction> ready() {
+	public default Set<Faction> activeMemberSet() {
 		Set<Faction> set = new HashSet<Faction>();
 
-		List<Faction> list = new ArrayList<Faction>(currentMemberSet());
+		Faction current;
+		for (Iterator<Faction> it = currentMemberSet().iterator(); it.hasNext();) {
+			current = it.next();
+
+			if (current.active())
+				set.add(current);
+		}
+
+		return set;
+	}
+
+	public default Set<Faction> ready() {
+		// create list
+		List<Faction> list = new ArrayList<Faction>(activeMemberSet());
 		Map<Faction, Status> map = standings();
 
+		// sort by cooldown
 		class Sort implements Comparator<Faction> {
 			@Override
 			public int compare(Faction left, Faction right) {
@@ -236,25 +222,7 @@ public interface FactionLadder {
 
 		Collections.sort(list, new Sort());
 
-		//
-		for (int i = 0; i < MAX_ACTIVE; ++i) {
-			set.add(list.get(i));
-		}
-
-		return set;
+		return new HashSet<Faction>(list.subList(0, MAX_ACTIVE));
 	}
 
-	public default Set<Plan.Quest> filterForFaction(Faction faction, Faction exception) {
-		Set<Plan.Quest> set = new HashSet<Plan.Quest>();
-
-		Plan.Quest candidate;
-		for (Iterator<Plan.Quest> it = quests().iterator(); it.hasNext();) {
-			candidate = it.next();
-
-			if (candidate.getClient().equals(faction) && candidate.getTarget() != exception)
-				set.add(candidate);
-		}
-
-		return set;
-	}
 }

@@ -10,12 +10,11 @@ public class Main {
 
 	//
 	private static final Scanner INPUT = new Scanner(System.in);
-	private static int proceed = 1;
 
 	public static void main(String[] args) {
 		// TODO
 
-		factionJobTest(1);
+		factionGameSimulation();
 
 		// workLoop();
 		// rollRogues();
@@ -23,6 +22,31 @@ public class Main {
 		// characterAdvance(Class.BARBARIAN);
 		// rollCharacter();
 
+	}
+
+	public static void factionGameSimulation() {
+		int proceed = 1, turn = 1;
+		Setting setting = new Setting();
+
+		String line;
+		while (proceed == 1) {
+			System.out.println(" - - - - - - - - score: " + turn++);
+			setting.update();
+
+			line = INPUT.nextLine();
+			try {
+				proceed = Integer.parseInt(line);
+			} catch (NumberFormatException e) {
+				proceed = 1;
+			}
+
+			// if (proceed != 0) {
+			// if (proceed == 2) {
+			// }
+			//
+			// proceed = 1;
+			// }
+		}
 	}
 
 	public static void factionJobTest(int turns) {
@@ -72,7 +96,7 @@ public class Main {
 	}
 
 	public static void workLoop() {
-		int score = 0;
+		int proceed = 1, score = 0;
 		Crew crew = new Crew();
 
 		String line;

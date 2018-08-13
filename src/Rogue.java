@@ -213,7 +213,7 @@ public class Rogue implements Actor {
 			}
 
 			// TODO - testing
-			System.out.println(this + " gained the " + candidate + " trauma condition.");
+			// System.out.println(this + " gained the " + candidate + " trauma condition.");
 			trauma.add(candidate);
 		}
 	}

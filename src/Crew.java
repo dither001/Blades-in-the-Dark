@@ -286,6 +286,10 @@ public class Crew implements Faction {
 	 * INSTANCE METHODS
 	 * 
 	 */
+	public boolean eligibleForAdvancement() {
+		return false;
+	}
+
 	public void advance() {
 		boolean canAdvance = true;
 		int costToAdvance = (tier + 1) * 8;
@@ -744,6 +748,30 @@ public class Crew implements Faction {
 	}
 
 	@Override
+	public Set<Rogue> roster() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setRoster(Set<Rogue> roster) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Set<Rogue> retired() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setRetired(Set<Rogue> retired) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
 	public int getHeat() {
 		return heat;
 	}
@@ -1176,4 +1204,11 @@ public class Crew implements Faction {
 			return crew1.tier - crew2.tier;
 		}
 	}
+
+	@Override
+	public Setting setting() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

@@ -1,7 +1,11 @@
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -10,17 +14,20 @@ public class Gang implements Faction, Stakeholder {
 	/*
 	 * INSTANCE FIELDS
 	 */
+	private int gangID;
+	private Setting setting;
 	private Locale.Cluster home;
 	private Set<Faction> gangs;
 
+	//
 	private boolean active;
-	private int gangID;
 	private String name;
 	private Set<Rep> reputation;
 	private Type type;
 
 	//
 	private Set<Rogue> roster;
+	private Set<Rogue> retired;
 	private Set<Plan.Quest> plans;
 
 	//
@@ -45,10 +52,11 @@ public class Gang implements Faction, Stakeholder {
 	/*
 	 * CONSTRUCTORS
 	 */
-	public Gang(int gangID, String name, Set<Faction> gangs, Locale.Cluster home) {
-		this.gangs = gangs;
+	public Gang(int gangID, String name, Setting setting, Locale.Cluster home) {
+		this.setting = setting;
+		this.gangs = setting.factions();
 		this.home = home;
-		
+
 		//
 		this.active = true;
 		this.gangID = gangID;
@@ -58,10 +66,11 @@ public class Gang implements Faction, Stakeholder {
 
 		//
 		this.roster = new HashSet<Rogue>();
+		this.retired = new HashSet<Rogue>();
 		this.plans = new HashSet<Plan.Quest>();
 
 		//
-		this.level = 1;
+		this.level = 2;
 		this.coin = 2;
 		this.experience = 0;
 		this.specials = EnumSet.noneOf(Special.class);
@@ -86,6 +95,122 @@ public class Gang implements Faction, Stakeholder {
 	public void report(Locale locale) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public boolean eligibleForAdvancement() {
+		if (experience < 12 - turf.size())
+			return false;
+
+		// create list of contributors
+		List<Rogue> rogues = new ArrayList<Rogue>(roguesWithCoin());
+		class Sort implements Comparator<Rogue> {
+
+			@Override
+			public int compare(Rogue left, Rogue right) {
+				return right.getCoin() - left.getCoin();
+			}
+		}
+
+		// sort contributors by wealth
+		Collections.sort(rogues, new Sort());
+		int availableCoin = coin;
+		for (Iterator<Rogue> it = rogues.iterator(); it.hasNext();) {
+			availableCoin += it.next().getCoin();
+		}
+
+		// second gate
+		int costToAdvance = ((level + 1) / 2) * 8;
+		if (availableCoin < costToAdvance)
+			return false;
+
+		return true;
+	}
+
+	@Override
+	public void advance() {
+		// first gate
+		if (experience < 12 - turf.size())
+			return;
+
+		// create list of contributors
+		List<Rogue> rogues = new ArrayList<Rogue>(roguesWithCoin());
+		class Sort implements Comparator<Rogue> {
+
+			@Override
+			public int compare(Rogue left, Rogue right) {
+				return right.getCoin() - left.getCoin();
+			}
+		}
+
+		// sort contributors by wealth
+		Collections.sort(rogues, new Sort());
+		int availableCoin = coin;
+		for (Iterator<Rogue> it = rogues.iterator(); it.hasNext();) {
+			availableCoin += it.next().getCoin();
+		}
+
+		// second gate
+		int costToAdvance = ((level + 1) / 2) * 8;
+		if (availableCoin < costToAdvance)
+			return;
+
+		// FIXME - TESTING
+		for (Iterator<Rogue> it = rogues.iterator(); it.hasNext();) {
+			Rogue rogue = it.next();
+			System.out.println(rogue.toString() + " || Coin: " + rogue.getCoin());
+		}
+
+		// everyone contributes
+		Rogue current;
+		int rogueCoin;
+		while (costToAdvance > 0) {
+			for (Iterator<Rogue> it = rogues.iterator(); it.hasNext();) {
+				current = it.next();
+
+				rogueCoin = current.getCoin();
+				if (rogueCoin > 0) {
+					--costToAdvance;
+					current.setCoin(rogueCoin - 1);
+				}
+
+			}
+
+			// pay remainder from vault if possible
+			if (coin >= costToAdvance) {
+				coin -= costToAdvance;
+				costToAdvance = 0;
+			}
+		}
+
+		// TODO - testing
+		String report = String.format("%s (level %d) has advanced.", toString(), level);
+		System.out.println(report);
+
+		// final steps
+		if (costToAdvance == 0) {
+			++level;
+			experience = 12 - turf.size();
+		}
+
+		// TODO - testing
+		System.out.println("New level: " + level);
+		System.out.println();
+
+	}
+
+	private Set<Rogue> roguesWithCoin() {
+		Set<Rogue> set = new HashSet<Rogue>();
+
+		Rogue candidate;
+		for (Iterator<Rogue> it = roster.iterator(); it.hasNext();) {
+			candidate = it.next();
+
+			if (candidate.getCoin() > 0)
+				set.add(candidate);
+		}
+
+		return set;
 	}
 
 	public void neighborSetup() {
@@ -293,6 +418,11 @@ public class Gang implements Faction, Stakeholder {
 	}
 
 	@Override
+	public Setting setting() {
+		return setting;
+	}
+
+	@Override
 	public Set<Faction> factions() {
 		return gangs;
 	}
@@ -325,6 +455,26 @@ public class Gang implements Faction, Stakeholder {
 	@Override
 	public void setCrewType(Type type) {
 		this.type = type;
+	}
+
+	@Override
+	public Set<Rogue> roster() {
+		return roster;
+	}
+
+	@Override
+	public void setRoster(Set<Rogue> roster) {
+		this.roster = roster;
+	}
+
+	@Override
+	public Set<Rogue> retired() {
+		return retired;
+	}
+
+	@Override
+	public void setRetired(Set<Rogue> retired) {
+		this.retired = retired;
 	}
 
 	@Override

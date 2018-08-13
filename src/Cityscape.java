@@ -39,8 +39,19 @@ public class Cityscape implements FactionLadder {
 	 * INSTANCE METHODS
 	 */
 	public void update() {
+		// post jobs
+		questBoard.clear();
+		for (Iterator<Faction> it = currentMembers.iterator(); it.hasNext();) {
+			quests().addAll(it.next().getPlans());
 
+		}
+
+		// update ladder
 		updateLadder();
+	}
+
+	public Set<Plan.Quest> quests() {
+		return questBoard;
 	}
 
 	/*
@@ -187,11 +198,6 @@ public class Cityscape implements FactionLadder {
 	@Override
 	public Collection<Status> standingValueSet() {
 		return standing.values();
-	}
-
-	@Override
-	public Set<Plan.Quest> quests() {
-		return questBoard;
 	}
 
 }

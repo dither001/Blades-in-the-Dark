@@ -49,13 +49,10 @@ public class Score implements Plan {
 
 	// constructors
 	public Score(Faction crew, List<Rogue> team, Quest quest) {
-		/*
-		 * TODO - I need to figure out (at some point) how to differentiate between a
-		 * job given by another crew and a job given by a single patron
-		 */
 		this.crew = crew;
 		this.team = new ArrayList<Rogue>(team);
 
+		//
 		this.client = quest.getClient();
 		this.target = quest.getTarget();
 		this.goal = quest.getGoal();
@@ -114,7 +111,7 @@ public class Score implements Plan {
 					 * FIXME - currently here for debug only; replace with "end score"
 					 */
 					// actions.add(new Action(getawayMove, randomPosition()));
-					System.out.println("Clean getaway.");
+					// System.out.println("Clean getaway.");
 					break;
 
 				} else if (primaryObjective.expired()) {
@@ -141,14 +138,14 @@ public class Score implements Plan {
 			}
 		}
 
-		if (window.expired()) {
-			System.out.println(" " + " " + " Window closed.");
-			if (primaryObjective.expired() != true)
-				System.out.println(" " + " " + " Primary objective failed.");
-		}
+		// if (window.expired()) {
+		// System.out.println(" " + " " + " Window closed.");
+		// if (primaryObjective.expired() != true)
+		// System.out.println(" " + " " + " Primary objective failed.");
+		// }
 
 		// TODO
-		System.out.println();
+		// System.out.println();
 		new Downtime(this);
 	}
 
@@ -204,7 +201,7 @@ public class Score implements Plan {
 		int[] results = Dice.fortune(Dice.roll(dice));
 
 		// TODO - testing
-		System.out.println("Engagement roll.");
+		// System.out.println("Engagement roll.");
 		if (results[5] > 1) {
 			// critical result clears the opening
 			position = Action.Position.CONTROLLED;
@@ -291,7 +288,7 @@ public class Score implements Plan {
 
 		// base chance to abort mission is 5%
 		moraleCheck = Dice.roll(20) + penalty;
-		System.out.println("Morale check: " + moraleCheck + " (" + penalty + ")");
+		// System.out.println("Morale check: " + moraleCheck + " (" + penalty + ")");
 		boolean abort = (tpk == team.size()) ? true : (moraleCheck > 20) ? true : false;
 		if (primaryObjective.expired() != true && abort)
 			window.clear();
@@ -317,8 +314,10 @@ public class Score implements Plan {
 	}
 
 	public String toStringDetailed() {
-		String string = String.format("name %s [%s] %s || Team size: %d %n%s %nTarget: %s", plan, Plan.detail(plan),
-				activity, team.size(), team.toString(), target.toString());
+		String string = String.format("%s [%s] || Team size: %d ", plan, activity, team.size());
+
+		// string += "\n" + team.toString();
+		string += "\nTarget: " + target.toString();
 
 		return string;
 	}
@@ -494,7 +493,7 @@ public class Score implements Plan {
 				}
 
 				// TODO - testing
-				System.out.println("Client (" + client.toString() + ") satisfied");
+				// System.out.println("Client (" + client.toString() + ") satisfied");
 
 			} else if (patronage() && window.expired()) {
 				if (ship != null) {
@@ -508,7 +507,7 @@ public class Score implements Plan {
 				}
 
 				// TODO - testing
-				System.out.println("Client (" + client.toString() + ") disappointed");
+				// System.out.println("Client (" + client.toString() + ") disappointed");
 
 			}
 
@@ -525,7 +524,8 @@ public class Score implements Plan {
 				}
 
 				// TODO - testing (appears to work)
-				System.out.println("Relations worsened between " + target + " and " + client);
+				// System.out.println("Relations worsened between " + target + " and " +
+				// client);
 			}
 
 			// additional reputation changes
@@ -548,7 +548,7 @@ public class Score implements Plan {
 
 					}
 
-					System.out.println(current + " status increased");
+					// System.out.println(current + " status increased");
 				}
 			}
 
@@ -570,7 +570,8 @@ public class Score implements Plan {
 
 					}
 
-					System.out.println(current + " status decreased");
+					// TODO - testing
+					// System.out.println(current + " status decreased");
 				}
 			}
 
@@ -591,12 +592,13 @@ public class Score implements Plan {
 
 				}
 
-				System.out.println(target + " status decreased");
+				// TODO - testing
+				// System.out.println(target + " status decreased");
 
 				//
 				int crewEXP = crew.getExperience();
 				crew.setExperience(crewEXP + exp);
-				System.out.println("Rep gained: " + exp);
+				// System.out.println("Rep gained: " + exp);
 			}
 
 			// payoff
@@ -606,8 +608,8 @@ public class Score implements Plan {
 				int payoff = (patronage()) ? Dice.roll(2, 4) + 2 : Dice.roll(2, 6);
 
 				// TODO - testing
-				System.out.println();
-				System.out.println("Coin gained: " + payoff);
+				// System.out.println();
+				// System.out.println("Coin gained: " + payoff);
 
 				// determine individual pay (or none)
 				if (payoff >= teamSize * 3)
@@ -637,12 +639,12 @@ public class Score implements Plan {
 
 						}
 
-						System.out.println(rogue + " received " + bonus);
+						// System.out.println(rogue + " received " + bonus);
 					}
 
 					// any remainder goes to the crew
 					crew.setCoin(crewCoin + payoff);
-					System.out.println(payoff + " went to the crew.");
+					// System.out.println(payoff + " went to the crew.");
 
 				} else if (crewCoin + payoff >= teamSize) {
 					int difference = teamSize - payoff;
