@@ -5,7 +5,8 @@ import java.util.Set;
 public interface Plan {
 
 	public enum Goal {
-		// CLIMB from "social climb;" SHAKE from "shaking someone else"
+		// CLIMB from "social climb"
+		// SHAKE from "shaking someone else"
 		ASSIST, CLIMB, CLAIM, RECRUIT, SHAKE
 	}
 
@@ -18,7 +19,7 @@ public interface Plan {
 		BATTLE, EXTORTION, SABOTAGE, SMASH_N_GRAB, //
 		ACQUISITION, AUGURY, CONSECRATION, SACRIFICE, //
 		SALES, SUPPLY, SHOW_OF_FORCE, SOCIALIZE, //
-		BURGLARY, ESPIONAGE, ROBBERY, //
+		BURGLARY, ESPIONAGE, ROBBERY, // also SABOTAGE
 		CARGO_ARMS, CARGO_CONTRABAND, CARGO_PEOPLE, CARGO_WEIRD
 	}
 
