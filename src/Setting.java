@@ -10,7 +10,7 @@ public class Setting {
 	/*
 	 * INSTANCE FIELDS
 	 */
-	private Locale.Cluster cluster;
+	private LocaleOld.Cluster cluster;
 	private Cityscape cityscape;
 
 	//
@@ -28,7 +28,7 @@ public class Setting {
 		Faction.NamedFaction[] array = Faction.factionAddOrder();
 
 		//
-		this.cluster = Locale.cluster();
+		this.cluster = LocaleOld.cluster();
 		this.cityscape = new Cityscape();
 		this.lifetimeGangs = 0;
 

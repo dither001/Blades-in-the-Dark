@@ -16,7 +16,7 @@ public class Gang implements Faction, Stakeholder {
 	 */
 	private int gangID;
 	private Setting setting;
-	private Locale.Cluster home;
+	private LocaleOld.Cluster home;
 	private Set<Faction> gangs;
 
 	//
@@ -38,8 +38,8 @@ public class Gang implements Faction, Stakeholder {
 	private Map<Upgrade, Faction> upgrades;
 
 	//
-	private Locale lair;
-	private Set<Locale> turf;
+	private LocaleOld lair;
+	private Set<LocaleOld> turf;
 
 	//
 	private Set<Ship> ships;
@@ -52,7 +52,7 @@ public class Gang implements Faction, Stakeholder {
 	/*
 	 * CONSTRUCTORS
 	 */
-	public Gang(int gangID, String name, Setting setting, Locale.Cluster home) {
+	public Gang(int gangID, String name, Setting setting, LocaleOld.Cluster home) {
 		this.setting = setting;
 		this.gangs = setting.factions();
 		this.home = home;
@@ -79,7 +79,7 @@ public class Gang implements Faction, Stakeholder {
 		//
 		this.lair = home.findVacancy(Dice.roll(6) - 1);
 		lair.addBuilding(this);
-		this.turf = new HashSet<Locale>();
+		this.turf = new HashSet<LocaleOld>();
 
 		//
 		this.ships = new HashSet<Ship>();
@@ -92,7 +92,7 @@ public class Gang implements Faction, Stakeholder {
 	}
 
 	@Override
-	public void report(Locale locale) {
+	public void report(LocaleOld locale) {
 		// TODO Auto-generated method stub
 
 	}
@@ -223,11 +223,11 @@ public class Gang implements Faction, Stakeholder {
 	}
 
 	public void factionSetup() {
-		Set<Locale> workingSet = new HashSet<Locale>();
+		Set<LocaleOld> workingSet = new HashSet<LocaleOld>();
 		workingSet.add(lair);
 
 		//
-		Locale startingTurf = null;
+		LocaleOld startingTurf = null;
 		while (startingTurf == null || startingTurf.testAddStake(this).size() < 1) {
 			startingTurf = home.findStake(workingSet);
 		}

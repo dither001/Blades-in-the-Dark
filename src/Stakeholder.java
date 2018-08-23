@@ -1,6 +1,6 @@
 
 public interface Stakeholder {
 	
-	public void report(Locale locale);
+	public void report(LocaleOld locale);
 
 }

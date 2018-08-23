@@ -14,7 +14,11 @@ public class Main {
 	public static void main(String[] args) {
 		// TODO
 
-		factionGameSimulation();
+		Locale cluster = new Locale();
+		cluster.localePrint();
+		
+		
+//		factionGameSimulation();
 
 		// workLoop();
 		// rollRogues();
