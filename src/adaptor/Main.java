@@ -1,8 +1,17 @@
+package adaptor;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Vector;
+
+import com.bladesinthedark.actor.Rogue;
+import com.bladesinthedark.crew.Crew;
+import com.bladesinthedark.crew.Faction;
+import com.bladesinthedark.crew.Gang;
+
+import model.Locale;
+import model.Setting;
 
 public class Main {
 	private static int PCS_TO_ROLL = 5;
@@ -16,9 +25,8 @@ public class Main {
 
 		Locale cluster = new Locale();
 		cluster.localePrint();
-		
-		
-//		factionGameSimulation();
+
+		// factionGameSimulation();
 
 		// workLoop();
 		// rollRogues();

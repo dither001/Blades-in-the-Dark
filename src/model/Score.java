@@ -1,7 +1,14 @@
+package model;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import com.bladesinthedark.actor.Rating;
+import com.bladesinthedark.actor.Rogue;
+import com.bladesinthedark.crew.Claim;
+import com.bladesinthedark.crew.Faction;
+import com.bladesinthedark.rules.Dice;
 
 public class Score implements Plan {
 	public enum Act {
@@ -31,7 +38,7 @@ public class Score implements Plan {
 	private Activity activity;
 
 	//
-	Faction.Claim claim;
+	Claim claim;
 
 	//
 	private Clock window;
@@ -43,7 +50,7 @@ public class Score implements Plan {
 	private Act act;
 	private int scene;
 	private int tension;
-	private Actor.Rating[][] beats;
+	private Rating[][] beats;
 
 	private ArrayList<Action> actions;
 
@@ -84,7 +91,7 @@ public class Score implements Plan {
 		this.act = Act.INCITING;
 		this.scene = 1;
 		this.tension = 0;
-		this.beats = Rogue.randomBeats();
+		this.beats = Rating.randomBeats();
 
 		//
 		this.actions = new ArrayList<Action>();
@@ -188,7 +195,7 @@ public class Score implements Plan {
 		return plan;
 	}
 
-	public Actor.Rating[][] getBeats() {
+	public Rating[][] getBeats() {
 		return beats;
 	}
 

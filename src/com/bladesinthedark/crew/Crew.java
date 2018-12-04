@@ -1,3 +1,4 @@
+package com.bladesinthedark.crew;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,27 +10,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.bladesinthedark.actor.*;
+import com.bladesinthedark.milieu.*;
+import com.bladesinthedark.rules.*;
+
+import model.*;
+
 public class Crew implements Faction {
-	public enum District {
-		BARROWCLEFT, BRIGHTSTONE, CHARHOLLOW, CHARTERHALL, COALRIDGE, CROWS_FOOT, THE_DOCKS, DUNSLOUGH, NIGHTMARKET, SILKSHORE, SIX_TOWERS, WHITECROWN
-	}
-
-	public enum Estate {
-		UNDERWORLD, INSTITUTION, LABOR_TRADE, CITIZENRY, THE_FRINGE
-	}
-
 	/*
 	 * STATIC FIELDS
-	 * 
 	 */
 	private static final int MAX_HEAT = 9;
-
-	//
-	public static final District[] ALL_DISTRICTS = { District.BARROWCLEFT, District.BRIGHTSTONE, District.CHARHOLLOW,
-			District.CHARTERHALL, District.COALRIDGE, District.CROWS_FOOT, District.THE_DOCKS, District.DUNSLOUGH,
-			District.NIGHTMARKET, District.SILKSHORE, District.SIX_TOWERS, District.WHITECROWN };
-
-	//
 	private static ArrayList<Crew> factions;
 
 	// initialization
@@ -106,8 +97,8 @@ public class Crew implements Faction {
 
 	private String name;
 	private Estate estate;
-	private Type type;
-	private HashSet<Rep> rep;
+	private CrewType type;
+	private HashSet<CrewReputation> rep;
 
 	private int tier;
 	private boolean holdStrong;
@@ -117,8 +108,8 @@ public class Crew implements Faction {
 	//
 	private String lair;
 	private HashMap<Claim, Crew> claims;
-	private EnumSet<Special> specials;
-	private HashMap<Upgrade, Crew> upgrades;
+	private EnumSet<CrewSpecial> specials;
+	private HashMap<CrewUpgrade, Crew> upgrades;
 	private int turf;
 
 	//
@@ -147,21 +138,21 @@ public class Crew implements Faction {
 		// TODO - create additional constructors
 		this.active = true;
 		this.name = "Default";
-		this.type = Faction.randomCrewType();
+		this.type = CrewType.randomCrewType();
 		this.tier = 0;
 		this.holdStrong = true;
 		this.coin = 2;
 		this.exp = 0;
 
 		//
-		this.rep = new HashSet<Rep>();
-		rep.add(Faction.randomReputation());
+		this.rep = new HashSet<CrewReputation>();
+		rep.add(CrewReputation.randomReputation());
 
 		//
-		this.claims = new HashMap<Faction.Claim, Crew>();
-		claims.put(Faction.Claim.LAIR, this);
-		this.specials = EnumSet.noneOf(Faction.Special.class);
-		this.upgrades = new HashMap<Faction.Upgrade, Crew>();
+		this.claims = new HashMap<Claim, Crew>();
+		claims.put(Claim.LAIR, this);
+		this.specials = EnumSet.noneOf(CrewSpecial.class);
+		this.upgrades = new HashMap<CrewUpgrade, Crew>();
 		this.turf = 0;
 
 		//
@@ -178,8 +169,8 @@ public class Crew implements Faction {
 		// setup ships
 		shipMap = new HashMap<Crew, Integer>();
 		shipArray = new int[] { 0, 0, 0, 0, 0, 0, 0 };
-		for (int i = 0; i < ALL_FACTIONS.length; ++i) {
-			shipMap.put(Crew.getCrewByFaction(ALL_FACTIONS[i]), 0);
+		for (int i = 0; i < NamedFaction.ALL_FACTIONS.length; ++i) {
+			shipMap.put(Crew.getCrewByFaction(NamedFaction.ALL_FACTIONS[i]), 0);
 		}
 
 		this.huntingGroundsBoss = new HashSet<Crew>();
@@ -191,32 +182,32 @@ public class Crew implements Faction {
 
 		//
 		huntingGroundsBoss.add(c);
-		if (type.equals(Type.ASSASSINS)) {
-			specials.add(Dice.randomFromArray(ASSASSIN_SPECIALS));
-			upgrades.put(Faction.Upgrade.TRAINING_INSIGHT, c);
-			upgrades.put(Faction.Upgrade.TRAINING_PROWESS, c);
-		} else if (type.equals(Type.BRAVOS)) {
+		if (type.equals(CrewType.ASSASSINS)) {
+			specials.add(Dice.randomFromArray(CrewSpecial.ASSASSIN_SPECIALS));
+			upgrades.put(CrewUpgrade.TRAINING_INSIGHT, c);
+			upgrades.put(CrewUpgrade.TRAINING_PROWESS, c);
+		} else if (type.equals(CrewType.BRAVOS)) {
 			// TODO - additional cohort details
-			specials.add(Dice.randomFromArray(BRAVOS_SPECIALS));
-			upgrades.put(Faction.Upgrade.C2_COHORT_1, c);
-			upgrades.put(Faction.Upgrade.TRAINING_PROWESS, c);
-		} else if (type.equals(Type.CULT)) {
+			specials.add(Dice.randomFromArray(CrewSpecial.BRAVOS_SPECIALS));
+			upgrades.put(CrewUpgrade.C2_COHORT_1, c);
+			upgrades.put(CrewUpgrade.TRAINING_PROWESS, c);
+		} else if (type.equals(CrewType.CULT)) {
 			// TODO - additional cohort details
-			specials.add(Dice.randomFromArray(CULT_SPECIALS));
-			upgrades.put(Faction.Upgrade.C2_COHORT_1, c);
-			upgrades.put(Faction.Upgrade.TRAINING_RESOLVE, c);
-		} else if (type.equals(Type.HAWKERS)) {
-			specials.add(Dice.randomFromArray(HAWKERS_SPECIALS));
-			upgrades.put(Faction.Upgrade.SECURE_LAIR_1, c);
-			upgrades.put(Faction.Upgrade.TRAINING_RESOLVE, c);
-		} else if (type.equals(Type.SHADOWS)) {
-			specials.add(Dice.randomFromArray(SHADOWS_SPECIALS));
-			upgrades.put(Faction.Upgrade.HIDDEN_LAIR, c);
-			upgrades.put(Faction.Upgrade.TRAINING_PROWESS, c);
-		} else if (type.equals(Type.SMUGGLERS)) {
-			specials.add(Dice.randomFromArray(SMUGGLERS_SPECIALS));
-			upgrades.put(Faction.Upgrade.BOAT_HOUSE_1, c);
-			upgrades.put(Faction.Upgrade.TRAINING_PROWESS, c);
+			specials.add(Dice.randomFromArray(CrewSpecial.CULT_SPECIALS));
+			upgrades.put(CrewUpgrade.C2_COHORT_1, c);
+			upgrades.put(CrewUpgrade.TRAINING_RESOLVE, c);
+		} else if (type.equals(CrewType.HAWKERS)) {
+			specials.add(Dice.randomFromArray(CrewSpecial.HAWKERS_SPECIALS));
+			upgrades.put(CrewUpgrade.SECURE_LAIR_1, c);
+			upgrades.put(CrewUpgrade.TRAINING_RESOLVE, c);
+		} else if (type.equals(CrewType.SHADOWS)) {
+			specials.add(Dice.randomFromArray(CrewSpecial.SHADOWS_SPECIALS));
+			upgrades.put(CrewUpgrade.HIDDEN_LAIR, c);
+			upgrades.put(CrewUpgrade.TRAINING_PROWESS, c);
+		} else if (type.equals(CrewType.SMUGGLERS)) {
+			specials.add(Dice.randomFromArray(CrewSpecial.SMUGGLERS_SPECIALS));
+			upgrades.put(CrewUpgrade.BOAT_HOUSE_1, c);
+			upgrades.put(CrewUpgrade.TRAINING_PROWESS, c);
 		}
 
 		int dice = Dice.roll(3);
@@ -232,9 +223,9 @@ public class Crew implements Faction {
 
 		// upgrade one
 		c = shipSetup.get(1);
-		Faction.Upgrade upgrade = Faction.randomUpgradeByCrewType(type);
+		CrewUpgrade upgrade = CrewUpgrade.randomUpgradeByCrewType(type);
 		while (upgrades.containsKey(upgrade)) {
-			upgrade = Faction.randomUpgradeByCrewType(type);
+			upgrade = CrewUpgrade.randomUpgradeByCrewType(type);
 		}
 
 		dice = Dice.roll(2);
@@ -248,7 +239,7 @@ public class Crew implements Faction {
 		// upgrade two
 		c = shipSetup.get(2);
 		while (upgrades.containsKey(upgrade)) {
-			upgrade = Faction.randomUpgradeByCrewType(type);
+			upgrade = CrewUpgrade.randomUpgradeByCrewType(type);
 		}
 
 		upgrades.put(upgrade, c);
@@ -278,8 +269,8 @@ public class Crew implements Faction {
 		this.tier = tier;
 		this.holdStrong = hold;
 		//
-		this.claims = new HashMap<Faction.Claim, Crew>();
-		claims.put(Faction.Claim.LAIR, this);
+		this.claims = new HashMap<Claim, Crew>();
+		claims.put(Claim.LAIR, this);
 	}
 
 	/*
@@ -336,10 +327,10 @@ public class Crew implements Faction {
 	}
 
 	private void updateTurf() {
-		Faction.Claim[] array = new Faction.Claim[] { Faction.Claim.TURF_1, Faction.Claim.TURF_2, Faction.Claim.TURF_3,
-				Faction.Claim.TURF_4, Faction.Claim.TURF_5, Faction.Claim.TURF_6 };
+		Claim[] array = new Claim[] { Claim.TURF_1, Claim.TURF_2, Claim.TURF_3,
+				Claim.TURF_4, Claim.TURF_5, Claim.TURF_6 };
 		int counter = 0;
-		for (Faction.Claim el : array) {
+		for (Claim el : array) {
 			if (claims.containsKey(el))
 				++counter;
 		}
@@ -426,7 +417,7 @@ public class Crew implements Faction {
 
 		}
 
-		if (array[6].contains(target) || rep.contains(Rep.HONORABLE)) {
+		if (array[6].contains(target) || rep.contains(CrewReputation.HONORABLE)) {
 			/*
 			 * TODO - refuse to pull job on a friendly
 			 */
@@ -480,37 +471,37 @@ public class Crew implements Faction {
 		 * ASSASSINS institutions & underworld CULT citizens & fringe HAWKERS citizens &
 		 * labor SHADOWS institutions & underworld SMUGGLERS labor & fringe
 		 */
-		if (type.equals(Type.ASSASSINS)) {
+		if (type.equals(CrewType.ASSASSINS)) {
 			targets[0] = 10; // citizens
 			targets[1] = 35; // institution
 			targets[2] = 10; // labor & trade
 			targets[3] = 10; // the fringe
 			targets[4] = 35; // underworld
-		} else if (type.equals(Type.BRAVOS)) {
+		} else if (type.equals(CrewType.BRAVOS)) {
 			targets[0] = 20; // citizens
 			targets[1] = 20; // institution
 			targets[2] = 20; // labor & trade
 			targets[3] = 20; // the fringe
 			targets[4] = 20; // underworld
-		} else if (type.equals(Type.CULT)) {
+		} else if (type.equals(CrewType.CULT)) {
 			targets[0] = 35; // citizens
 			targets[1] = 10; // institution
 			targets[2] = 10; // labor & trade
 			targets[3] = 35; // the fringe
 			targets[4] = 10; // underworld
-		} else if (type.equals(Type.HAWKERS)) {
+		} else if (type.equals(CrewType.HAWKERS)) {
 			targets[0] = 35; // citizens
 			targets[1] = 10; // institution
 			targets[2] = 35; // labor & trade
 			targets[3] = 10; // the fringe
 			targets[4] = 10; // underworld
-		} else if (type.equals(Type.SHADOWS)) {
+		} else if (type.equals(CrewType.SHADOWS)) {
 			targets[0] = 10; // citizens
 			targets[1] = 35; // institution
 			targets[2] = 10; // labor & trade
 			targets[3] = 10; // the fringe
 			targets[4] = 35; // underworld
-		} else if (type.equals(Type.SMUGGLERS)) {
+		} else if (type.equals(CrewType.SMUGGLERS)) {
 			targets[0] = 10; // citizens
 			targets[1] = 10; // institution
 			targets[2] = 35; // labor & trade
@@ -522,19 +513,19 @@ public class Crew implements Faction {
 		NamedFaction faction;
 		if (dice < 1 + targets[0]) {
 			System.out.println(1 + targets[0] + " / " + dice);
-			faction = Faction.randomCitizenryEnum();
+			faction = NamedFaction.randomCitizenryEnum();
 		} else if (dice < 1 + targets[0] + targets[1]) {
 			System.out.println(1 + targets[0] + targets[1] + " / " + dice);
-			faction = Faction.randomInstitutionEnum();
+			faction = NamedFaction.randomInstitutionEnum();
 		} else if (dice < 1 + targets[0] + targets[1] + targets[2]) {
 			System.out.println(1 + targets[0] + targets[1] + targets[2] + " / " + dice);
-			faction = Faction.randomLaborTradeEnum();
+			faction = NamedFaction.randomLaborTradeEnum();
 		} else if (dice < 1 + targets[0] + targets[1] + targets[2] + targets[3]) {
 			System.out.println(1 + targets[0] + targets[1] + targets[2] + targets[3] + " / " + dice);
-			faction = Faction.randomFringeEnum();
+			faction = NamedFaction.randomFringeEnum();
 		} else {
 			System.out.println(100 + " / " + dice);
-			faction = Faction.randomUnderworldEnum();
+			faction = NamedFaction.randomUnderworldEnum();
 		}
 
 		return getCrewByFaction(faction);
@@ -671,12 +662,12 @@ public class Crew implements Faction {
 		this.name = name;
 	}
 
-	public Set<Rep> getReputation() {
+	public Set<CrewReputation> getReputation() {
 		return rep;
 	}
 
-	public void setReputation(Set<Rep> reputation) {
-		this.rep = (HashSet<Rep>) reputation;
+	public void setReputation(Set<CrewReputation> reputation) {
+		this.rep = (HashSet<CrewReputation>) reputation;
 	}
 
 	@Override
@@ -723,27 +714,27 @@ public class Crew implements Faction {
 	}
 
 	@Override
-	public EnumSet<Special> getSpecials() {
+	public EnumSet<CrewSpecial> getSpecials() {
 		return specials;
 	}
 
 	@Override
-	public void setSpecials(EnumSet<Special> specials) {
+	public void setSpecials(EnumSet<CrewSpecial> specials) {
 		this.specials = specials;
 	}
 
 	@Override
-	public Set<Upgrade> upgradeSet() {
+	public Set<CrewUpgrade> upgradeSet() {
 		return upgrades.keySet();
 	}
 
 	@Override
-	public Type crewType() {
+	public CrewType crewType() {
 		return type;
 	}
 
 	@Override
-	public void setCrewType(Type type) {
+	public void setCrewType(CrewType type) {
 		this.type = type;
 	}
 
@@ -962,7 +953,7 @@ public class Crew implements Faction {
 		return choice;
 	}
 
-	public HashMap<Faction.Claim, Crew> getClaims() {
+	public HashMap<Claim, Crew> getClaims() {
 		return claims;
 	}
 
@@ -1147,7 +1138,7 @@ public class Crew implements Faction {
 	}
 
 	public static District randomDistrict() {
-		return Dice.randomFromArray(ALL_DISTRICTS);
+		return Dice.randomFromArray(District.ALL_DISTRICTS);
 	}
 
 	public static List<Crew> getFactions() {
@@ -1183,7 +1174,7 @@ public class Crew implements Faction {
 	}
 
 	public static NamedFaction getFactionNameByString(String string) {
-		NamedFaction[] array = ALL_FACTIONS;
+		NamedFaction[] array = NamedFaction.ALL_FACTIONS;
 		NamedFaction faction = null;
 
 		for (int i = 0; i < array.length; ++i) {

@@ -1,3 +1,5 @@
+package com.bladesinthedark.crew;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,100 +12,6 @@ import java.util.Set;
 
 public interface FactionLadder {
 	static final int MAX_ACTIVE = 6;
-
-	/*
-	 * INNER CLASS - member STATUS
-	 */
-	public static class Status {
-		private Faction owner;
-		private int memberID;
-
-		//
-		private boolean active;
-		private boolean busy;
-
-		//
-		private int rank;
-		private int cooldown;
-		private int fame;
-		private int infamy;
-
-		// constructors
-		public Status(Faction owner) {
-			this(true, owner);
-		}
-
-		public Status(boolean active, Faction owner) {
-			this.memberID = 0;
-			this.owner = owner;
-
-			//
-			this.active = active;
-
-			//
-			this.rank = 1;
-			this.cooldown = 0;
-			this.fame = 0;
-			this.infamy = 0;
-		}
-
-		// methods
-		@Override
-		public String toString() {
-			String string;
-			//
-			String name = owner.toString();
-			String active = (this.active) ? "(active)" : "(inactive)";
-
-			string = String.format("%s %s || Age: %d", name, active, memberID);
-			return string;
-		}
-
-		int getMemberID() {
-			return memberID;
-		}
-
-		void setMemberID(int memberID) {
-			this.memberID = memberID;
-		}
-
-		boolean active() {
-			return active;
-		}
-
-		boolean inactive() {
-			return active != true;
-		}
-
-		void activate() {
-			this.active = true;
-		}
-
-		void deactivate() {
-			this.active = false;
-		}
-
-		boolean available() {
-			return busy != true;
-		}
-
-		void makeBusy() {
-			this.busy = true;
-		}
-
-		void release() {
-			this.busy = false;
-		}
-
-		int getCooldown() {
-			// turnsSinceLastAction / ((lowestRank - rank > 0) ? lowestRank - rank : 1)
-			return cooldown / rank;
-		}
-
-		void setCooldown(int cooldown) {
-			this.cooldown = cooldown;
-		}
-	}
 
 	/*
 	 * INSTANCE METHODS
@@ -216,7 +124,7 @@ public interface FactionLadder {
 			@Override
 			public int compare(Faction left, Faction right) {
 
-				return map.get(right).cooldown - map.get(left).cooldown;
+				return map.get(right).getCooldown() - map.get(left).getCooldown();
 			}
 		}
 

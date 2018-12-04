@@ -1,6 +1,11 @@
+package model;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import com.bladesinthedark.crew.CrewType;
+import com.bladesinthedark.crew.Faction;
+import com.bladesinthedark.rules.Dice;
 
 public interface Plan {
 
@@ -81,20 +86,20 @@ public interface Plan {
 		return Dice.randomFromArray(ALL_ACTIVITIES);
 	}
 
-	public static Activity randomActivity(Faction.Type crew) {
+	public static Activity randomActivity(CrewType crew) {
 		Activity[] array = ALL_ACTIVITIES;
 
-		if (crew.equals(Faction.Type.ASSASSINS))
+		if (crew.equals(CrewType.ASSASSINS))
 			array = ASSASSIN_FLAVORS;
-		else if (crew.equals(Faction.Type.BRAVOS))
+		else if (crew.equals(CrewType.BRAVOS))
 			array = BRAVO_FLAVORS;
-		else if (crew.equals(Faction.Type.CULT))
+		else if (crew.equals(CrewType.CULT))
 			array = CULT_FLAVORS;
-		else if (crew.equals(Faction.Type.HAWKERS))
+		else if (crew.equals(CrewType.HAWKERS))
 			array = HAWKER_FLAVORS;
-		else if (crew.equals(Faction.Type.SHADOWS))
+		else if (crew.equals(CrewType.SHADOWS))
 			array = SHADOW_FLAVORS;
-		else if (crew.equals(Faction.Type.SMUGGLERS))
+		else if (crew.equals(CrewType.SMUGGLERS))
 			array = SMUGGLER_FLAVORS;
 
 		return Dice.randomFromArray(array);

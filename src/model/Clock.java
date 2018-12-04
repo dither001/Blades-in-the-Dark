@@ -1,3 +1,6 @@
+package model;
+import com.bladesinthedark.rules.Dice;
+
 public class Clock {
 	public enum Length {
 		FOUR, SIX, EIGHT, TEN, TWELVE

@@ -1,3 +1,4 @@
+package com.bladesinthedark.rules;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;

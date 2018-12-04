@@ -1,7 +1,11 @@
+package model;
 
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+
+import com.bladesinthedark.actor.*;
+import com.bladesinthedark.rules.*;
 
 public class Action {
 	public enum Consequence {
@@ -52,7 +56,7 @@ public class Action {
 	private Rogue rogue;
 	private int dice;
 	private Clock clock;
-	private Actor.Rating approach;
+	private Rating approach;
 	private Position position;
 	private Effect effect;
 	private boolean pushed;
@@ -64,11 +68,11 @@ public class Action {
 	// constructors
 	public Action(Score score, Clock clock, Position position) {
 		this(score, clock,
-				Rogue.pseudoRandomApproach(score.getAct(), score.getPlan(), score.getCrew(), score.getBeats()),
+				Rating.pseudoRandomApproach(score.getAct(), score.getPlan(), score.getCrew(), score.getBeats()),
 				position, randomEffect());
 	}
 
-	public Action(Score score, Clock clock, Actor.Rating approach, Position position, Effect effect) {
+	public Action(Score score, Clock clock, Rating approach, Position position, Effect effect) {
 		this.score = score;
 		this.tension = score.getTension();
 		this.team = score.getTeam();

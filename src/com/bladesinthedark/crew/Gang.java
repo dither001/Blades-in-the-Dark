@@ -1,3 +1,5 @@
+package com.bladesinthedark.crew;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -9,6 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
+import com.bladesinthedark.actor.*;
+import com.bladesinthedark.rules.*;
+
+import model.*;
 
 public class Gang implements Faction, Stakeholder {
 	/*
@@ -22,8 +29,8 @@ public class Gang implements Faction, Stakeholder {
 	//
 	private boolean active;
 	private String name;
-	private Set<Rep> reputation;
-	private Type type;
+	private Set<CrewReputation> reputation;
+	private CrewType type;
 
 	//
 	private Set<Rogue> roster;
@@ -34,8 +41,8 @@ public class Gang implements Faction, Stakeholder {
 	private int level;
 	private int coin;
 	private int experience;
-	private EnumSet<Special> specials;
-	private Map<Upgrade, Faction> upgrades;
+	private EnumSet<CrewSpecial> specials;
+	private Map<CrewUpgrade, Faction> upgrades;
 
 	//
 	private LocaleOld lair;
@@ -61,8 +68,8 @@ public class Gang implements Faction, Stakeholder {
 		this.active = true;
 		this.gangID = gangID;
 		this.name = name;
-		this.reputation = new HashSet<Rep>();
-		this.type = Faction.randomCrewType();
+		this.reputation = new HashSet<CrewReputation>();
+		this.type = CrewType.randomCrewType();
 
 		//
 		this.roster = new HashSet<Rogue>();
@@ -73,8 +80,8 @@ public class Gang implements Faction, Stakeholder {
 		this.level = 2;
 		this.coin = 2;
 		this.experience = 0;
-		this.specials = EnumSet.noneOf(Special.class);
-		this.upgrades = new HashMap<Upgrade, Faction>();
+		this.specials = EnumSet.noneOf(CrewSpecial.class);
+		this.upgrades = new HashMap<CrewUpgrade, Faction>();
 
 		//
 		this.lair = home.findVacancy(Dice.roll(6) - 1);
@@ -265,37 +272,37 @@ public class Gang implements Faction, Stakeholder {
 	public void upgradeSetup() {
 		Faction faction = Dice.randomFromSet(ships).getOther(this);
 
-		if (type.equals(Type.ASSASSINS)) {
-			specials.add(Dice.randomFromArray(ASSASSIN_SPECIALS));
-			upgrades.put(Faction.Upgrade.TRAINING_INSIGHT, faction);
-			upgrades.put(Faction.Upgrade.TRAINING_PROWESS, faction);
+		if (type.equals(CrewType.ASSASSINS)) {
+			specials.add(Dice.randomFromArray(CrewSpecial.ASSASSIN_SPECIALS));
+			upgrades.put(CrewUpgrade.TRAINING_INSIGHT, faction);
+			upgrades.put(CrewUpgrade.TRAINING_PROWESS, faction);
 
-		} else if (type.equals(Type.BRAVOS)) {
+		} else if (type.equals(CrewType.BRAVOS)) {
 			// TODO - additional cohort details
-			specials.add(Dice.randomFromArray(BRAVOS_SPECIALS));
-			upgrades.put(Faction.Upgrade.C2_COHORT_1, faction);
-			upgrades.put(Faction.Upgrade.TRAINING_PROWESS, faction);
+			specials.add(Dice.randomFromArray(CrewSpecial.BRAVOS_SPECIALS));
+			upgrades.put(CrewUpgrade.C2_COHORT_1, faction);
+			upgrades.put(CrewUpgrade.TRAINING_PROWESS, faction);
 
-		} else if (type.equals(Type.CULT)) {
+		} else if (type.equals(CrewType.CULT)) {
 			// TODO - additional cohort details
-			specials.add(Dice.randomFromArray(CULT_SPECIALS));
-			upgrades.put(Faction.Upgrade.C2_COHORT_1, faction);
-			upgrades.put(Faction.Upgrade.TRAINING_RESOLVE, faction);
+			specials.add(Dice.randomFromArray(CrewSpecial.CULT_SPECIALS));
+			upgrades.put(CrewUpgrade.C2_COHORT_1, faction);
+			upgrades.put(CrewUpgrade.TRAINING_RESOLVE, faction);
 
-		} else if (type.equals(Type.HAWKERS)) {
-			specials.add(Dice.randomFromArray(HAWKERS_SPECIALS));
-			upgrades.put(Faction.Upgrade.SECURE_LAIR_1, faction);
-			upgrades.put(Faction.Upgrade.TRAINING_RESOLVE, faction);
+		} else if (type.equals(CrewType.HAWKERS)) {
+			specials.add(Dice.randomFromArray(CrewSpecial.HAWKERS_SPECIALS));
+			upgrades.put(CrewUpgrade.SECURE_LAIR_1, faction);
+			upgrades.put(CrewUpgrade.TRAINING_RESOLVE, faction);
 
-		} else if (type.equals(Type.SHADOWS)) {
-			specials.add(Dice.randomFromArray(SHADOWS_SPECIALS));
-			upgrades.put(Faction.Upgrade.HIDDEN_LAIR, faction);
-			upgrades.put(Faction.Upgrade.TRAINING_PROWESS, faction);
+		} else if (type.equals(CrewType.SHADOWS)) {
+			specials.add(Dice.randomFromArray(CrewSpecial.SHADOWS_SPECIALS));
+			upgrades.put(CrewUpgrade.HIDDEN_LAIR, faction);
+			upgrades.put(CrewUpgrade.TRAINING_PROWESS, faction);
 
-		} else if (type.equals(Type.SMUGGLERS)) {
-			specials.add(Dice.randomFromArray(SMUGGLERS_SPECIALS));
-			upgrades.put(Faction.Upgrade.BOAT_HOUSE_1, faction);
-			upgrades.put(Faction.Upgrade.TRAINING_PROWESS, faction);
+		} else if (type.equals(CrewType.SMUGGLERS)) {
+			specials.add(Dice.randomFromArray(CrewSpecial.SMUGGLERS_SPECIALS));
+			upgrades.put(CrewUpgrade.BOAT_HOUSE_1, faction);
+			upgrades.put(CrewUpgrade.TRAINING_PROWESS, faction);
 
 		}
 
@@ -304,9 +311,9 @@ public class Gang implements Faction, Stakeholder {
 		Ship ship = Ship.get(this, faction);
 		int score = ship.getScore();
 
-		Upgrade upgrade = Faction.randomUpgradeByCrewType(type);
+		CrewUpgrade upgrade = CrewUpgrade.randomUpgradeByCrewType(type);
 		while (upgrades.containsKey(upgrade)) {
-			upgrade = Faction.randomUpgradeByCrewType(type);
+			upgrade = CrewUpgrade.randomUpgradeByCrewType(type);
 		}
 
 		upgrades.put(upgrade, faction);
@@ -325,7 +332,7 @@ public class Gang implements Faction, Stakeholder {
 		score = ship.getScore();
 
 		while (upgrades.containsKey(upgrade)) {
-			upgrade = Faction.randomUpgradeByCrewType(type);
+			upgrade = CrewUpgrade.randomUpgradeByCrewType(type);
 		}
 
 		upgrades.put(upgrade, faction);
@@ -438,22 +445,22 @@ public class Gang implements Faction, Stakeholder {
 	}
 
 	@Override
-	public Set<Rep> getReputation() {
+	public Set<CrewReputation> getReputation() {
 		return reputation;
 	}
 
 	@Override
-	public void setReputation(Set<Rep> reputation) {
+	public void setReputation(Set<CrewReputation> reputation) {
 		this.reputation = reputation;
 	}
 
 	@Override
-	public Type crewType() {
+	public CrewType crewType() {
 		return type;
 	}
 
 	@Override
-	public void setCrewType(Type type) {
+	public void setCrewType(CrewType type) {
 		this.type = type;
 	}
 
@@ -518,17 +525,17 @@ public class Gang implements Faction, Stakeholder {
 	}
 
 	@Override
-	public EnumSet<Special> getSpecials() {
+	public EnumSet<CrewSpecial> getSpecials() {
 		return specials;
 	}
 
 	@Override
-	public void setSpecials(EnumSet<Special> specials) {
+	public void setSpecials(EnumSet<CrewSpecial> specials) {
 		this.specials = specials;
 	}
 
 	@Override
-	public Set<Upgrade> upgradeSet() {
+	public Set<CrewUpgrade> upgradeSet() {
 		return upgrades.keySet();
 	}
 

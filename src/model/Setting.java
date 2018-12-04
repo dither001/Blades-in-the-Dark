@@ -1,3 +1,4 @@
+package model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -5,6 +6,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import com.bladesinthedark.crew.Faction;
+import com.bladesinthedark.crew.Gang;
+import com.bladesinthedark.crew.NamedFaction;
 
 public class Setting {
 	/*
@@ -25,7 +30,7 @@ public class Setting {
 		 * FIXME - this array represents will need to be replaced with the
 		 * randomly-generated content when I abstract stuff for CharGen
 		 */
-		Faction.NamedFaction[] array = Faction.factionAddOrder();
+		NamedFaction[] array = NamedFaction.factionAddOrder();
 
 		//
 		this.cluster = LocaleOld.cluster();
