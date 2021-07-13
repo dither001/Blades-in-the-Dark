@@ -1,3 +1,4 @@
+strictness allow 1007;
 strictness allow 1008;
 
 use goap.ump;
@@ -11,11 +12,26 @@ namespace blades.api;
 interface IGameContext {
 	depend java.util.HashSet;
 	depend java.util.Set;
+	
+	const Set<IActor> PATRONS = new HashSet<IActor>();
 
 	const Set<ICrewShip> CREW_SHIPS = new HashSet<ICrewShip>();
 	const Set<ICrew> CREWS = new HashSet<ICrew>();
+
 	const Set<IRogueShip> ROGUE_SHIPS = new HashSet<IRogueShip>();
 	const Set<IRogue> ROGUES = new HashSet<IRogue>();
+
+	const Set<IClaim> CLAIMS = new HashSet<IClaim>();
+	
+	/* */
+	void gatherInformation(IRogue rogue);
+	
+	default void whoHasWork() {
+		Set<IGoal> goals.addAll(ROGUES.stream()
+			.filter(IRogue::hasGoals)
+			.flatmap(IRogue::getGoals)
+			.collect(Collectors.toUnmodifiableSet()));
+	}
 }
 
 interface IRating {
@@ -42,52 +58,60 @@ interface IRoll {
 /* */
 
 interface ICrewShip {
-	ICrew getA(); ICrew getB();
-	int getValue();
-	default boolean atWar() { return getValue() == -3; }
-	default ICrew getOther(ICrew c) {
-		return c == getA() ? getB() : c == getB() ? getA() : null;
-	}
+	depend java.util.function.Predicate;
+
+	public static final Predicate<ICrewShip> ALLIES = ship -> { return ship.value() > 1; };
+	public static final Predicate<ICrewShip> ENEMIES = ship -> { return ship.value() < -1; };
+	public static final Predicate<ICrewShip> RIVALS = ship -> { return ship.value() > -2 && ship.value() < 2; };	
+	public static final Predicate<ICrewShip> AT_WAR = ship -> { return ship.value() < -2; };
+	
+	ICrew a(); ICrew b(); int value();
+	default boolean contains(ICrew crew) { return a().equals(crew) || b().equals(crew); }
+	default ICrew getOther(ICrew c) { return c == a() ? b() : c == b() ? a() : null; }
 }
 
 interface ICrew {
+	depend java.util.Set;
+	depend java.util.UUID;
+	depend java.util.function.Predicate;
+
+	/* */
+	public static final Predicate<ICrew> LOOKING_FOR_WORK = crew -> { return crew.isLookingForWork(); };
+	/* */
 	const ASSASSINS = "assassins"; const BRAVOS = "bravos"; const CULTISTS = "cultists"; const HAWKERS = "hawkers"; const SHADOWS = "shadows"; const SMUGGLERS = "smugglers";
 	
 	isA IActor;
 	
-	boolean setCrewname(String aCrewname);
-	boolean setCrewtype(String aCrewtype);
-	boolean setRep(int aRep);
-	boolean setTier(int aTier);
-	boolean setHeat(int aHeat);
-	boolean setWanted(int aWanted);
-	boolean setCoin(int aCoin);
-	boolean setHold(boolean aHold);
-	boolean addRogue(IRogue aRogue);
-	boolean removeRogue(IRogue aRogue);
+	UUID getCrewID();
 	String getCrewname(); String getCrewtype();
 	int getRep(); int getTier(); int getHeat(); int getWanted(); int getCoin();
 	boolean getHold();
-	IRogue getRogue(int index);
-	IRogue[] getRogues();
-	int numberOfRogues();
-	boolean hasRogues();
-	int indexOfRogue(IRogue aRogue);
+	
+	Set<IRogue> assembleTeam();
+	boolean isLookingForWork();
 }
 
 interface IRogueShip {
-	IRogue getA(); IRogue getB();
-	int getValue();
-	default boolean atWar() { return getValue() == -3; }
-	default IRogue getOther(IRogue r) {
-		return r == getA() ? getB() : r == getB() ? getA() : null;
-	}
+	const ALLY = "ally"; const CONTACT = "contact"; const ENEMY = "enemy"; const RIVAL = "rival";
+
+	IRogue a(); IRogue b();
+	String value();
+	default IRogue getOther(IRogue r) { return r == a() ? b() : r == b() ? a() : null; }
 }
 
 interface IRogue {
+	depend java.util.UUID;
+	
+	/* vices */
+	const FAITH = "faith"; const GAMBLING = "gambling"; const LUXURY = "luxury"; const OBLIGATION = "obligation"; const PLEASURE = "pleasure"; const STUPOR = "stupor"; const WEIRD = "weird";
+	/* playbooks */
 	const CUTTER = "cutter"; const HOUND = "hound"; const LEECH = "leech"; const LURK = "lurk"; const SLIDE = "slide"; const SPIDER = "spider"; const WHISPER = "whisper";
 	
 	isA IActor;
+	UUID getRogueID();
+	
+	boolean hasGoals();
+	boolean isActive(); boolean isRetired(); boolean isDead();
 }
 
 interface IPlaybook { }
@@ -96,13 +120,30 @@ interface IPlaybook { }
 /* */
 /* */
 
-interface IClaim {}
-
-interface IPlan {
-	const ASSAULT = "assault"; const DECEPTION = "deception"; const OCCULT = "occult"; const SOCIAL = "social"; const STEALTH = "stealth"; const TRANSPORT = "transport";
+interface IClaim {
+	depend java.util.UUID;
+	
+	const LAIR = "lair"; const TURF = "turf";
+	
+	UUID getClaimID();
 }
 
-interface IScore {}
+interface ITeam {
+	depend java.util.UUID;
+	
+	UUID getTeamID();
+}
+
+interface IScore {
+	depend java.util.UUID;
+	
+	/* */
+	const ASSAULT = "assault"; const DECEPTION = "deception"; const OCCULT = "occult"; const SOCIAL = "social"; const STEALTH = "stealth"; const TRANSPORT = "transport";
+	/* */
+	const ACCIDENT = "accident"; // TODO
+	
+	UUID getScoreID();
+}
 
 interface IEntanglement {
 	const ARREST = "arrest"; const COOPERATION = "cooperation"; const DEMONIC_NOTICE = "demonic notice"; const FLIPPED = "flipped"; const GANG_TROUBLE = "gang trouble"; const INTERROGATION = "interrogation"; const QUESTIONING = "questioning"; const REPRISALS = "reprisals"; const RIVALS = "rivals"; const SHOW_OF_FORCE = "show of force"; const UNQUIET_DEAD = "unquiet dead"; const USUAL_SUSPECTS = "usual suspects";
@@ -139,42 +180,22 @@ class CrewShip {
 	immutable ICrew a;
 	immutable ICrew b;
 	int value;
+	key { a, b }
 	
 	[ a != b ]
-	[ value >= -3 && value <= 3 ]
 }
 
 class Crew {
 	isA ICrew;
 	
+	UUID crewID;
 	crewname; crewtype;
 	int rep; int tier; int heat; int wanted; int coin;
 	boolean hold;
 	IRogue[] rogues;
-	
-	sequence {
-		Primed {
-			ready() -> Engagement;
-		}
-		Engagement {
-			entry /{ doEngagement() -> Operation; }
-		}
-		Operation {
-			entry /{ doOperation() -> Downtime; }
-		}
-		Payoff {
-			entry /{ doPayoff() -> Heat; }
-		}
-		Heat {
-			entry /{ doHeat() -> Entanglements; }
-		}
-		Entanglements {
-			entry /{ doEntanglements() -> Activities; }
-		}
-		Activities {
-			entry /{ doActivities() -> Primed; }
-		}
-	}
+	IClaim[] claims;
+	String[] favoredOps;
+	key { crewID }
 }
 
 class RogueShip {
@@ -182,17 +203,23 @@ class RogueShip {
 	
 	immutable IRogue a;
 	immutable IRogue b;
-	int value;
+	value = IRogueShip.RIVAL;
+	key { a, b }
 	
 	[ a != b ]
-	[ value >= -3 && value <= 3 ]
 }
 
 class Rogue {
+	depend java.util.UUID;
+	
 	isA IRogue;
 	
-	roguename; playbook;
+	UUID rogueID;
+	IGoal[] goals;
+	ICrew crew;
+	roguename; playbook; vice;
 	int stress; int trauma; int coin; int stash;
+	key { rogueID }
 }
 
 /* */
@@ -200,17 +227,55 @@ class Rogue {
 /* */
 
 class Claim {
+	depend java.util.UUID;
+	
 	isA IClaim;
 	
-	claimname; claimtype;
-	boolean isPrison;
+	UUID claimID;
+	ICrew claimant;
+	district; claimname; claimtype = IClaim.TURF;
+	boolean isPrison = false;
+	key { claimID }
 }
 
 class Score {
+	depend java.util.UUID;
+	
 	isA IScore;
 	
-	scorename; plantype;
+	UUID scoreID;
+	ICrew crew; ICrew target; IGoal goal;
+	IRogue[] team;
+	scorename = ""; plantype; activity;
+	int rep = { };
 	int coin; int heat;
+	key { scoreID }
 	
-	IActor target;
+	after constructor {
+		scorename = String.format("The %s %s", target.getCrewname(), activity);
+	}
+	
+	sequence {
+		Ready {
+			doReady() -> Engagement;
+		}
+		Engagement {
+			doEngagement() -> Operation;
+		}
+		Operation {
+			doOperation() -> Payoff;
+		}
+		Payoff {
+			doPayoff() -> Heat;
+		}
+		Heat {
+			doHeat() -> Entanglement;
+		}
+		Entanglement {
+			doEntanglement() -> Downtime;
+		}
+		Downtime {
+			doDowntime() -> Final;
+		}
+	}
 }
