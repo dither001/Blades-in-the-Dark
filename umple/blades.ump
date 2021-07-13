@@ -1,0 +1,216 @@
+strictness allow 1008;
+
+use goap.ump;
+
+namespace blades.api;
+
+/* */
+/* */
+/* */
+
+interface IGameContext {
+	depend java.util.HashSet;
+	depend java.util.Set;
+
+	const Set<ICrewShip> CREW_SHIPS = new HashSet<ICrewShip>();
+	const Set<ICrew> CREWS = new HashSet<ICrew>();
+	const Set<IRogueShip> ROGUE_SHIPS = new HashSet<IRogueShip>();
+	const Set<IRogue> ROGUES = new HashSet<IRogue>();
+}
+
+interface IRating {
+	const HUNT = "hunt"; const STUDY = "study"; const SURVEY = "survey"; const TINKER = "tinker";
+	const FINESSE = "finesse"; const PROWL = "prowl"; const SKIRMISH = "skirmish"; const WRECK = "wreck";
+	const ATTUNE = "attune"; const COMMAND = "command"; const CONSORT = "consort"; const SWAY = "sway";
+}
+
+interface IRoll {
+	/* roll type */
+	const ACTION = "action"; const DOWNTIME = "downtime"; const FORTUNE = "fortune"; const RESISTANCE = "resistance";
+	/* position */
+	const CONTROLLED = "controlled"; const RISKY = "risky"; const DESPERATE = "desperate";
+	/* effect */
+	const GREAT = "great"; const SUCCESS = "success"; const PARTIAL = "partial";
+	/* factors */
+	const POTENCY = "potency"; const QUALITY = "quality"; const SCALE = "scale";
+	
+	String getRolltype();
+}
+
+/* */
+/* */
+/* */
+
+interface ICrewShip {
+	ICrew getA(); ICrew getB();
+	int getValue();
+	default boolean atWar() { return getValue() == -3; }
+	default ICrew getOther(ICrew c) {
+		return c == getA() ? getB() : c == getB() ? getA() : null;
+	}
+}
+
+interface ICrew {
+	const ASSASSINS = "assassins"; const BRAVOS = "bravos"; const CULTISTS = "cultists"; const HAWKERS = "hawkers"; const SHADOWS = "shadows"; const SMUGGLERS = "smugglers";
+	
+	isA IActor;
+	
+	boolean setCrewname(String aCrewname);
+	boolean setCrewtype(String aCrewtype);
+	boolean setRep(int aRep);
+	boolean setTier(int aTier);
+	boolean setHeat(int aHeat);
+	boolean setWanted(int aWanted);
+	boolean setCoin(int aCoin);
+	boolean setHold(boolean aHold);
+	boolean addRogue(IRogue aRogue);
+	boolean removeRogue(IRogue aRogue);
+	String getCrewname(); String getCrewtype();
+	int getRep(); int getTier(); int getHeat(); int getWanted(); int getCoin();
+	boolean getHold();
+	IRogue getRogue(int index);
+	IRogue[] getRogues();
+	int numberOfRogues();
+	boolean hasRogues();
+	int indexOfRogue(IRogue aRogue);
+}
+
+interface IRogueShip {
+	IRogue getA(); IRogue getB();
+	int getValue();
+	default boolean atWar() { return getValue() == -3; }
+	default IRogue getOther(IRogue r) {
+		return r == getA() ? getB() : r == getB() ? getA() : null;
+	}
+}
+
+interface IRogue {
+	const CUTTER = "cutter"; const HOUND = "hound"; const LEECH = "leech"; const LURK = "lurk"; const SLIDE = "slide"; const SPIDER = "spider"; const WHISPER = "whisper";
+	
+	isA IActor;
+}
+
+interface IPlaybook { }
+
+/* */
+/* */
+/* */
+
+interface IClaim {}
+
+interface IPlan {
+	const ASSAULT = "assault"; const DECEPTION = "deception"; const OCCULT = "occult"; const SOCIAL = "social"; const STEALTH = "stealth"; const TRANSPORT = "transport";
+}
+
+interface IScore {}
+
+interface IEntanglement {
+	const ARREST = "arrest"; const COOPERATION = "cooperation"; const DEMONIC_NOTICE = "demonic notice"; const FLIPPED = "flipped"; const GANG_TROUBLE = "gang trouble"; const INTERROGATION = "interrogation"; const QUESTIONING = "questioning"; const REPRISALS = "reprisals"; const RIVALS = "rivals"; const SHOW_OF_FORCE = "show of force"; const UNQUIET_DEAD = "unquiet dead"; const USUAL_SUSPECTS = "usual suspects";
+}
+
+/* */
+/* */
+/* */
+
+/* */
+/* */
+/* */
+
+
+namespace blades.main;
+
+/* */
+/* */
+/* */
+
+class ActionRoll {
+	isA IRoll;
+	
+	immutable rolltype = IRoll.ACTION;
+}
+
+/* */
+/* */
+/* */
+
+class CrewShip {
+	isA ICrewShip;
+	
+	immutable ICrew a;
+	immutable ICrew b;
+	int value;
+	
+	[ a != b ]
+	[ value >= -3 && value <= 3 ]
+}
+
+class Crew {
+	isA ICrew;
+	
+	crewname; crewtype;
+	int rep; int tier; int heat; int wanted; int coin;
+	boolean hold;
+	IRogue[] rogues;
+	
+	sequence {
+		Primed {
+			ready() -> Engagement;
+		}
+		Engagement {
+			entry /{ doEngagement() -> Operation; }
+		}
+		Operation {
+			entry /{ doOperation() -> Downtime; }
+		}
+		Payoff {
+			entry /{ doPayoff() -> Heat; }
+		}
+		Heat {
+			entry /{ doHeat() -> Entanglements; }
+		}
+		Entanglements {
+			entry /{ doEntanglements() -> Activities; }
+		}
+		Activities {
+			entry /{ doActivities() -> Primed; }
+		}
+	}
+}
+
+class RogueShip {
+	isA IRogueShip;
+	
+	immutable IRogue a;
+	immutable IRogue b;
+	int value;
+	
+	[ a != b ]
+	[ value >= -3 && value <= 3 ]
+}
+
+class Rogue {
+	isA IRogue;
+	
+	roguename; playbook;
+	int stress; int trauma; int coin; int stash;
+}
+
+/* */
+/* */
+/* */
+
+class Claim {
+	isA IClaim;
+	
+	claimname; claimtype;
+	boolean isPrison;
+}
+
+class Score {
+	isA IScore;
+	
+	scorename; plantype;
+	int coin; int heat;
+	
+	IActor target;
+}
