@@ -10,28 +10,24 @@ namespace blades.api;
 /* */
 
 interface IGameContext {
+	depend java.util.Arrays;
 	depend java.util.HashSet;
 	depend java.util.Set;
+	depend java.util.stream.Stream;
 	
-	const Set<IActor> PATRONS = new HashSet<IActor>();
-
+	/* */
 	const Set<ICrewShip> CREW_SHIPS = new HashSet<ICrewShip>();
 	const Set<ICrew> CREWS = new HashSet<ICrew>();
-
 	const Set<IRogueShip> ROGUE_SHIPS = new HashSet<IRogueShip>();
 	const Set<IRogue> ROGUES = new HashSet<IRogue>();
-
 	const Set<IClaim> CLAIMS = new HashSet<IClaim>();
 	
 	/* */
 	void gatherInformation(IRogue rogue);
 	
-	default void whoHasWork() {
-		Set<IGoal> goals.addAll(ROGUES.stream()
-			.filter(IRogue::hasGoals)
-			.flatmap(IRogue::getGoals)
-			.collect(Collectors.toUnmodifiableSet()));
-	}
+	/* */
+	default Stream<IRogue> roguesWithGoals() { return ROGUES.stream().filter(IRogue::hasGoals); }
+	default Stream<IGoal> rogueGoals() { return roguesWithGoals().map(IRogue::getGoals).flatMap(Arrays::stream); }
 }
 
 interface IRating {
@@ -78,6 +74,8 @@ interface ICrew {
 	/* */
 	public static final Predicate<ICrew> LOOKING_FOR_WORK = crew -> { return crew.isLookingForWork(); };
 	/* */
+	const AMBITIOUS = "ambitious"; // TODO
+	/* */
 	const ASSASSINS = "assassins"; const BRAVOS = "bravos"; const CULTISTS = "cultists"; const HAWKERS = "hawkers"; const SHADOWS = "shadows"; const SMUGGLERS = "smugglers";
 	
 	isA IActor;
@@ -111,6 +109,7 @@ interface IRogue {
 	UUID getRogueID();
 	
 	boolean hasGoals();
+	IGoal[] getGoals();
 	boolean isActive(); boolean isRetired(); boolean isDead();
 }
 
@@ -189,7 +188,8 @@ class Crew {
 	isA ICrew;
 	
 	UUID crewID;
-	crewname; crewtype;
+	crewname; crewtype; huntingGrounds;
+	String[] reputation;
 	int rep; int tier; int heat; int wanted; int coin;
 	boolean hold;
 	IRogue[] rogues;
@@ -247,7 +247,7 @@ class Score {
 	ICrew crew; ICrew target; IGoal goal;
 	IRogue[] team;
 	scorename = ""; plantype; activity;
-	int rep = { };
+	int rep = { 2 - (crew.getTier() - target.getTier()) };
 	int coin; int heat;
 	key { scoreID }
 	
