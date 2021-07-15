@@ -55,7 +55,7 @@ interface IRoll {
 
 interface ICrewShip {
 	depend java.util.function.Predicate;
-
+	
 	public static final Predicate<ICrewShip> ALLIES = ship -> { return ship.value() > 1; };
 	public static final Predicate<ICrewShip> ENEMIES = ship -> { return ship.value() < -1; };
 	public static final Predicate<ICrewShip> RIVALS = ship -> { return ship.value() > -2 && ship.value() < 2; };	
@@ -188,7 +188,7 @@ class Crew {
 	isA ICrew;
 	
 	UUID crewID;
-	crewname; crewtype; huntingGrounds;
+	name; type; huntingGrounds;
 	String[] reputation;
 	int rep; int tier; int heat; int wanted; int coin;
 	boolean hold;
@@ -256,26 +256,12 @@ class Score {
 	}
 	
 	sequence {
-		Ready {
-			doReady() -> Engagement;
-		}
-		Engagement {
-			doEngagement() -> Operation;
-		}
-		Operation {
-			doOperation() -> Payoff;
-		}
-		Payoff {
-			doPayoff() -> Heat;
-		}
-		Heat {
-			doHeat() -> Entanglement;
-		}
-		Entanglement {
-			doEntanglement() -> Downtime;
-		}
-		Downtime {
-			doDowntime() -> Final;
-		}
+		Ready { doReady() -> Engagement; }
+		Engagement { doEngagement() -> Operation; }
+		Operation { doOperation() -> Payoff; }
+		Payoff { doPayoff() -> Heat; }
+		Heat { doHeat() -> Entanglement; }
+		Entanglement { doEntanglement() -> Downtime; }
+		Downtime { doDowntime() -> Final; }
 	}
 }

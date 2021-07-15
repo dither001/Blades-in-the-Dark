@@ -1,0 +1,200 @@
+strictness allow 46;
+strictness allow 1007;
+strictness allow 1008;
+
+namespace com.blades.main;
+
+/* */
+/* */
+/* */
+class Claim {
+	unique UUID id;
+	name; type; district;
+	Crew crew;
+	boolean isPrison;
+	
+	key { id }
+}
+
+/* */
+/* */
+/* */
+class Crew {
+	depend java.util.stream.Stream;
+
+	/* */
+	const AMBITIOUS = "ambitious"; // TODO
+	/* */
+	const ASSASSINS = "assassins"; const BRAVOS = "bravos"; const CULTISTS = "cultists"; const HAWKERS = "hawkers"; const SHADOWS = "shadows"; const SMUGGLERS = "smugglers";
+
+	/* */
+	unique UUID id;
+	name; type; 
+	huntingGrounds; favoredOp;
+	String[] reputation;
+	int rep; int tier; int heat; int wanted; int coin;
+	boolean hold;
+	boolean atWar = { CrewShip.atWar(this) }
+	boolean lookingForWork = { jobs.stream().anyMatch(Score::getActive) };
+	Rogue[] rogues;
+	Claim[] claims;
+	Score[] jobs;
+
+	key { id }
+
+	/* */
+	public static Stream<Crew> getCrews() { return crewsById.values().stream(); };
+	public static Stream<Crew> getCrewsLookingForWork() { return getCrews().filter(Crew::getLookingForWork); }
+}
+
+class EmptyCrew {
+	super.name
+	super.type
+	super.reputation
+	super.rep
+	super.tier
+	super.heat
+	super.wanted
+	super.coin
+	super.hold
+	
+}
+
+/* */
+/* */
+/* */
+class Entanglement {
+	const ARREST = "arrest"; const COOPERATION = "cooperation"; const DEMONIC_NOTICE = "demonic notice"; const FLIPPED = "flipped"; const GANG_TROUBLE = "gang trouble"; const INTERROGATION = "interrogation"; const QUESTIONING = "questioning"; const REPRISALS = "reprisals"; const RIVALS = "rivals"; const SHOW_OF_FORCE = "show of force"; const UNQUIET_DEAD = "unquiet dead"; const USUAL_SUSPECTS = "usual suspects";
+}
+
+/* */
+/* */
+/* */
+class GameContext {
+	singleton;
+
+	/* */
+	void gatherInformation(Rogue rogue) {};	
+}
+
+/* */
+/* */
+/* */
+class Goal {
+	const DO_ACTIVITY = "do activity"; const STAKE_CLAIM = "stake claim"; const REVENGE = "revenge";
+	
+	lazy Claim claim;
+}
+
+/* */
+/* */
+/* */
+class Rogue {
+	depend java.util.stream.Stream;
+
+	/* vices */
+	const FAITH = "faith"; const GAMBLING = "gambling"; const LUXURY = "luxury"; const OBLIGATION = "obligation"; const PLEASURE = "pleasure"; const STUPOR = "stupor"; const WEIRD = "weird";
+	/* playbooks */
+	const CUTTER = "cutter"; const HOUND = "hound"; const LEECH = "leech"; const LURK = "lurk"; const SLIDE = "slide"; const SPIDER = "spider"; const WHISPER = "whisper";
+
+	/* */
+	unique UUID id;
+	Crew crew;
+	Goal[] goals;
+	roguename; playbook; vice;
+	int stress; int trauma; int coin; int stash;
+	key { id }
+	
+	/* */
+	public static Rogue newRogue(UUID aId, Crew aCrew, aRoguename, aPlaybook, aVice) {
+		return new Rogue (aId, aCrew, aRoguename, aPlaybook, aVice, 0, 0, 0, 0);
+	}
+	
+	public static Stream<Rogue> roguesWithGoals() { return roguesById.values().stream().filter(Rogue::hasGoals); }
+	public static Stream<Goal> rogueGoals() { return roguesWithGoals().map(Rogue::getGoals).flatMap(Arrays::stream); }
+}
+
+/* */
+/* */
+/* */
+class Score {
+	const ASSAULT = "assault"; const DECEPTION = "deception"; const OCCULT = "occult"; const SOCIAL = "social"; const STEALTH = "stealth"; const TRANSPORT = "transport";
+	/* */
+	const ACCIDENT = "accident"; // TODO
+
+	/* */
+	unique UUID id;
+	name = { String.format("The %s %s", target.getName(), activity) };
+	Crew crew; Crew target; Goal goal;
+	Rogue[] team;
+	plan; activity;
+	int rep = { 2 - (crew.getTier() - target.getTier()) };
+	int coin; int heat;
+	boolean abandoned; boolean active;
+	key { id }
+
+	/* score state machine */
+	sequence {
+		Ready { doReady() -> Engagement; }
+		Engagement { doEngagement() -> Operation; }
+		Operation { doOperation() -> Payoff; }
+		Payoff { doPayoff() -> Heat; }
+		Heat { doHeat() -> Entanglement; }
+		Entanglement { doEntanglement() -> Downtime; }
+		final Downtime { }
+	}
+}
+
+/* */
+/* */
+/* */
+class CrewShip {
+	depend java.util.function.Predicate;
+	depend java.util.stream.Stream;
+	
+	/* */
+	const Predicate<CrewShip> ALLIES = allies();
+	const Predicate<CrewShip> ENEMIES = enemies();
+	const Predicate<CrewShip> RIVALS = rivals();
+	const Predicate<CrewShip> AT_WAR = at_war();
+
+	/* */
+	unique UUID id;
+	Crew a; Crew b;
+	int value;
+	key { a, b }
+
+	/* */
+	boolean contains(Crew c) { return a.equals(c) || b.equals(c); }
+	Crew getOther(Crew c) { return c.equals(a) ? b : c.equals(b) ? a : null; }
+
+	/* */
+	public static Stream<CrewShip> getShips() { return crewshipsById.values().stream(); }
+	public static Stream<CrewShip> getShips(Crew crew) { return getShips().filter(c -> c.contains(crew)); }
+	public static boolean atWar(Crew crew) { return getShips(crew).anyMatch(AT_WAR); }
+
+	/* */
+	private static Predicate<CrewShip> allies() { return ship -> { return ship.getValue() > 1; }; }
+	private static Predicate<CrewShip> enemies() { return ship -> { return ship.getValue() < -1; }; }
+	private static Predicate<CrewShip> rivals() { return ship -> { return ship.getValue() > -2 && ship.getValue() < 2; }; }
+	private static Predicate<CrewShip> at_war() { return ship -> { return ship.getValue() < -2; }; }
+}
+
+/* */
+/* */
+/* */
+associationClass RogueShip {
+	/* */
+	unique Integer id;
+
+	const ALLY = "ally"; const CONTACT = "contact"; const ENEMY = "enemy"; const RIVAL = "rival";
+
+	/* */
+	1 Rogue a -> 1 Rogue b;
+	value = ALLY;
+	key { a, b }
+
+	/* */
+	boolean contains(Rogue c) { return a.equals(c) || b.equals(c); }
+	Rogue getOther(Rogue c) { return c.equals(a) ? b : c.equals(b) ? a : null; }
+}
