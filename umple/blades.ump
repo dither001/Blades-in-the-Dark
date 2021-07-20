@@ -1,267 +1,274 @@
+strictness allow 46;
 strictness allow 1007;
 strictness allow 1008;
 
-use goap.ump;
-
-namespace blades.api;
+namespace com.blades.main;
 
 /* */
+/* CLAIM */
 /* */
-/* */
+class Claim {
+	unique UUID id;
+	name; type;
+	Locale locale;
+	Crew crew;
+	boolean isPrison;
+	
+	key { id }
+}
 
-interface IGameContext {
-	depend java.util.Arrays;
-	depend java.util.HashSet;
-	depend java.util.Set;
+/* */
+/* CREW */
+/* */
+class Crew {
 	depend java.util.stream.Stream;
-	
-	/* */
-	const Set<ICrewShip> CREW_SHIPS = new HashSet<ICrewShip>();
-	const Set<ICrew> CREWS = new HashSet<ICrew>();
-	const Set<IRogueShip> ROGUE_SHIPS = new HashSet<IRogueShip>();
-	const Set<IRogue> ROGUES = new HashSet<IRogue>();
-	const Set<IClaim> CLAIMS = new HashSet<IClaim>();
-	
-	/* */
-	void gatherInformation(IRogue rogue);
-	
-	/* */
-	default Stream<IRogue> roguesWithGoals() { return ROGUES.stream().filter(IRogue::hasGoals); }
-	default Stream<IGoal> rogueGoals() { return roguesWithGoals().map(IRogue::getGoals).flatMap(Arrays::stream); }
-}
 
-interface IRating {
-	const HUNT = "hunt"; const STUDY = "study"; const SURVEY = "survey"; const TINKER = "tinker";
-	const FINESSE = "finesse"; const PROWL = "prowl"; const SKIRMISH = "skirmish"; const WRECK = "wreck";
-	const ATTUNE = "attune"; const COMMAND = "command"; const CONSORT = "consort"; const SWAY = "sway";
-}
-
-interface IRoll {
-	/* roll type */
-	const ACTION = "action"; const DOWNTIME = "downtime"; const FORTUNE = "fortune"; const RESISTANCE = "resistance";
-	/* position */
-	const CONTROLLED = "controlled"; const RISKY = "risky"; const DESPERATE = "desperate";
-	/* effect */
-	const GREAT = "great"; const SUCCESS = "success"; const PARTIAL = "partial";
-	/* factors */
-	const POTENCY = "potency"; const QUALITY = "quality"; const SCALE = "scale";
-	
-	String getRolltype();
-}
-
-/* */
-/* */
-/* */
-
-interface ICrewShip {
-	depend java.util.function.Predicate;
-	
-	public static final Predicate<ICrewShip> ALLIES = ship -> { return ship.value() > 1; };
-	public static final Predicate<ICrewShip> ENEMIES = ship -> { return ship.value() < -1; };
-	public static final Predicate<ICrewShip> RIVALS = ship -> { return ship.value() > -2 && ship.value() < 2; };	
-	public static final Predicate<ICrewShip> AT_WAR = ship -> { return ship.value() < -2; };
-	
-	ICrew a(); ICrew b(); int value();
-	default boolean contains(ICrew crew) { return a().equals(crew) || b().equals(crew); }
-	default ICrew getOther(ICrew c) { return c == a() ? b() : c == b() ? a() : null; }
-}
-
-interface ICrew {
-	depend java.util.Set;
-	depend java.util.UUID;
-	depend java.util.function.Predicate;
-
-	/* */
-	public static final Predicate<ICrew> LOOKING_FOR_WORK = crew -> { return crew.isLookingForWork(); };
 	/* */
 	const AMBITIOUS = "ambitious"; // TODO
 	/* */
 	const ASSASSINS = "assassins"; const BRAVOS = "bravos"; const CULTISTS = "cultists"; const HAWKERS = "hawkers"; const SHADOWS = "shadows"; const SMUGGLERS = "smugglers";
-	
-	isA IActor;
-	
-	UUID getCrewID();
-	String getCrewname(); String getCrewtype();
-	int getRep(); int getTier(); int getHeat(); int getWanted(); int getCoin();
-	boolean getHold();
-	
-	Set<IRogue> assembleTeam();
-	boolean isLookingForWork();
-}
 
-interface IRogueShip {
-	const ALLY = "ally"; const CONTACT = "contact"; const ENEMY = "enemy"; const RIVAL = "rival";
-
-	IRogue a(); IRogue b();
-	String value();
-	default IRogue getOther(IRogue r) { return r == a() ? b() : r == b() ? a() : null; }
-}
-
-interface IRogue {
-	depend java.util.UUID;
-	
-	/* vices */
-	const FAITH = "faith"; const GAMBLING = "gambling"; const LUXURY = "luxury"; const OBLIGATION = "obligation"; const PLEASURE = "pleasure"; const STUPOR = "stupor"; const WEIRD = "weird";
-	/* playbooks */
-	const CUTTER = "cutter"; const HOUND = "hound"; const LEECH = "leech"; const LURK = "lurk"; const SLIDE = "slide"; const SPIDER = "spider"; const WHISPER = "whisper";
-	
-	isA IActor;
-	UUID getRogueID();
-	
-	boolean hasGoals();
-	IGoal[] getGoals();
-	boolean isActive(); boolean isRetired(); boolean isDead();
-}
-
-interface IPlaybook { }
-
-/* */
-/* */
-/* */
-
-interface IClaim {
-	depend java.util.UUID;
-	
-	const LAIR = "lair"; const TURF = "turf";
-	
-	UUID getClaimID();
-}
-
-interface ITeam {
-	depend java.util.UUID;
-	
-	UUID getTeamID();
-}
-
-interface IScore {
-	depend java.util.UUID;
-	
 	/* */
-	const ASSAULT = "assault"; const DECEPTION = "deception"; const OCCULT = "occult"; const SOCIAL = "social"; const STEALTH = "stealth"; const TRANSPORT = "transport";
-	/* */
-	const ACCIDENT = "accident"; // TODO
+	unique UUID id;
+	name; type; 
+	favoredOp;
+	String[] reputation;
+	Locale huntingGrounds; Locale lair;
+	int rep; int tier; int heat; int wanted; int coin;
+	boolean hold;
+	boolean atWar = { CrewShip.atWar(this) }
+	boolean lookingForWork = { ! (jobs.stream().anyMatch(Score::getActive)) };
+	Rogue[] rogues;
+	Claim[] claims;
+	Score[] jobs;
+
+	key { id }
 	
-	UUID getScoreID();
+	/* instance */
+	List<Rogue> selectRogues(Score score) { return List.copyOf(rogues); }
+	
+	/* static */
+	public static Crew newCrew(UUID aId, String aName, String aType, String aFavoredOp, Locale aHuntingGrounds, Locale aLair, int aRep, int aTier, int aHeat, int aWanted, int aCoin, boolean aHold) {
+		return new Crew(aId, aName, aType, aFavoredOp, aHuntingGrounds, aLair, 0, 0, 0, 0, 2, true);
+	}
+
+	/* */
+	public static Stream<Crew> getCrews() { return crewsById.values().stream(); };
+	public static Stream<Crew> getCrewsLookingForWork() { return getCrews().filter(Crew::getLookingForWork); }
 }
 
-interface IEntanglement {
+/* */
+/* ENTANGLEMENT */
+/* */
+class Entanglement {
 	const ARREST = "arrest"; const COOPERATION = "cooperation"; const DEMONIC_NOTICE = "demonic notice"; const FLIPPED = "flipped"; const GANG_TROUBLE = "gang trouble"; const INTERROGATION = "interrogation"; const QUESTIONING = "questioning"; const REPRISALS = "reprisals"; const RIVALS = "rivals"; const SHOW_OF_FORCE = "show of force"; const UNQUIET_DEAD = "unquiet dead"; const USUAL_SUSPECTS = "usual suspects";
 }
 
 /* */
+/* GAME CONTEXT */
 /* */
-/* */
+class GameContext {
+	singleton;
 
-/* */
-/* */
-/* */
-
-
-namespace blades.main;
-
-/* */
-/* */
-/* */
-
-class ActionRoll {
-	isA IRoll;
-	
-	immutable rolltype = IRoll.ACTION;
+	/* */
+	void gatherInformation(Rogue rogue) {};	
 }
 
 /* */
+/* GAME LOOP */
 /* */
+class GameLoop {
+	singleton;
+
+	boolean running = true;
+
+	/* instance */
+	void loop() { while (running) { update(); } }
+	void update() {}
+	
+	/* static */
+	public static void main(String...args) { GameLoop.getInstance().loop(); }
+	
+	/* game state machine */
+	sequence {
+		Untap { untap() -> Upkeep; }
+		Upkeep { upkeep() -> Draw; }
+		Draw { draw() -> Main; }
+		Main { main() -> Combat; }
+		Combat { combat() -> Main2; }
+		Main2 { main2() -> Cleanup; }
+		Cleanup { cleanup() -> Untap; }
+	}
+}
+
 /* */
-
-class CrewShip {
-	isA ICrewShip;
+/* GOAL */
+/* */
+class Goal {
+	const DO_ACTIVITY = "do activity"; const STAKE_CLAIM = "stake claim"; const REVENGE = "revenge";
 	
-	immutable ICrew a;
-	immutable ICrew b;
-	int value;
-	key { a, b }
-	
-	[ a != b ]
+	/* */
+	Rogue patron;
+	activity;
+	lazy Claim claim;
 }
 
-class Crew {
-	isA ICrew;
+/* */
+/* LOCALE */
+/* */
+class Locale {
+	/* */
+	const CHARHOLLOW = "charhollow"; // TODO
 	
-	UUID crewID;
-	name; type; huntingGrounds;
-	String[] reputation;
-	int rep; int tier; int heat; int wanted; int coin;
-	boolean hold;
-	IRogue[] rogues;
-	IClaim[] claims;
-	String[] favoredOps;
-	key { crewID }
+	/* */
+	name;
+	Crew boss;
+	immutable Locale district;
+	immutable Claim claim;
+
+	boolean isClaim = { claim != null }
+	boolean isDistrict = { district == null }
 }
 
-class RogueShip {
-	isA IRogueShip;
-	
-	immutable IRogue a;
-	immutable IRogue b;
-	value = IRogueShip.RIVAL;
-	key { a, b }
-	
-	[ a != b ]
-}
 
+/* */
+/* ROGUE */
+/* */
 class Rogue {
-	depend java.util.UUID;
-	
-	isA IRogue;
-	
-	UUID rogueID;
-	IGoal[] goals;
-	ICrew crew;
+	depend java.util.stream.Stream;
+
+	/* vices */
+	const FAITH = "faith"; const GAMBLING = "gambling"; const LUXURY = "luxury"; const OBLIGATION = "obligation"; const PLEASURE = "pleasure"; const STUPOR = "stupor"; const WEIRD = "weird";
+	/* playbooks */
+	const CUTTER = "cutter"; const HOUND = "hound"; const LEECH = "leech"; const LURK = "lurk"; const SLIDE = "slide"; const SPIDER = "spider"; const WHISPER = "whisper";
+
+	/* */
+	unique UUID id;
+	Crew crew;
+	Goal[] goals;
 	roguename; playbook; vice;
 	int stress; int trauma; int coin; int stash;
-	key { rogueID }
+	boolean tapped = false;
+	key { id }
+	
+	/* */
+	Score offerJob() { return Score.newScore(null, null, null, null, null, null, null, 0, 0); }
+	
+	/* static */
+	public static Rogue newRogue(UUID aId, Crew aCrew, aRoguename, aPlaybook, aVice) {
+		return new Rogue(aId, aCrew, aRoguename, aPlaybook, aVice, 0, 0, 0, 0);
+	}
+	
+	public static Stream<Rogue> getRoguesWithGoals() { return roguesById.values().stream().filter(Rogue::hasGoals); }
+	public static Stream<Goal> getRogueGoals() { return getRoguesWithGoals().map(Rogue::getGoals).flatMap(Arrays::stream); }
 }
 
 /* */
+/* SCORE */
 /* */
-/* */
-
-class Claim {
-	depend java.util.UUID;
-	
-	isA IClaim;
-	
-	UUID claimID;
-	ICrew claimant;
-	district; claimname; claimtype = IClaim.TURF;
-	boolean isPrison = false;
-	key { claimID }
-}
-
 class Score {
-	depend java.util.UUID;
-	
-	isA IScore;
-	
-	UUID scoreID;
-	ICrew crew; ICrew target; IGoal goal;
-	IRogue[] team;
-	scorename = ""; plantype; activity;
+	depend java.util.function.Predicate;
+	depend java.util.stream.Stream;
+
+	/* */
+	const ASSAULT = "assault"; const DECEPTION = "deception"; const OCCULT = "occult"; const SOCIAL = "social"; const STEALTH = "stealth"; const TRANSPORT = "transport";
+	/* */
+	const ACCIDENT = "accident"; // TODO
+
+	/* */
+	unique UUID id;
+	name = { String.format("The %s %s", target.getName(), activity) };
+	Crew crew; Crew target; Goal goal;
+	Rogue[] team;
+	plan; activity;
+	Locale locale;
 	int rep = { 2 - (crew.getTier() - target.getTier()) };
 	int coin; int heat;
-	key { scoreID }
+	boolean accepted = false; boolean abandoned = false; boolean active = false;
+	key { id }
 	
-	after constructor {
-		scorename = String.format("The %s %s", target.getCrewname(), activity);
-	}
-	
+	/* */
+	/* boolean doEngagement() { team.stream().forEach(r -> { r.setTapped(true); }); } */
+	/* boolean doDowntime() { team.stream().forEach(r -> { r.setTapped(false); }); } */
+
+	/* score state machine */
 	sequence {
-		Ready { doReady() -> Engagement; }
-		Engagement { doEngagement() -> Operation; }
-		Operation { doOperation() -> Payoff; }
-		Payoff { doPayoff() -> Heat; }
-		Heat { doHeat() -> Entanglement; }
-		Entanglement { doEntanglement() -> Downtime; }
-		Downtime { doDowntime() -> Final; }
+		Ready { doReady -> Engagement; }
+		Engagement { 
+			doEngagement -> /{
+				team.stream().forEach(r -> { r.setTapped(true); });
+			} Operation; 
+		}
+		Operation { doOperation -> Payoff; }
+		Payoff { doPayoff -> Heat; }
+		Heat { doHeat -> Entanglement; }
+		Entanglement { doEntanglement -> Downtime; }
+		final Downtime { doDowntime }
 	}
+	
+	/* static */
+	public static Score newScore(UUID aId, Crew aCrew, Crew aTarget, Goal aGoal, String aPlan, String aActivity, Locale aLocale, int aCoin, int aHeat) {
+		return new Score(aId, aCrew, aTarget, aGoal, aPlan, aActivity, aLocale, 0, 0);
+	}
+	
+	/* */
+	public static Stream<Score> getScores() { return scoresById.values().stream(); }
+	public static Stream<Score> getAvailableScores() { return getScores().filter(Predicate.not(Score::getAccepted)); }
+	public static Stream<Score> getAvailableScores(Crew c){
+		return getScores().filter(Predicate.not(Score::getAccepted).and(Predicate.not(s -> s.getTarget().equals(c))));
+	}
+}
+
+/* */
+/* */
+/* */
+class CrewShip {
+	depend java.util.function.Predicate;
+	depend java.util.stream.Stream;
+	
+	/* */
+	const Predicate<CrewShip> ALLIES = allies();
+	const Predicate<CrewShip> ENEMIES = enemies();
+	const Predicate<CrewShip> RIVALS = rivals();
+	const Predicate<CrewShip> AT_WAR = at_war();
+
+	/* */
+	unique UUID id;
+	Crew a; Crew b;
+	int value;
+	key { a, b }
+
+	/* */
+	boolean contains(Crew c) { return a.equals(c) || b.equals(c); }
+	Crew getOther(Crew c) { return c.equals(a) ? b : c.equals(b) ? a : null; }
+
+	/* */
+	public static Stream<CrewShip> getShips() { return crewshipsById.values().stream(); }
+	public static Stream<CrewShip> getShips(Crew crew) { return getShips().filter(c -> c.contains(crew)); }
+	public static boolean atWar(Crew crew) { return getShips(crew).anyMatch(AT_WAR); }
+
+	/* */
+	private static Predicate<CrewShip> allies() { return ship -> { return ship.getValue() > 1; }; }
+	private static Predicate<CrewShip> enemies() { return ship -> { return ship.getValue() < -1; }; }
+	private static Predicate<CrewShip> rivals() { return ship -> { return ship.getValue() > -2 && ship.getValue() < 2; }; }
+	private static Predicate<CrewShip> at_war() { return ship -> { return ship.getValue() < -2; }; }
+}
+
+/* */
+/* */
+/* */
+associationClass RogueShip {
+	/* */
+	unique Integer id;
+
+	const ALLY = "ally"; const CONTACT = "contact"; const ENEMY = "enemy"; const RIVAL = "rival";
+
+	/* */
+	1 Rogue a -> 1 Rogue b;
+	value = ALLY;
+	key { a, b }
+
+	/* */
+	boolean contains(Rogue c) { return a.equals(c) || b.equals(c); }
+	Rogue getOther(Rogue c) { return c.equals(a) ? b : c.equals(b) ? a : null; }
 }
