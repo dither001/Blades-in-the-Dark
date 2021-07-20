@@ -70,8 +70,13 @@ class Entanglement {
 class GameContext {
 	singleton;
 
+	depend java.util.function.Predicate;
+
 	/* */
-	void gatherInformation(Rogue rogue) {};	
+	String gatherInformation(Rogue rogue, Score score){
+		/* Rogue.getRoguesWithGoals().filter(Predicate.not(Rogue::getTapped)).map(Rogue::offerJob); */
+		return "detail";
+	};	
 }
 
 /* */
@@ -79,7 +84,8 @@ class GameContext {
 /* */
 class GameLoop {
 	singleton;
-
+	
+	/* */
 	boolean running = true;
 
 	/* instance */
@@ -117,17 +123,24 @@ class Goal {
 /* LOCALE */
 /* */
 class Locale {
+	depend java.util.stream.Stream;
+
 	/* */
 	const CHARHOLLOW = "charhollow"; // TODO
 	
 	/* */
+	unique UUID id;
 	name;
 	Crew boss;
 	immutable Locale district;
 	immutable Claim claim;
-
 	boolean isClaim = { claim != null }
 	boolean isDistrict = { district == null }
+	
+	key { id }
+	
+	/* */
+	public static Stream<Locale> getLocales() { return localesById.values().stream(); }
 }
 
 
@@ -159,7 +172,10 @@ class Rogue {
 		return new Rogue(aId, aCrew, aRoguename, aPlaybook, aVice, 0, 0, 0, 0);
 	}
 	
-	public static Stream<Rogue> getRoguesWithGoals() { return roguesById.values().stream().filter(Rogue::hasGoals); }
+	public static Stream<Rogue> getRogues() { return roguesById.values().stream(); }
+
+	public static Stream<Rogue> getAvailableRogues() { return getRogues().filter(Predicate.not(Rogue::getTapped)); }
+	public static Stream<Rogue> getRoguesWithGoals() { return getRogues().filter(Rogue::hasGoals); }
 	public static Stream<Goal> getRogueGoals() { return getRoguesWithGoals().map(Rogue::getGoals).flatMap(Arrays::stream); }
 }
 
