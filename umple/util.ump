@@ -1,0 +1,74 @@
+
+namespace com.blades.util;
+
+/* */
+/* DICE */
+/* */
+class Dice {
+	const CRITICAL = "critical"; const SUCCESS = "success"; const PARTIAL = "partial"; const FAILURE = "failure";
+}
+
+/* */
+/* LISTS */
+/* */
+class Lists {
+	singleton;
+	
+	depend java.util.ArrayList;
+
+	/* */
+	public static <T> ArrayList<T> newArrayList() {
+		return new ArrayList<T>();
+	}
+}
+
+/* */
+/* SETS */
+/* */
+class Sets {
+	singleton;
+	
+	depend java.util.HashSet;
+
+	/* */
+	public static <T> HashSet<T> newHashSet() {
+		return new HashSet<T>();
+	}
+}
+
+/* */
+/* UTIL */
+/* */
+class Util {
+	singleton;
+	
+	depend java.io.BufferedReader;
+	depend java.io.File;
+	depend java.io.FileReader;
+	depend java.util.Optional;
+	depend java.util.UUID;
+	depend java.util.function.Function;
+	depend java.util.stream.Stream;
+	
+	/* */
+	public static <T> boolean ensure(T quality) {
+		return quality == null ? false
+			: quality.getClass().equals(Boolean.class) 
+			? ((Boolean) quality).booleanValue()
+			: quality.getClass().equals(Optional.class) 
+			? ((Optional<?>) quality).isPresent() 
+			: true;
+	}
+	
+	public static <T> Stream<T> fileTransformer(String pathname, Function<String, T> func) {
+		Stream.Builder<T> builder = Stream.builder();
+		try (BufferedReader buffer = new BufferedReader(new FileReader(new File(pathname))) ) { 
+			String line;
+			while (Util.ensure(line = buffer.readLine())) { builder.accept(func.apply(line)); }
+		} catch (Exception e) { e.printStackTrace(); return null; }
+		
+		return builder.build();
+	}
+	
+	public static UUID nextUUID() { return UUID.randomUUID(); }
+}

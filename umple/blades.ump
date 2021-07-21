@@ -2,28 +2,10 @@ strictness allow 46;
 strictness allow 1007;
 strictness allow 1008;
 
+use goap.ump;
+use util.ump;
+
 namespace com.blades.main;
-
-/* */
-/* ACTION */
-/* */
-class Action {
-	const RATING = "rating"; const DOWNTIME = "downtime"; const GROUP = "group";
-	/* downtime actions */
-	const ACQUIRE_ASSET = "acquire asset"; const LONG_TERM_PROJECT = "long term project"; const RECOVER = "recover"; const REDUCE_HEAT = "reduce heat"; const TRAINING = "training"; const INDULGE_VICE = "indulge vice";
-	
-	type;
-	outcome = Dice.PARTIAL;
-	
-	Action execute() { return this; }
-}
-
-/* */
-/* DICE */
-/* */
-class Dice {
-	const CRITICAL = "critical"; const SUCCESS = "success"; const PARTIAL = "partial"; const FAILURE = "failure";
-}
 
 /* */
 /* CLAIM */
@@ -44,6 +26,8 @@ class Claim {
 class Crew {
 	depend java.util.function.Predicate;
 	depend java.util.stream.Stream;
+	
+	depend com.blades.util.Util;
 
 	/* */
 	const AMBITIOUS = "ambitious"; // TODO
@@ -58,27 +42,66 @@ class Crew {
 	Locale huntingGrounds; Locale lair;
 	int rep; int tier; int heat; int wanted; int coin;
 	boolean hold;
-	boolean atWar = { CrewShip.atWar(this) }
-	boolean lookingForWork = { ! (jobs.stream().anyMatch(Score::getActive)) };
-	Rogue[] rogues;
-	Claim[] claims;
-	Score[] jobs;
+	Rogue[] rogues; Claim[] claims; Score[] scores;
 
 	key { id }
 	
-	/* instance */
-	Opportunity seekOpportunity() {
-		Opportunity opp = null;
-		
-		if (getLookingForWork()) {
-			Rogue rog = rogues.stream().filter(Predicate.not(Rogue::getTapped)).findAny().get();
-			opp = (rog != null) ? rog.seekOpportunity() : null;
-		}
-		
-		return opp;
-	}
+	/* calculated fields */
+	boolean atWar = { CrewShip.atWar(this) }
+	boolean lookingForWork = { ! (scores.stream().anyMatch(Score::getActive)) };
 
-	List<Rogue> selectRogues(Score score) { return List.copyOf(rogues); }
+	/** Primary means for determining crew's hold.
+	* @return boolean modified by whether crew is at war. */
+	boolean currentHold = { getAtWar() ? hold ? false : hold : hold }
+
+	/** Primary means for determining crew's tier. 
+	* @return int modified by whether crew is at war and has strong/weak hold. */
+	int currentRep = { getAtWar() ? hold ? rep : rep - 1 : rep }
+	
+	/* instance */
+	Stream<Rogue> getRoster() { return rogues.stream(); }
+
+	void lookForWork() {
+		Opportunity opp = seekOpportunity();
+		/* FIXME */
+		Score score = (Util.ensure(opp)) ? Score.newScore(null, this, opp) : null;
+		
+		if ((Util.ensure(score)) ? acceptWork(score) : false) { 
+			/* String detail = gatherInformation(opp); */
+			selectTeam(score).forEach(score::addTeam);
+		}
+	}
+	
+	boolean acceptWork(Score score) {
+		boolean accepted = false;
+
+		// TODO
+		if (getRoster().count() > 0) {
+			accepted = scores.add(score);
+		}
+
+		return accepted;
+	}
+	
+	String gatherInformation(Opportunity opp) {
+		String detail = null;
+		if (Util.ensure(opp)) {
+			Rogue rog = getRoster().filter(Predicate.not(Rogue::getTapped)).findAny().get();
+			detail = opp.gatherInformation(rog);
+		}
+
+		return detail;
+	}
+	
+	Opportunity seekOpportunity() {
+		Rogue rog = rogues.stream().filter(Predicate.not(Rogue::getTapped)).findAny().get();
+		return (Util.ensure(rog)) ? rog.seekOpportunity() : null;
+	}
+	
+	List<Rogue> selectTeam(Score score) {
+		// TODO
+		return List.copyOf(rogues);
+	}
 	
 	/* static */
 	public static Crew newCrew(UUID aId, String aName, String aType, String aFavoredOp, Locale aHuntingGrounds, Locale aLair, int aRep, int aTier, int aHeat, int aWanted, int aCoin, boolean aHold) {
@@ -88,6 +111,10 @@ class Crew {
 	/* */
 	public static Stream<Crew> getCrews() { return crewsById.values().stream(); };
 	public static Stream<Crew> getCrewsLookingForWork() { return getCrews().filter(Crew::getLookingForWork); }
+	public static void update() {
+		/* TODO */
+		getCrewsLookingForWork().forEach(Crew::lookForWork);
+	}
 }
 
 /* */
@@ -115,7 +142,7 @@ class GameLoop {
 
 	/* instance */
 	void loop() { while (running) { update(); } }
-	void update() {}
+	void update() { Crew.update(); }
 	
 	/* static */
 	public static void main(String...args) { GameLoop.getInstance().loop(); }
@@ -130,18 +157,6 @@ class GameLoop {
 		Main2 { main2() -> Cleanup; }
 		Cleanup { cleanup() -> Untap; }
 	}
-}
-
-/* */
-/* GOAL */
-/* */
-class Goal {
-	const DO_ACTIVITY = "do activity"; const STAKE_CLAIM = "stake claim"; const REVENGE = "revenge";
-	
-	/* */
-	Rogue patron;
-	activity;
-	lazy Claim claim;
 }
 
 /* */
@@ -175,7 +190,7 @@ class Opportunity {
 	depend java.util.stream.Stream;
 
 	unique UUID id;
-	Crew target;
+	Rogue patron; Crew target;
 	Locale locale;
 	/* "vector" implies plan type */
 	situation; plan; 
@@ -195,8 +210,8 @@ class Opportunity {
 	};
 	
 	/* static */
-	public static Opportunity newOpportunity(Crew crew) {
-		return new Opportunity(null, null, null, null, null);
+	public static Opportunity newOpportunity(UUID aId, Rogue rogue) {
+		return new Opportunity(aId, rogue, null, null, "", "");
 	}
 	
 	public static Stream<Opportunity> getOpportunities() { return opportunitysById.values().stream(); }
@@ -208,6 +223,9 @@ class Opportunity {
 class Rogue {
 	depend java.util.function.Predicate;
 	depend java.util.stream.Stream;
+	
+	depend com.blades.goap.Goal;
+	depend com.blades.util.Util;
 
 	/* vices */
 	const FAITH = "faith"; const GAMBLING = "gambling"; const LUXURY = "luxury"; const OBLIGATION = "obligation"; const PLEASURE = "pleasure"; const STUPOR = "stupor"; const WEIRD = "weird";
@@ -224,11 +242,13 @@ class Rogue {
 
 	key { id }
 	
-	/* */
-	Score offerJob() { return Score.newScore(null, null, null, null, null, null, null, 0, 0); }
+	/* instance */
+	Score offerJob() { return Score.newScore(Util.nextUUID(), null, null, null, null, null); }
 	Opportunity seekOpportunity() {
-		return Opportunity.newOpportunity(crew);
+		return Opportunity.newOpportunity(Util.nextUUID(), this);
 	}
+	
+	void doDowntime(int actions) {}
 	
 	/* static */
 	public static Rogue newRogue(UUID aId, Crew aCrew, aRoguename, aPlaybook, aVice) {
@@ -248,6 +268,8 @@ class Rogue {
 class Score {
 	depend java.util.function.Predicate;
 	depend java.util.stream.Stream;
+	
+	depend com.blades.goap.Goal;
 
 	/* */
 	const ASSAULT = "assault"; const DECEPTION = "deception"; const OCCULT = "occult"; const SOCIAL = "social"; const STEALTH = "stealth"; const TRANSPORT = "transport";
@@ -259,17 +281,14 @@ class Score {
 	name = { String.format("The %s %s", target.getName(), activity) };
 	Crew crew; Crew target; Goal goal;
 	Rogue[] team;
-	plan; activity;
+	plan; lazy activity;
 	Locale locale;
 	int rep = { 2 - (crew.getTier() - target.getTier()) };
 	int coin; int heat;
 	boolean accepted = false; boolean abandoned = false; boolean active = false;
+
 	key { id }
 	
-	/* */
-	/* boolean doEngagement() { team.stream().forEach(r -> { r.setTapped(true); }); } */
-	/* boolean doDowntime() { team.stream().forEach(r -> { r.setTapped(false); }); } */
-
 	/* score state machine */
 	sequence {
 		Ready { doReady -> Engagement; }
@@ -282,12 +301,20 @@ class Score {
 		Payoff { doPayoff -> Heat; }
 		Heat { doHeat -> Entanglement; }
 		Entanglement { doEntanglement -> Downtime; }
-		final Downtime { doDowntime }
+		Downtime { 
+			doDowntime -> /{
+				int actions = (crew.getAtWar()) ? 1 : 2;
+				team.stream().forEach(r -> r.doDowntime(actions));
+			} Final;
+		}
 	}
 	
 	/* static */
-	public static Score newScore(UUID aId, Crew aCrew, Crew aTarget, Goal aGoal, String aPlan, String aActivity, Locale aLocale, int aCoin, int aHeat) {
-		return new Score(aId, aCrew, aTarget, aGoal, aPlan, aActivity, aLocale, 0, 0);
+	public static Score newScore(UUID aId, Crew aCrew, Crew aTarget, Goal aGoal, String aPlan, Locale aLocale) {
+		return new Score(aId, aCrew, aTarget, aGoal, aPlan, aLocale, 0, 0);
+	}
+	public static Score newScore(UUID aId, Crew crew, Opportunity opp) {
+		return newScore(aId, crew, opp.getTarget(), null, opp.getPlan(), opp.getLocale());
 	}
 	
 	/* */
@@ -299,7 +326,7 @@ class Score {
 }
 
 /* */
-/* */
+/* CREWSHIP */
 /* */
 class CrewShip {
 	depend java.util.function.Predicate;
@@ -334,7 +361,7 @@ class CrewShip {
 }
 
 /* */
-/* */
+/* ROGUESHIP */
 /* */
 associationClass RogueShip {
 	/* */
