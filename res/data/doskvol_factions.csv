@@ -1,61 +1,61 @@
-Barrowcleft,2,TRUE
-Billhooks,2,FALSE
-Bluecoats,3,TRUE
-Brigade,2,TRUE
-Brightstone,4,TRUE
-Cabbies,2,FALSE
-Charhollow,1,TRUE
-Charterhall,4,TRUE
-Church of Ecstasy,4,TRUE
-Circle of Flame,3,TRUE
-City Council,5,TRUE
-Coalridge,2,FALSE
-Crows,2,FALSE
-Crow's Foot,2,TRUE
-Cyphers,2,TRUE
-Dagger Isles Consulate,1,TRUE
-Deathlands Scavengers,2,FALSE
-Dimmer Sisters,2,TRUE
-Dockers,3,TRUE
-Docks,2,TRUE
-Dunslough,1,FALSE
-Fog Hounds,1,FALSE
-Forgotten Gods,3,FALSE
-Foundation,4,TRUE
-Gondoliers,3,TRUE
-Gray Cloaks,2,TRUE
-Grinders,2,FALSE
-Hive,4,TRUE
-Horde,3,TRUE
-Imperial Military,6,TRUE
-Ink Rakes,2,FALSE
-Inspectors,3,TRUE
-Ironhook Prison,4,TRUE
-Iruvian Consulate,3,TRUE
-Laborers,3,FALSE
-Lampblacks,2,FALSE
-Leviathan Hunters,5,TRUE
-Lord Scurlock,3,TRUE
-Lost,1,FALSE
-Ministry of Preservation,5,TRUE
-Nightmarket,2,TRUE
-Path of Echoes,3,TRUE
-Rail Jacks,2,FALSE
-Reconciled,3,TRUE
-Red Sashes,2,FALSE
-Sailors,3,FALSE
-Servants,2,FALSE
-Severosi Consulate,1,TRUE
-Silkshore,2,TRUE
-Silver Nails,3,TRUE
-Six Towers,3,FALSE
-Skovlan Consulate,3,FALSE
-Skovlander Refugees,3,FALSE
-Sparkwrights,4,TRUE
-Spirit Wardens,4,TRUE
-Ulf Ironborn,1,TRUE
-Unseen,4,TRUE
-Weeping Lady,2,TRUE
-Whitecrown,5,TRUE
-Wraiths,2,FALSE
-Vultures,1,FALSE
+Barrowcleft,2,TRUE,neighborhood,Barrowcleft
+Billhooks,2,FALSE,butcher shop,
+Bluecoats,3,TRUE,,
+Brigade,2,TRUE,,
+Brightstone,4,TRUE,neighborhood,Brightstone
+Cabbies,2,FALSE,,
+Charhollow,1,TRUE,neighborhood,Charhollow
+Charterhall,4,TRUE,neighborhood,Charterhall
+Church of Ecstasy,4,TRUE,Sanctorium,Brightstone
+Circle of Flame,3,TRUE,Centuralia Club,Six Towers
+City Council,5,TRUE,council chambers,Charterhall
+Coalridge,2,FALSE,neighborhood,Coalridge
+Crows,2,FALSE,abandoned tower,Crow's Foot
+Crow's Foot,2,TRUE,neighborhood,Crow's Foot
+Cyphers,2,TRUE,,
+Dagger Isles Consulate,1,TRUE,,
+Deathlands Scavengers,2,FALSE,,
+Dimmer Sisters,2,TRUE,manor house,
+Dockers,3,TRUE,warehouse,The Docks
+The Docks,2,TRUE,neighborhood,The Docks
+Dunslough,1,FALSE,,Dunslough
+Fog Hounds,1,FALSE,underground dock,The Docks
+Forgotten Gods,3,FALSE,,
+Foundation,4,TRUE,,
+Gondoliers,3,TRUE,,
+Gray Cloaks,2,TRUE,abandoned ruin,Six Towers
+Grinders,2,FALSE,abandoned warehouse,
+Hive,4,TRUE,,
+Horde,3,TRUE,,
+Imperial Military,6,TRUE,,
+Ink Rakes,2,FALSE,,
+Inspectors,3,TRUE,,
+Ironhook Prison,4,TRUE,Ironhook Prison,Dunslough
+Iruvian Consulate,3,TRUE,,
+Laborers,3,FALSE,,
+Lampblacks,2,FALSE,coal warehouse,Crow's Foot
+Leviathan Hunters,5,TRUE,shipyard,The Docks
+Lord Scurlock,3,TRUE,manor house,Six Towers
+Lost,1,FALSE,,
+Ministry of Preservation,5,TRUE,,
+Nightmarket,2,TRUE,neighborhood,Nightmarket
+Path of Echoes,3,TRUE,,
+Rail Jacks,2,FALSE,Gaddoc Rail Station,Nightmarket
+Reconciled,3,TRUE,,
+Red Sashes,2,FALSE,fighting school,Crow's Foot
+Sailors,3,FALSE,,
+Servants,2,FALSE,,
+Severosi Consulate,1,TRUE,,
+Silkshore,2,TRUE,neighborhood,Silkshore
+Silver Nails,3,TRUE,The Mustang Inn,
+Six Towers,3,FALSE,neighborhood,Six Towers
+Skovlan Consulate,3,FALSE,,
+Skovlander Refugees,3,FALSE,,
+Sparkwrights,4,TRUE,factory workshop,Coalridge
+Spirit Wardens,4,TRUE,Bellweather Crematorium,Whitecrown
+Ulf Ironborn,1,TRUE,The Old Forge tavern,
+Unseen,4,TRUE,,
+Weeping Lady,2,TRUE,,
+Whitecrown,5,TRUE,neighborhood,Whitecrown
+Wraiths,2,FALSE,,
+Vultures,1,FALSE,,

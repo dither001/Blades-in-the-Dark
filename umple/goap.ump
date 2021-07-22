@@ -44,7 +44,7 @@ class Goal {
 	depend com.blades.main.Rogue;
 
 	const DO_ACTIVITY = "do activity"; const SHAKE_HOLD = "shake hold"; const STAKE_CLAIM = "stake claim";
-	const ADVANCE = "advance";
+	const ADVANCE = "advance"; const EXPOSE = "expose";
 	
 	/* */
 	Rogue patron;

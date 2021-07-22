@@ -33,13 +33,24 @@ class Loader {
 
 	depend com.blades.main.Crew;
 	depend com.blades.main.CrewShip;
+	depend com.blades.main.Locale;
 	depend com.blades.main.Rogue;
 	
 	after constructor {
+		loadDistricts("res/data/doskvol_districts.csv");
 		loadFactions("res/data/doskvol_factions.csv");
 		loadCrewShips("res/data/doskvol_crewships.csv");
 		loadContacts("res/data/crew_contacts.csv");
 		loadContacts("res/data/rogue_contacts.csv");
+	}
+	
+	private static void loadDistricts(String path) {
+		Util.fileTransformer(path, new Function<String, Locale>() {
+			@Override
+			public Locale apply(String t) {
+				return new Locale(Util.nextUUID(), t, null, null, null);
+			}
+		});
 	}
 	
 	private static void loadFactions(String path) {
@@ -59,7 +70,7 @@ class Loader {
 				Crew c1 = Crew.getCrewByName(a[0]);
 				Crew c2 = Crew.getCrewByName(a[1]);
 				int status = Boolean.parseBoolean(a[2]) ? -2 : 2;
-				return new CrewShip(Util.nextUUID(), c1, c2, status);
+				return new CrewShip(Util.nextUUID(), status, c1, c2);
 			}
 		});
 	}
