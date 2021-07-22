@@ -69,6 +69,7 @@ class Crew {
 		if ((Util.ensure(score)) ? acceptWork(score) : false) { 
 			/* String detail = gatherInformation(opp); */
 			selectTeam(score).forEach(score::addTeam);
+			score.setActive(true);
 		}
 	}
 	
@@ -104,6 +105,14 @@ class Crew {
 	}
 	
 	/* static */
+	public static Crew getCrewByName(String name) {
+		return getCrews().filter(s -> s.getName().equalsIgnoreCase(name)).findFirst().get();
+	}
+
+	public static Crew newFaction(UUID aId, String aName, int aTier, boolean aHold) {
+		return new Crew(aId, aName, null, null, null, null, 0, aTier, 0, 0, 2, aHold);
+	}
+
 	public static Crew newCrew(UUID aId, String aName, String aType, String aFavoredOp, Locale aHuntingGrounds, Locale aLair, int aRep, int aTier, int aHeat, int aWanted, int aCoin, boolean aHold) {
 		return new Crew(aId, aName, aType, aFavoredOp, aHuntingGrounds, aLair, 0, 0, 0, 0, 2, true);
 	}
@@ -145,7 +154,10 @@ class GameLoop {
 	void update() { Crew.update(); }
 	
 	/* static */
-	public static void main(String...args) { GameLoop.getInstance().loop(); }
+	public static void main(String...args) {
+		com.blades.util.Loader.getInstance();
+		/* GameLoop.getInstance().loop(); */
+	}
 	
 	/* game state machine */
 	sequence {
@@ -182,6 +194,11 @@ class Locale {
 	/* */
 	public static Stream<Locale> getLocales() { return localesById.values().stream(); }
 }
+
+/* */
+/* OBSTACLE */
+/* */
+class Obstacle {}
 
 /* */
 /* OPPORTUNITY */
@@ -248,11 +265,13 @@ class Rogue {
 		return Opportunity.newOpportunity(Util.nextUUID(), this);
 	}
 	
-	void doDowntime(int actions) {
-setTapped(false);
-}
+	void doDowntime(int actions) { setTapped(false); }
 	
 	/* static */
+	public static Rogue newContact(UUID aid, String aRoguename) {
+		return new Rogue(aid, null, aRoguename, null, null, 0, 0, 0, 0);
+	}
+
 	public static Rogue newRogue(UUID aId, Crew aCrew, aRoguename, aPlaybook, aVice) {
 		return new Rogue(aId, aCrew, aRoguename, aPlaybook, aVice, 0, 0, 0, 0);
 	}
@@ -285,6 +304,7 @@ class Score {
 	Rogue[] team;
 	plan; lazy activity;
 	Locale locale;
+	lazy Obstacle[] obstacles;
 	int rep = { 2 - (crew.getTier() - target.getTier()) };
 	int coin; int heat;
 	boolean accepted = false; boolean abandoned = false; boolean active = false;
