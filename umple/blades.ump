@@ -248,7 +248,9 @@ class Rogue {
 		return Opportunity.newOpportunity(Util.nextUUID(), this);
 	}
 	
-	void doDowntime(int actions) {}
+	void doDowntime(int actions) {
+setTapped(false);
+}
 	
 	/* static */
 	public static Rogue newRogue(UUID aId, Crew aCrew, aRoguename, aPlaybook, aVice) {
