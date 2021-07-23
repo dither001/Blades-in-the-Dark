@@ -36,11 +36,12 @@ class Crew {
 
 	/* */
 	unique UUID id;
-	name; type; 
-	favoredOp;
-	String[] reputation;
+	name; type;
 	Locale huntingGrounds; Locale lair;
-	int rep; int tier; int heat; int wanted; int coin;
+	String[] reputation;
+	favoredOp;
+
+	int rep = 0; int tier; int heat = 0; int wanted = 0; int coin;
 	boolean hold;
 	Rogue[] rogues; Claim[] claims; Score[] scores;
 	/* Opportunity[] opportunities; */
@@ -87,11 +88,7 @@ class Crew {
 	}
 
 	public static Crew newFaction(UUID aId, String aName, int aTier, boolean aHold) {
-		return new Crew(aId, aName, null, null, null, null, 0, aTier, 0, 0, 2, aHold);
-	}
-
-	public static Crew newCrew(UUID aId, String aName, String aType, String aFavoredOp, Locale aHuntingGrounds, Locale aLair, int aRep, int aTier, int aHeat, int aWanted, int aCoin, boolean aHold) {
-		return new Crew(aId, aName, aType, aFavoredOp, aHuntingGrounds, aLair, 0, 0, 0, 0, 2, true);
+		return new Crew(aId, aName, null, null, null, null, aTier, 0, aHold);
 	}
 
 	/* */
@@ -101,6 +98,42 @@ class Crew {
 		/* TODO */
 		getCrewsLookingForWork().forEach(Crew::lookForWork);
 	}
+}
+
+/* */
+/* CREWSHIP */
+/* */
+class CrewShip {
+	depend java.util.function.Predicate;
+	depend java.util.stream.Stream;
+	
+	/* */
+	const Predicate<CrewShip> ALLIES = allies();
+	const Predicate<CrewShip> ENEMIES = enemies();
+	const Predicate<CrewShip> RIVALS = rivals();
+	const Predicate<CrewShip> AT_WAR = at_war();
+
+	/* */
+	/* */
+	unique UUID id;
+	* <@>- 2 Crew crews;
+	int value;
+
+	key { id }
+	
+	boolean contains(Crew c) { return c.equals(crews.get(0)) || c.equals(crews.get(1)); }
+	Crew getOther(Crew c) { return c.equals(crews.get(0)) ? crews.get(1) : c.equals(crews.get(1)) ? crews.get(0) : null; }
+
+	/* */
+	public static Stream<CrewShip> getShips() { return crewshipsById.values().stream(); }
+	public static Stream<CrewShip> getShips(Crew crew) { return getShips().filter(c -> c.contains(crew)); }
+	public static boolean atWar(Crew crew) { return getShips(crew).anyMatch(AT_WAR); }
+
+	/* */
+	private static Predicate<CrewShip> allies() { return ship -> { return ship.getValue() > 1; }; }
+	private static Predicate<CrewShip> enemies() { return ship -> { return ship.getValue() < -1; }; }
+	private static Predicate<CrewShip> rivals() { return ship -> { return ship.getValue() > -2 && ship.getValue() < 2; }; }
+	private static Predicate<CrewShip> at_war() { return ship -> { return ship.getValue() < -2; }; }
 }
 
 /* */
@@ -134,6 +167,14 @@ class GameLoop {
 	public static void main(String...args) {
 		com.blades.util.Loader.getInstance();
 		/* GameLoop.getInstance().loop(); */
+		
+		Rogue[] a = new Rogue[125];
+		a[0] = new Rogue(Util.nextUUID(), null, null, null, null);
+		for (int i = 1; i < 125; ++i) {
+			a[i] = new Rogue(Util.nextUUID(), null, null, null, null);
+			new Situation(Util.nextUUID(), new RogueShip(Util.nextUUID(), a[i], a[i-1]), null);
+		}
+		new Situation(Util.nextUUID(), new RogueShip(Util.nextUUID(), a[0], a[124]), null);
 	}
 	
 	/* game state machine */
@@ -155,24 +196,13 @@ class Locale {
 	depend java.util.stream.Stream;
 
 	/* */
-	const BARROWCLEFT = "Barrowcleft"; const BRIGHTSTONE = "Brightstone"; 
-	const CHARHOLLOW = "Charhollow"; const CHARTERHALL = "Charterhall"; 
-	const COALRIDGE = "Coalridge"; const CROWS_FOOT = "Crow's Foot";
-	const THE_DOCKS = "The Docks"; const DUNSLOUGH = "Dunslough"; 
-	const NIGHTMARKET = "Nightmarket"; const SILKSHORE = "Silkshore"; 
-	const SIX_TOWERS = "Six Towers"; const WHITECROWN = "Whitecrown";
-	
-	/* */
 	unique UUID id;
 	name;
-	Crew boss;
-	immutable Locale district;
-	immutable Claim claim;
-	boolean isClaim = { claim != null }
-	boolean isDistrict = { district == null }
-	
+	lazy Crew crew; lazy Claim claim;
 	key { id }
-	
+
+	boolean isClaim = { claim != null }
+
 	/* */
 	public static Stream<Locale> getLocales() { return localesById.values().stream(); }
 }
@@ -180,20 +210,51 @@ class Locale {
 /* */
 /* OBSTACLE */
 /* */
-class Obstacle {}
+class Obstacle {
+
+	name;
+	/* Hazards, barriers, and distractions are borrowed from FATE: Accelerated. In short, hazards deal damage, barriers must be opposed, and distractions present choices with consequences. */
+	lazy boolean isHazard; lazy boolean isBarrier; lazy boolean isDistraction;
+	/* A disctraction consists of the Dilemma, the Effects, and an Opposition value (if any). */
+}
+
+/* */
+/* OPPORTUNITY */
+/* */
+associationClass Opportunity {
+	depend java.util.stream.Stream;
+
+	/* */
+	* targetOf Crew target;
+	* Locale locale;
+	* Situation situation;
+	key { target, locale }
+
+	/* */
+	lazy Rogue patron; 
+	lazy Crew[] related;
+	lazy Opportunity[] secrets;
+	/* "backdoor" implies alternate plan vector */
+	lazy String backdoor;
+	
+
+	/* instance */
+	String gatherInformation(Rogue rogue) {
+		/* Rogue.getRoguesWithGoals().filter(Predicate.not(Rogue::getTapped)).map(Rogue::offerJob); */
+		return "detail";
+	};
+}
 
 /* */
 /* PLAN */
 /* */
 class Plan {
-	depend com.blades.goap.Goal;
-
 	const ASSAULT = "assault"; const DECEPTION = "deception"; const OCCULT = "occult"; const SOCIAL = "social"; const STEALTH = "stealth"; const TRANSPORT = "transport";
 	/* */
 	const ACCIDENT = "accident"; // TODO
 
 	/* */
-	Crew crew; Goal goal;
+	Crew crew;
 	Rogue[] team;
 	approach; activity; detail;
 }
@@ -205,7 +266,6 @@ class Rogue {
 	depend java.util.function.Predicate;
 	depend java.util.stream.Stream;
 	
-	depend com.blades.goap.Goal;
 	depend com.blades.util.Util;
 
 	/* vices */
@@ -215,10 +275,9 @@ class Rogue {
 
 	/* */
 	unique UUID id;
-	Crew crew;
-	Goal[] goals;
 	roguename; playbook; vice;
-	int stress; int trauma; int coin; int stash;
+	Crew crew;
+	int stress = 0; int trauma = 0; int coin = 0; int stash = 0;
 	boolean tapped = false;
 
 	key { id }
@@ -228,40 +287,53 @@ class Rogue {
 	
 	/* static */
 	public static Rogue newContact(UUID aid, String aRoguename) {
-		return new Rogue(aid, null, aRoguename, null, null, 0, 0, 0, 0);
-	}
-
-	public static Rogue newRogue(UUID aId, Crew aCrew, aRoguename, aPlaybook, aVice) {
-		return new Rogue(aId, aCrew, aRoguename, aPlaybook, aVice, 0, 0, 0, 0);
+		return new Rogue(aid, aRoguename, null, null, null);
 	}
 	
 	public static Stream<Rogue> getRogues() { return roguesById.values().stream(); }
 
 	public static Stream<Rogue> getAvailableRogues() { return getRogues().filter(Predicate.not(Rogue::getTapped)); }
-	public static Stream<Rogue> getRoguesWithGoals() { return getRogues().filter(Rogue::hasGoals); }
-	public static Stream<Goal> getRogueGoals() { return getRoguesWithGoals().map(Rogue::getGoals).flatMap(Arrays::stream); }
+	/* public static Stream<Rogue> getRoguesWithGoals() { return getRogues().filter(Rogue::hasGoals); } */
+	/* public static Stream<Goal> getRogueGoals() { return getRoguesWithGoals().map(Rogue::getGoals).flatMap(Arrays::stream); } */
+}
+
+/* */
+/* ROGUESHIP */
+/* */
+class RogueShip {
+	/* */
+	const ALLY = "ally"; const CONTACT = "contact"; const ENEMY = "enemy"; const RIVAL = "rival";
+
+	/* */
+	unique UUID id;
+	* <@>- 2 Rogue rogues;
+	value = RIVAL;
+
+	key { id }
+	
+	boolean contains(Rogue c) { return c.equals(rogues.get(0)) || c.equals(rogues.get(1)); }
+	Rogue getOther(Rogue c) { return c.equals(rogues.get(0)) ? rogues.get(1) : c.equals(rogues.get(1)) ? rogues.get(0) : null; }
 }
 
 /* */
 /* SCORE */
 /* */
-class Score {
+associationClass Score {
 	depend java.util.function.Predicate;
 	depend java.util.stream.Stream;
-	
-	depend com.blades.goap.Goal;
 
 	/* */
 	unique UUID id;
-	Opportunity opportunity; Plan plan;	
+	* Opportunity opportunity;
+	* Plan plan;
 	lazy Obstacle[] obstacles;
-	int coin; int heat;
+	lazy int coin; lazy int heat;
+	key { opportunity, plan }
 
 	name = { String.format("The %s %s", opportunity.getTarget().getName(), plan.getActivity()) };
 	int rep = { 2 - (plan.getCrew().getTier() - opportunity.getTarget().getTier()) };
 	boolean accepted = false; boolean abandoned = false; boolean active = false;
 
-	key { id }
 	
 	/* score state machine */
 	sequence {
@@ -283,11 +355,6 @@ class Score {
 		}
 	}
 	
-	/* static */
-	public static Score newScore(UUID aId, Opportunity aOpportunity, Plan aPlan) {
-		return new Score(aId, aOpportunity, aPlan, 0, 0);
-	}
-	
 	/* */
 	public static Stream<Score> getScores() { return scoresById.values().stream(); }
 	public static Stream<Score> getAvailableScores() { return getScores().filter(Predicate.not(Score::getAccepted)); }
@@ -296,95 +363,11 @@ class Score {
 /* */
 /* SITUATION */
 /* */
-class Situation {
-	depend com.blades.goap.State;
-
-	unique UUID id;
-	State[] effects;
-	
-	key { id }
-	
-	/* */
-	public static Situation newSituation(UUID aId) { return new Situation(aId); }
-}
-
-/* */
-/* CREWSHIP */
-/* */
-associationClass CrewShip {
-	depend java.util.function.Predicate;
-	depend java.util.stream.Stream;
-	
-	/* */
-	const Predicate<CrewShip> ALLIES = allies();
-	const Predicate<CrewShip> ENEMIES = enemies();
-	const Predicate<CrewShip> RIVALS = rivals();
-	const Predicate<CrewShip> AT_WAR = at_war();
-
+associationClass Situation {
 	/* */
 	unique UUID id;
-	* Crew a -> * Crew b;
-	int value;
-
-	key { a, b }
-
-	/* */
-	boolean contains(Crew c) { return a.equals(c) || b.equals(c); }
-	Crew getOther(Crew c) { return c.equals(a) ? b : c.equals(b) ? a : null; }
-
-	/* */
-	public static Stream<CrewShip> getShips() { return crewshipsById.values().stream(); }
-	public static Stream<CrewShip> getShips(Crew crew) { return getShips().filter(c -> c.contains(crew)); }
-	public static boolean atWar(Crew crew) { return getShips(crew).anyMatch(AT_WAR); }
-
-	/* */
-	private static Predicate<CrewShip> allies() { return ship -> { return ship.getValue() > 1; }; }
-	private static Predicate<CrewShip> enemies() { return ship -> { return ship.getValue() < -1; }; }
-	private static Predicate<CrewShip> rivals() { return ship -> { return ship.getValue() > -2 && ship.getValue() < 2; }; }
-	private static Predicate<CrewShip> at_war() { return ship -> { return ship.getValue() < -2; }; }
-}
-
-/* */
-/* OPPORTUNITY */
-/* */
-associationClass Opportunity {
-	depend java.util.stream.Stream;
-
-	lazy Rogue patron; 
-	* Crew target;
-	* Locale locale;
-	* Situation situation;
+	* RogueShip ship;
+	* Obstacle obstacle;
 	
-	/* */
-	lazy Crew[] related;
-	/* "backdoor" implies alternate plan vector */
-	lazy String backdoor;
-	lazy Opportunity[] secrets;
-	
-	key { target, locale }
-
-	/* instance */
-	String gatherInformation(Rogue rogue) {
-		/* Rogue.getRoguesWithGoals().filter(Predicate.not(Rogue::getTapped)).map(Rogue::offerJob); */
-		return "detail";
-	};
-}
-
-/* */
-/* ROGUESHIP */
-/* */
-associationClass RogueShip {
-	/* */
-	unique Integer id;
-
-	const ALLY = "ally"; const CONTACT = "contact"; const ENEMY = "enemy"; const RIVAL = "rival";
-
-	/* */
-	1 Rogue a -> 1 Rogue b;
-	value = ALLY;
-	key { a, b }
-
-	/* */
-	boolean contains(Rogue c) { return a.equals(c) || b.equals(c); }
-	Rogue getOther(Rogue c) { return c.equals(a) ? b : c.equals(b) ? a : null; }
+	key { ship, obstacle }
 }

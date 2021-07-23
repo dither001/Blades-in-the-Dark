@@ -10,25 +10,14 @@ external String {}
 /* ACTION */
 /* */
 class Action {
-	depend java.util.function.Predicate;
-
 	depend com.blades.util.Dice;
 	
 	const RATING = "rating"; const DOWNTIME = "downtime"; const GROUP = "group";
 	/* downtime actions */
 	const ACQUIRE_ASSET = "acquire asset"; const LONG_TERM_PROJECT = "long term project"; const RECOVER = "recover"; const REDUCE_HEAT = "reduce heat"; const TRAINING = "training"; const INDULGE_VICE = "indulge vice";
-	
-	Actor actor;
-	type;
-	outcome = Dice.PARTIAL;
-	State[] causes; State[] effects;
-	lazy Predicate<Actor> predicate;
-	lazy Predicate<Actor> execute;
-	lazy Predicate<Action> isDone;
-	
-	/* */
-	boolean test() { return predicate.test(actor); }
-	boolean execute() { return execute.test(actor); }
+
+	* causes <@>- * State conditions;
+	* effect <@>- * State consequences;
 }
 
 /* */
@@ -37,31 +26,23 @@ class Action {
 class Actor {}
 
 /* */
-/* GOAL */
-/* */
-class Goal {
-	depend com.blades.main.Claim;
-	depend com.blades.main.Rogue;
-
-	const DO_ACTIVITY = "do activity"; const SHAKE_HOLD = "shake hold"; const STAKE_CLAIM = "stake claim";
-	const ADVANCE = "advance"; const EXPOSE = "expose";
-	
-	/* */
-	Rogue patron;
-	activity;
-	lazy Claim claim;
-}
-
-/* */
 /* STATE */
 /* */
-associationClass State {
+class State {
+	depend java.util.functions.Predicate;
+
 	/* there isn't an effective English verb for "being somewhere" that doesn't collide with the word "being" which is already in use; I tried put/putting and decided to use place/placing to reflect that it relates to "being placed" */
 	const BEING = "is"; const GETTING = "gets"; const DOING = "does"; const PUTTING = "puts";
 
-	1 String predicate -> 1 Boolean value;
+	const DO_ACTIVITY = "does activity"; 
+	const SHAKE_HOLD = "has hold"; 
+	const STAKE_CLAIM = "has claim";
+	const ADVANCE = "does advance"; 
+	const EXPOSE = "does expose";
+
+	String name; 
+	Predicate predicate;
 	float cost = 1f;
-	key { predicate, value }
 	
 	boolean is() { return predicate.startsWith(BEING); }
 	boolean gets() { return predicate.startsWith(GETTING); }

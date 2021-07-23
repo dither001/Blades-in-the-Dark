@@ -48,7 +48,7 @@ class Loader {
 		Util.fileTransformer(path, new Function<String, Locale>() {
 			@Override
 			public Locale apply(String t) {
-				return new Locale(Util.nextUUID(), t, null, null, null);
+				return new Locale(Util.nextUUID(), t);
 			}
 		});
 	}
