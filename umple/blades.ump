@@ -37,20 +37,22 @@ class Crew {
 	/* */
 	unique UUID id;
 	name; type;
-	Locale huntingGrounds; Locale lair;
 	String[] reputation;
 	favoredOp;
+	
+	1 crew <@>- * Rogue rogues;
+	0..1 crew <@>- * Locale turf;
+	1 crew <@>- * Plan plans;
+	1 crew <@>- * Score scores;
 
 	int rep = 0; int tier; int heat = 0; int wanted = 0; int coin;
 	boolean hold;
-	Rogue[] rogues; Claim[] claims; Score[] scores;
-	/* Opportunity[] opportunities; */
 
 	key { id }
-	
-	/* calculated fields */
+
+	/* derived attributes */	
 	boolean atWar = { CrewShip.atWar(this) }
-	boolean lookingForWork = { ! (scores.stream().anyMatch(Score::getActive)) };
+	boolean lookingForWork = { ! (scores.stream().anyMatch(Score::getActive)) }
 
 	/** Primary means for determining crew's hold.
 	* @return boolean modified by whether crew is at war. */
@@ -62,9 +64,9 @@ class Crew {
 	
 	/* instance */
 	public Stream<Rogue> getRoster() { return rogues.stream(); }
-	public Stream<Rogue> getAvailableRogues() {
-		return rogues.stream().filter(Predicate.not(Rogue::getTapped));
-	}
+	public Stream<Rogue> getAvailableRogues() { return rogues.stream().filter(Predicate.not(Rogue::getTapped)); }
+	public int turfCount() { return (int) getTurf().stream().filter(Locale::getIsTurf).count(); }
+	public Locale getLair() {  return getTurf().stream().filter(Locale::getIsLair).findFirst().orElse(null);  }
 	
 	public void lookForWork() {
 		/* getAvailableRogues().map(Rogue::seekOpportunity).forEach(opportunities::add); */
@@ -86,9 +88,13 @@ class Crew {
 	public static Crew getCrewByName(String name) {
 		return getCrews().filter(s -> s.getName().equalsIgnoreCase(name)).findFirst().get();
 	}
+	
+	public static Crew getCrewByReputation(String rep) {
+		return getCrews().filter(s -> s.indexOfReputation(rep) > -1).findFirst().get();
+	}
 
 	public static Crew newFaction(UUID aId, String aName, int aTier, boolean aHold) {
-		return new Crew(aId, aName, null, null, null, null, aTier, 0, aHold);
+		return new Crew(aId, aName, null, null, aTier, 0, aHold);
 	}
 
 	/* */
@@ -121,6 +127,10 @@ class CrewShip {
 
 	key { id }
 	
+	/* derived attribute */
+	String shipname = { String.format("%s + %s", getCrew(0).getName(), getCrew(1).getName()) }
+	
+	/* */
 	boolean contains(Crew c) { return c.equals(crews.get(0)) || c.equals(crews.get(1)); }
 	Crew getOther(Crew c) { return c.equals(crews.get(0)) ? crews.get(1) : c.equals(crews.get(1)) ? crews.get(0) : null; }
 
@@ -156,9 +166,11 @@ class GameContext {
 class GameLoop {
 	singleton;
 	
+	depend com.blades.util.Util;
+	
 	/* */
 	boolean running = true;
-
+	
 	/* instance */
 	void loop() { while (running) { update(); } }
 	void update() { Crew.update(); }
@@ -168,13 +180,50 @@ class GameLoop {
 		com.blades.util.Loader.getInstance();
 		/* GameLoop.getInstance().loop(); */
 		
+	}
+	
+	private static void testScore() {
+		Situation sitch = Situation.getSituations().filter(s -> {
+			return Util.ensure(s.getShip().getRogue(0).getCrew().getLair());
+		}).findFirst().get();
+		System.out.println(sitch.getShip().getShipname());
+
+		Crew target = sitch.getShip().getRogue(0).getCrew();
+		System.out.println(target.getName());
+
+		Locale locale = target.getLair();
+		System.out.println(locale.getName());
+
+		Opportunity opp = new Opportunity(target, locale, sitch);
+	}
+	
+	private static void testRogueships() {
+		int numCrews = (int) Crew.getCrews().count();
+		List<Crew> crews = Crew.getCrews().collect(Collectors.toUnmodifiableList());
+
 		Rogue[] a = new Rogue[125];
-		a[0] = new Rogue(Util.nextUUID(), null, null, null, null);
+		a[0] = new Rogue(Util.nextUUID(), "Unnamed rogue 0", null, null, crews.get(0));
 		for (int i = 1; i < 125; ++i) {
-			a[i] = new Rogue(Util.nextUUID(), null, null, null, null);
-			new Situation(Util.nextUUID(), new RogueShip(Util.nextUUID(), a[i], a[i-1]), null);
+			Crew c = crews.get(i % numCrews);
+//			System.out.println(c.getName());
+
+			a[i] = new Rogue(Util.nextUUID(), "Unnamed rogue " + i, null, null, c);
+			new Situation(Util.nextUUID(), new RogueShip(Util.nextUUID(), a[i], a[i - 1]),
+					new Obstacle("Unnamed " + i));
+
+			c.addRogue(a[i]);
+//			System.out.println(crews.get(i % numCrews).getName());
 		}
-		new Situation(Util.nextUUID(), new RogueShip(Util.nextUUID(), a[0], a[124]), null);
+		new Situation(Util.nextUUID(), new RogueShip(Util.nextUUID(), a[0], a[124]), new Obstacle("Unnamed 0"));
+
+		System.out.println("Total Rogues: " + Rogue.getRogues().count());
+		System.out.println("Total 'ships: " + RogueShip.getRogueships().count());
+		System.out.println("Total Crews: " + Crew.getCrews().count());
+//		Crew.getCrews().forEach(c -> System.out.println(c.numberOfRogues()));
+//		CrewShip.getShips().forEach(ship -> System.out.println(String.format("%s %s", ship.getValue(), ship.getGetshipname())));
+
+//		RogueShip.getRogueships().forEach(ship -> System.out.println(ship.getSituation(0).getObstacle().getName()));	   
+//		Crew.getCrews().forEach(crew -> System.out.println(crew.getName()));
 	}
 	
 	/* game state machine */
@@ -198,13 +247,17 @@ class Locale {
 	/* */
 	unique UUID id;
 	name;
-	lazy Crew crew; lazy Claim claim;
-	key { id }
+	lazy boolean isLair; lazy boolean isHuntingGround; lazy boolean isTurf;
 
-	boolean isClaim = { claim != null }
+	key { id }
+	
+	0..1 parent -- * Locale children;
 
 	/* */
 	public static Stream<Locale> getLocales() { return localesById.values().stream(); }
+	public static Locale getLocaleByName(String name) {
+		return getLocales().filter(l -> l.getName().compareToIgnoreCase(name) == 0).findFirst().get();
+	}
 }
 
 /* */
@@ -254,7 +307,6 @@ class Plan {
 	const ACCIDENT = "accident"; // TODO
 
 	/* */
-	Crew crew;
 	Rogue[] team;
 	approach; activity; detail;
 }
@@ -276,7 +328,7 @@ class Rogue {
 	/* */
 	unique UUID id;
 	roguename; playbook; vice;
-	Crew crew;
+	/* Crew crew; */
 	int stress = 0; int trauma = 0; int coin = 0; int stash = 0;
 	boolean tapped = false;
 
@@ -301,6 +353,8 @@ class Rogue {
 /* ROGUESHIP */
 /* */
 class RogueShip {
+	depend java.util.stream.Stream;
+
 	/* */
 	const ALLY = "ally"; const CONTACT = "contact"; const ENEMY = "enemy"; const RIVAL = "rival";
 
@@ -310,9 +364,16 @@ class RogueShip {
 	value = RIVAL;
 
 	key { id }
-	
+
+	/* */
+	shipname = { String.format("%s + %s", rogues.get(0).getRoguename(), rogues.get(1).getRoguename()) }
+
+	/* */
 	boolean contains(Rogue c) { return c.equals(rogues.get(0)) || c.equals(rogues.get(1)); }
 	Rogue getOther(Rogue c) { return c.equals(rogues.get(0)) ? rogues.get(1) : c.equals(rogues.get(1)) ? rogues.get(0) : null; }
+	
+	/* */
+	public static Stream<RogueShip> getRogueships() { return rogueshipsById.values().stream(); }
 }
 
 /* */
@@ -364,10 +425,15 @@ associationClass Score {
 /* SITUATION */
 /* */
 associationClass Situation {
+	depend java.util.stream.Stream;
+
 	/* */
 	unique UUID id;
 	* RogueShip ship;
 	* Obstacle obstacle;
 	
 	key { ship, obstacle }
+	
+	/* static */
+	public static Stream<Situation> getSituations() { return situationsById.values().stream(); }
 }

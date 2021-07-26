@@ -16,8 +16,8 @@ class Action {
 	/* downtime actions */
 	const ACQUIRE_ASSET = "acquire asset"; const LONG_TERM_PROJECT = "long term project"; const RECOVER = "recover"; const REDUCE_HEAT = "reduce heat"; const TRAINING = "training"; const INDULGE_VICE = "indulge vice";
 
-	* causes <@>- * State conditions;
-	* effect <@>- * State consequences;
+	* roots <@>- * State conditions;
+	* results <@>- * State consequences;
 }
 
 /* */
@@ -44,8 +44,8 @@ class State {
 	Predicate predicate;
 	float cost = 1f;
 	
-	boolean is() { return predicate.startsWith(BEING); }
-	boolean gets() { return predicate.startsWith(GETTING); }
-	boolean does() { return predicate.startsWith(DOING); }
-	boolean puts() { return predicate.startsWith(PUTTING); }
+	/* boolean is() { return predicate.startsWith(BEING); } */
+	/* boolean gets() { return predicate.startsWith(GETTING); } */
+	/* boolean does() { return predicate.startsWith(DOING); } */
+	/* boolean puts() { return predicate.startsWith(PUTTING); } */
 }

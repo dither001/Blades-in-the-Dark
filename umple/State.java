@@ -2,13 +2,15 @@
 /*This code was generated using the UMPLE 1.30.2.5248.dba0a5744 modeling language!*/
 
 package com.blades.goap;
+import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * 
  * STATE
  * 
  */
-// line 57 "../../../goap.ump"
+// line 31 "../../../goap.ump"
 public class State
 {
 
@@ -24,173 +26,326 @@ public class State
   public static final String GETTING = "gets";
   public static final String DOING = "does";
   public static final String PUTTING = "puts";
+  public static final String DO_ACTIVITY = "does activity";
+  public static final String SHAKE_HOLD = "has hold";
+  public static final String STAKE_CLAIM = "has claim";
+  public static final String ADVANCE = "does advance";
+  public static final String EXPOSE = "does expose";
 
   //------------------------
   // MEMBER VARIABLES
   //------------------------
 
   //State Attributes
+  private String name;
+  private Predicate predicate;
   private float cost;
 
   //State Associations
-  private String predicate;
-  private Boolean value;
-
-  //Helper Variables
-  private int cachedHashCode;
-  private Boolean canSetPredicate;
-  private Boolean canSetValue;
+  private List<Action> roots;
+  private List<Action> results;
 
   //------------------------
   // CONSTRUCTOR
   //------------------------
 
-  public State(String aPredicate, Boolean aValue)
+  public State(String aName, Predicate aPredicate)
   {
-    cachedHashCode = -1;
-    canSetPredicate = true;
-    canSetValue = true;
+    name = aName;
+    predicate = aPredicate;
     cost = 1f;
-    if (!setPredicate(aPredicate))
-    {
-      throw new RuntimeException("Unable to create State due to aPredicate. See http://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
-    }
-    if (!setValue(aValue))
-    {
-      throw new RuntimeException("Unable to create State due to aValue. See http://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
-    }
+    roots = new ArrayList<Action>();
+    results = new ArrayList<Action>();
   }
 
   //------------------------
   // INTERFACE
   //------------------------
 
-  public Boolean setCost(float aCost)
+  public boolean setName(String aName)
   {
-    Boolean wasSet = false;
+    boolean wasSet = false;
+    name = aName;
+    wasSet = true;
+    return wasSet;
+  }
+
+  public boolean setPredicate(Predicate aPredicate)
+  {
+    boolean wasSet = false;
+    predicate = aPredicate;
+    wasSet = true;
+    return wasSet;
+  }
+
+  public boolean setCost(float aCost)
+  {
+    boolean wasSet = false;
     cost = aCost;
     wasSet = true;
     return wasSet;
+  }
+
+  public String getName()
+  {
+    return name;
+  }
+
+  public Predicate getPredicate()
+  {
+    return predicate;
   }
 
   public float getCost()
   {
     return cost;
   }
-  /* Code from template association_GetOne */
-  public String getPredicate()
+  /* Code from template association_GetMany */
+  public Action getRoot(int index)
   {
-    return predicate;
-  }
-  /* Code from template association_GetOne */
-  public Boolean getValue()
-  {
-    return value;
-  }
-  /* Code from template association_SetUnidirectionalOne */
-  public Boolean setPredicate(String aNewPredicate)
-  {
-    Boolean wasSet = false;
-    if (!canSetPredicate) { return false; }
-    if (aNewPredicate != null)
-    {
-      predicate = aNewPredicate;
-      wasSet = true;
-    }
-    return wasSet;
-  }
-  /* Code from template association_SetUnidirectionalOne */
-  public Boolean setValue(Boolean aNewValue)
-  {
-    Boolean wasSet = false;
-    if (!canSetValue) { return false; }
-    if (aNewValue != null)
-    {
-      value = aNewValue;
-      wasSet = true;
-    }
-    return wasSet;
+    Action aRoot = roots.get(index);
+    return aRoot;
   }
 
-  public boolean equals(Object obj)
+  public List<Action> getRoots()
   {
-    if (obj == null) { return false; }
-    if (!getClass().equals(obj.getClass())) { return false; }
-
-    State compareTo = (State)obj;
-  
-    if (getPredicate() == null && compareTo.getPredicate() != null)
-    {
-      return false;
-    }
-    else if (getPredicate() != null && !getPredicate().equals(compareTo.getPredicate()))
-    {
-      return false;
-    }
-
-    if (getValue() == null && compareTo.getValue() != null)
-    {
-      return false;
-    }
-    else if (getValue() != null && !getValue().equals(compareTo.getValue()))
-    {
-      return false;
-    }
-
-    return true;
+    List<Action> newRoots = Collections.unmodifiableList(roots);
+    return newRoots;
   }
 
-  public int hashCode()
+  public int numberOfRoots()
   {
-    if (cachedHashCode != -1)
+    int number = roots.size();
+    return number;
+  }
+
+  public boolean hasRoots()
+  {
+    boolean has = roots.size() > 0;
+    return has;
+  }
+
+  public int indexOfRoot(Action aRoot)
+  {
+    int index = roots.indexOf(aRoot);
+    return index;
+  }
+  /* Code from template association_GetMany */
+  public Action getResult(int index)
+  {
+    Action aResult = results.get(index);
+    return aResult;
+  }
+
+  public List<Action> getResults()
+  {
+    List<Action> newResults = Collections.unmodifiableList(results);
+    return newResults;
+  }
+
+  public int numberOfResults()
+  {
+    int number = results.size();
+    return number;
+  }
+
+  public boolean hasResults()
+  {
+    boolean has = results.size() > 0;
+    return has;
+  }
+
+  public int indexOfResult(Action aResult)
+  {
+    int index = results.indexOf(aResult);
+    return index;
+  }
+  /* Code from template association_MinimumNumberOfMethod */
+  public static int minimumNumberOfRoots()
+  {
+    return 0;
+  }
+  /* Code from template association_AddManyToManyMethod */
+  public boolean addRoot(Action aRoot)
+  {
+    boolean wasAdded = false;
+    if (roots.contains(aRoot)) { return false; }
+    roots.add(aRoot);
+    if (aRoot.indexOfCondition(this) != -1)
     {
-      return cachedHashCode;
-    }
-    cachedHashCode = 17;
-    if (getPredicate() != null)
-    {
-      cachedHashCode = cachedHashCode * 23 + getPredicate().hashCode();
+      wasAdded = true;
     }
     else
     {
-      cachedHashCode = cachedHashCode * 23;
+      wasAdded = aRoot.addCondition(this);
+      if (!wasAdded)
+      {
+        roots.remove(aRoot);
+      }
     }
-    if (getValue() != null)
+    return wasAdded;
+  }
+  /* Code from template association_RemoveMany */
+  public boolean removeRoot(Action aRoot)
+  {
+    boolean wasRemoved = false;
+    if (!roots.contains(aRoot))
     {
-      cachedHashCode = cachedHashCode * 23 + getValue().hashCode();
+      return wasRemoved;
+    }
+
+    int oldIndex = roots.indexOf(aRoot);
+    roots.remove(oldIndex);
+    if (aRoot.indexOfCondition(this) == -1)
+    {
+      wasRemoved = true;
     }
     else
     {
-      cachedHashCode = cachedHashCode * 23;
+      wasRemoved = aRoot.removeCondition(this);
+      if (!wasRemoved)
+      {
+        roots.add(oldIndex,aRoot);
+      }
+    }
+    return wasRemoved;
+  }
+  /* Code from template association_AddIndexControlFunctions */
+  public boolean addRootAt(Action aRoot, int index)
+  {  
+    boolean wasAdded = false;
+    if(addRoot(aRoot))
+    {
+      if(index < 0 ) { index = 0; }
+      if(index > numberOfRoots()) { index = numberOfRoots() - 1; }
+      roots.remove(aRoot);
+      roots.add(index, aRoot);
+      wasAdded = true;
+    }
+    return wasAdded;
+  }
+
+  public boolean addOrMoveRootAt(Action aRoot, int index)
+  {
+    boolean wasAdded = false;
+    if(roots.contains(aRoot))
+    {
+      if(index < 0 ) { index = 0; }
+      if(index > numberOfRoots()) { index = numberOfRoots() - 1; }
+      roots.remove(aRoot);
+      roots.add(index, aRoot);
+      wasAdded = true;
+    } 
+    else 
+    {
+      wasAdded = addRootAt(aRoot, index);
+    }
+    return wasAdded;
+  }
+  /* Code from template association_MinimumNumberOfMethod */
+  public static int minimumNumberOfResults()
+  {
+    return 0;
+  }
+  /* Code from template association_AddManyToManyMethod */
+  public boolean addResult(Action aResult)
+  {
+    boolean wasAdded = false;
+    if (results.contains(aResult)) { return false; }
+    results.add(aResult);
+    if (aResult.indexOfConsequence(this) != -1)
+    {
+      wasAdded = true;
+    }
+    else
+    {
+      wasAdded = aResult.addConsequence(this);
+      if (!wasAdded)
+      {
+        results.remove(aResult);
+      }
+    }
+    return wasAdded;
+  }
+  /* Code from template association_RemoveMany */
+  public boolean removeResult(Action aResult)
+  {
+    boolean wasRemoved = false;
+    if (!results.contains(aResult))
+    {
+      return wasRemoved;
     }
 
-    canSetPredicate = false;
-    canSetValue = false;
-    return cachedHashCode;
+    int oldIndex = results.indexOf(aResult);
+    results.remove(oldIndex);
+    if (aResult.indexOfConsequence(this) == -1)
+    {
+      wasRemoved = true;
+    }
+    else
+    {
+      wasRemoved = aResult.removeConsequence(this);
+      if (!wasRemoved)
+      {
+        results.add(oldIndex,aResult);
+      }
+    }
+    return wasRemoved;
+  }
+  /* Code from template association_AddIndexControlFunctions */
+  public boolean addResultAt(Action aResult, int index)
+  {  
+    boolean wasAdded = false;
+    if(addResult(aResult))
+    {
+      if(index < 0 ) { index = 0; }
+      if(index > numberOfResults()) { index = numberOfResults() - 1; }
+      results.remove(aResult);
+      results.add(index, aResult);
+      wasAdded = true;
+    }
+    return wasAdded;
+  }
+
+  public boolean addOrMoveResultAt(Action aResult, int index)
+  {
+    boolean wasAdded = false;
+    if(results.contains(aResult))
+    {
+      if(index < 0 ) { index = 0; }
+      if(index > numberOfResults()) { index = numberOfResults() - 1; }
+      results.remove(aResult);
+      results.add(index, aResult);
+      wasAdded = true;
+    } 
+    else 
+    {
+      wasAdded = addResultAt(aResult, index);
+    }
+    return wasAdded;
   }
 
   public void delete()
   {
-    predicate = null;
-    value = null;
+    ArrayList<Action> copyOfRoots = new ArrayList<Action>(roots);
+    roots.clear();
+    for(Action aRoot : copyOfRoots)
+    {
+      aRoot.removeCondition(this);
+    }
+    ArrayList<Action> copyOfResults = new ArrayList<Action>(results);
+    results.clear();
+    for(Action aResult : copyOfResults)
+    {
+      aResult.removeConsequence(this);
+    }
   }
-
 
   public String toString()
   {
     return super.toString() + "["+
+            "name" + ":" + getName()+ "," +
             "cost" + ":" + getCost()+ "]" + System.getProperties().getProperty("line.separator") +
-            "  " + "predicate = "+(getPredicate()!=null?Integer.toHexString(System.identityHashCode(getPredicate())):"null") + System.getProperties().getProperty("line.separator") +
-            "  " + "value = "+(getValue()!=null?Integer.toHexString(System.identityHashCode(getValue())):"null");
-  }  
-  //------------------------
-  // DEVELOPER CODE - PROVIDED AS-IS
-  //------------------------
-  
-  // line 65 ../../../goap.ump
-  Boolean is() { return predicate.startsWith(BEING); }
-	Boolean gets() { return predicate.startsWith(GETTING); }
-	Boolean does() { return predicate.startsWith(DOING); }
-	Boolean puts() { return predicate.startsWith(PUTTING); }
-  
+            "  " + "predicate" + "=" + (getPredicate() != null ? !getPredicate().equals(this)  ? getPredicate().toString().replaceAll("  ","    ") : "this" : "null");
+  }
 }

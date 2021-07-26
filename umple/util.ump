@@ -40,8 +40,8 @@ class Loader {
 		loadDistricts("res/data/doskvol_districts.csv");
 		loadFactions("res/data/doskvol_factions.csv");
 		loadCrewShips("res/data/doskvol_crewships.csv");
-		loadContacts("res/data/crew_contacts.csv");
-		loadContacts("res/data/rogue_contacts.csv");
+		/* loadContacts("res/data/crew_contacts.csv"); */
+		/* loadContacts("res/data/rogue_contacts.csv"); */
 	}
 	
 	private static void loadDistricts(String path) {
@@ -57,7 +57,15 @@ class Loader {
 		Util.fileTransformer(path, new Function<String, Crew>() {
 			@Override public Crew apply(String t) {
 				String[] a = t.split(",");
-				return Crew.newFaction(Util.nextUUID(), a[0], Integer.parseInt(a[1]), Boolean.parseBoolean(a[2]));
+				Crew c = Crew.newFaction(
+					Util.nextUUID(), 
+					a[0], 
+					Integer.parseInt(a[1]), 
+					Boolean.parseBoolean(a[2])
+				);
+				
+				if (a[3] != "") {  Locale l = new Locale(Util.nextUUID(), a[3]); l.setCrew(c); l.setIsLair(true); }
+				return c;
 			}
 		});
 	}
