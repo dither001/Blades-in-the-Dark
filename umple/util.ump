@@ -35,7 +35,8 @@ class Loader {
 	depend com.blades.main.CrewShip;
 	depend com.blades.main.Locale;
 	depend com.blades.main.Rogue;
-	
+	depend com.blades.main.Zoning;
+
 	after constructor {
 		loadDistricts("res/data/doskvol_districts.csv");
 		loadFactions("res/data/doskvol_factions.csv");
@@ -64,7 +65,7 @@ class Loader {
 					Boolean.parseBoolean(a[2])
 				);
 				
-				if (a[3] != "") {  Locale l = new Locale(Util.nextUUID(), a[3]); l.setCrew(c); l.setIsLair(true); }
+				if (a[3] != "") {  Locale l = new Locale(Util.nextUUID(), a[3]); l.setZoning(new Zoning(a[5])); l.setCrew(c); l.setIsLair(true); }
 				return c;
 			}
 		});
@@ -142,4 +143,6 @@ class Util {
 	}
 	
 	public static UUID nextUUID() { return UUID.randomUUID(); }
+	
+	public static <T> boolean unless(T quality) { return ! ensure(quality); }
 }

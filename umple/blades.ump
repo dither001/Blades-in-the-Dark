@@ -8,6 +8,18 @@ use util.ump;
 namespace com.blades.main;
 
 /* */
+/* ACTIVITY */
+/* */
+class Activity {
+	Objective objective;
+	Rogue[] team;
+	Obstacle[] rules;
+	Item[] tools;
+	Playbook[] roles;
+	Crew[] interestedParties;
+}
+
+/* */
 /* CLAIM */
 /* */
 class Claim {
@@ -39,11 +51,10 @@ class Crew {
 	name; type;
 	String[] reputation;
 	favoredOp;
+	lazy internal Score score;
 	
 	1 crew <@>- * Rogue rogues;
 	0..1 crew <@>- * Locale turf;
-	1 crew <@>- * Plan plans;
-	1 crew <@>- * Score scores;
 
 	int rep = 0; int tier; int heat = 0; int wanted = 0; int coin;
 	boolean hold;
@@ -52,7 +63,7 @@ class Crew {
 
 	/* derived attributes */	
 	boolean atWar = { CrewShip.atWar(this) }
-	boolean lookingForWork = { ! (scores.stream().anyMatch(Score::getActive)) }
+	boolean lookingForWork = { Util.unless(score) }
 
 	/** Primary means for determining crew's hold.
 	* @return boolean modified by whether crew is at war. */
@@ -69,19 +80,36 @@ class Crew {
 	public Locale getLair() {  return getTurf().stream().filter(Locale::getIsLair).findFirst().orElse(null);  }
 	
 	public void lookForWork() {
-		/* getAvailableRogues().map(Rogue::seekOpportunity).forEach(opportunities::add); */
+		Opportunity opp = Opportunity.getOpportunities().findFirst().get();
+		Plan plan = makePlan(opp);
+
+		this.score = new Score(Util.nextUUID(), opp, plan);
 	}
-	
-	boolean acceptWork(Score score) {
-		boolean accepted = false;
-		// TODO
-		if (getRoster().count() > 0) { accepted = scores.add(score); }
-		return accepted;
+
+	/* operational tasks */
+	private Objective objectify(Opportunity opp) { return new Objective(); }
+
+	private List<Obstacle> assess(Opportunity opp) {
+		List<Obstacle> list = new ArrayList<Obstacle>();
+		list.add(opp.getSituation().getObstacle());
+		return list;
 	}
-	
-	List<Rogue> selectTeam(Score score) {
-		// TODO
-		return List.copyOf(rogues);
+	private List<Item> selectTools(List<Obstacle> obs) { return List.of(); }
+	private List<Playbook> selectRoles(List<Obstacle> obs) { return List.of(); }
+	private List<Rogue> selectTeam(Activity activity) { return List.copyOf(rogues); }
+
+	private Plan makePlan(Opportunity opp) {
+		Crew target = opp.getTarget();
+		List<Obstacle> obs = assess(opp);
+
+		Activity activity = new Activity(objectify(opp));
+		CrewShip.getShips(target).map(ship -> ship.getOther(target)).forEach(activity::addInterestedParty);
+		obs.forEach(activity::addRule);
+		selectTools(obs).forEach(activity::addTool);
+		selectRoles(obs).forEach(activity::addRole);
+		selectTeam(activity).forEach(activity::addTeam);
+
+		return new Plan(this, activity);
 	}
 	
 	/* static */
@@ -166,6 +194,9 @@ class GameContext {
 class GameLoop {
 	singleton;
 	
+	depend java.util.List;
+	depend java.util.stream.Collectors;
+	
 	depend com.blades.util.Util;
 	
 	/* */
@@ -239,6 +270,11 @@ class GameLoop {
 }
 
 /* */
+/* ITEM */
+/* */
+class Item {}
+
+/* */
 /* LOCALE */
 /* */
 class Locale {
@@ -248,24 +284,36 @@ class Locale {
 	unique UUID id;
 	name;
 	lazy boolean isLair; lazy boolean isHuntingGround; lazy boolean isTurf;
+	lazy Zoning zoning;
 
 	key { id }
 	
 	0..1 parent -- * Locale children;
+	
+	boolean hasZoning = { zoning != null }
 
 	/* */
 	public static Stream<Locale> getLocales() { return localesById.values().stream(); }
 	public static Locale getLocaleByName(String name) {
-		return getLocales().filter(l -> l.getName().compareToIgnoreCase(name) == 0).findFirst().get();
+		return getLocales().filter(l -> l.getName().matches(name)).findFirst().get();
 	}
+}
+
+/* */
+/* OBJECTIVE */
+/* */
+class Objective {
+	/* real or symbolic value; relevant _physical_ obstacles; exposure -> suitability of target; ; */
+	/* value; inertia; visibility; accessibility; */
 }
 
 /* */
 /* OBSTACLE */
 /* */
 class Obstacle {
+	const SURVEY = "survey";
 
-	name;
+	name; rating = SURVEY;
 	/* Hazards, barriers, and distractions are borrowed from FATE: Accelerated. In short, hazards deal damage, barriers must be opposed, and distractions present choices with consequences. */
 	lazy boolean isHazard; lazy boolean isBarrier; lazy boolean isDistraction;
 	/* A disctraction consists of the Dilemma, the Effects, and an Opposition value (if any). */
@@ -274,14 +322,15 @@ class Obstacle {
 /* */
 /* OPPORTUNITY */
 /* */
-associationClass Opportunity {
+class Opportunity {
 	depend java.util.stream.Stream;
 
 	/* */
-	* targetOf Crew target;
-	* Locale locale;
-	* Situation situation;
-	key { target, locale }
+	unique UUID id; 
+	Crew target;
+	Locale locale;
+	Situation situation;
+	key { id }
 
 	/* */
 	lazy Rogue patron; 
@@ -290,25 +339,30 @@ associationClass Opportunity {
 	/* "backdoor" implies alternate plan vector */
 	lazy String backdoor;
 	
-
-	/* instance */
-	String gatherInformation(Rogue rogue) {
-		/* Rogue.getRoguesWithGoals().filter(Predicate.not(Rogue::getTapped)).map(Rogue::offerJob); */
-		return "detail";
-	};
+	/* */
+	public static Stream<Opportunity> getOpportunities() { return opportunitysById.values().stream(); } 
 }
 
 /* */
 /* PLAN */
 /* */
 class Plan {
-	const ASSAULT = "assault"; const DECEPTION = "deception"; const OCCULT = "occult"; const SOCIAL = "social"; const STEALTH = "stealth"; const TRANSPORT = "transport";
 	/* */
-	const ACCIDENT = "accident"; // TODO
+	Crew crew; Activity activity;
+	
+	/* */
+	List<Rogue> team = { Arrays.asList(activity.getTeam()) }
+}
 
+/* */
+/* PLAYBOOK */
+/* */
+class Playbook {
+	/* playbooks */
+	const CUTTER = "cutter"; const HOUND = "hound"; const LEECH = "leech"; const LURK = "lurk"; const SLIDE = "slide"; const SPIDER = "spider"; const WHISPER = "whisper";
+	
 	/* */
-	Rogue[] team;
-	approach; activity; detail;
+	name = CUTTER;
 }
 
 /* */
@@ -322,12 +376,10 @@ class Rogue {
 
 	/* vices */
 	const FAITH = "faith"; const GAMBLING = "gambling"; const LUXURY = "luxury"; const OBLIGATION = "obligation"; const PLEASURE = "pleasure"; const STUPOR = "stupor"; const WEIRD = "weird";
-	/* playbooks */
-	const CUTTER = "cutter"; const HOUND = "hound"; const LEECH = "leech"; const LURK = "lurk"; const SLIDE = "slide"; const SPIDER = "spider"; const WHISPER = "whisper";
 
 	/* */
 	unique UUID id;
-	roguename; playbook; vice;
+	roguename; Playbook playbook; vice;
 	/* Crew crew; */
 	int stress = 0; int trauma = 0; int coin = 0; int stash = 0;
 	boolean tapped = false;
@@ -379,29 +431,29 @@ class RogueShip {
 /* */
 /* SCORE */
 /* */
-associationClass Score {
+class Score {
 	depend java.util.function.Predicate;
 	depend java.util.stream.Stream;
 
 	/* */
 	unique UUID id;
-	* Opportunity opportunity;
-	* Plan plan;
-	lazy Obstacle[] obstacles;
+	Plan plan; Opportunity opportunity;
 	lazy int coin; lazy int heat;
-	key { opportunity, plan }
 
+	key { id }
+
+	/* */
 	name = { String.format("The %s %s", opportunity.getTarget().getName(), plan.getActivity()) };
 	int rep = { 2 - (plan.getCrew().getTier() - opportunity.getTarget().getTier()) };
-	boolean accepted = false; boolean abandoned = false; boolean active = false;
 
+	/* boolean accepted = false; boolean abandoned = false; boolean active = false; */
 	
 	/* score state machine */
 	sequence {
 		Ready { doReady -> Engagement; }
 		Engagement { 
 			doEngagement -> /{
-				Stream.of(plan.getTeam()).forEach(r -> { r.setTapped(true); });
+				plan.getTeam().forEach(r -> r.setTapped(true));
 			} Operation; 
 		}
 		Operation { doOperation -> Payoff; }
@@ -411,7 +463,7 @@ associationClass Score {
 		Downtime { 
 			doDowntime -> /{
 				int actions = (plan.getCrew().getAtWar()) ? 1 : 2;
-				Stream.of(plan.getTeam()).forEach(r -> r.doDowntime(actions));
+				plan.getTeam().forEach(r -> r.doDowntime(actions));
 			} Final;
 		}
 	}
@@ -424,16 +476,31 @@ associationClass Score {
 /* */
 /* SITUATION */
 /* */
-associationClass Situation {
+class Situation {
 	depend java.util.stream.Stream;
 
 	/* */
 	unique UUID id;
-	* RogueShip ship;
-	* Obstacle obstacle;
+	RogueShip ship;
+	Obstacle obstacle;
 	
-	key { ship, obstacle }
+	key { id }
 	
 	/* static */
-	public static Stream<Situation> getSituations() { return situationsById.values().stream(); }
+	public static Stream<Situation> getSituations() { return situationsById.values().stream(); }	
+}
+
+/* */
+/* ZONING */
+/* */
+class Zoning {
+	/* work, play, movement, waiting, rest */
+	const PURPOSE = "purpose"; const RULESPACE = "rulespace"; const PROFESSIONAL = "professional"; const PERSONAL = "personal";
+
+	/* */
+	type;
+
+	/* instance */
+	boolean isPublic = { type.matches(PURPOSE) || type.matches(RULESPACE) }
+	boolean isPrivate = { type.matches(PROFESSIONAL) || type.matches(PERSONAL) }
 }
