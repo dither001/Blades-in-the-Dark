@@ -65,7 +65,13 @@ class Loader {
 					Boolean.parseBoolean(a[2])
 				);
 				
-				if (a[3] != "") {  Locale l = new Locale(Util.nextUUID(), a[3]); l.setZoning(new Zoning(a[5])); l.setCrew(c); l.setIsLair(true); }
+				if (a[3] != "") {
+					Locale l = new Locale(Util.nextUUID(), a[3]);
+					l.setZoning(new Zoning(a[5]));
+					if (a[4] != "") { l.setParent(Locale.getLocaleByName(a[4])); }
+					l.setCrew(c);
+					l.setIsLair(true);
+				}
 				return c;
 			}
 		});

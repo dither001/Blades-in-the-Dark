@@ -1,0 +1,169 @@
+
+namespace com.blades.main;
+
+/* */
+/* ACTIVITY */
+/* */
+class Activity {
+	Objective objective;
+	Rogue[] team;
+	Obstacle[] rules;
+	Item[] tools;
+	Playbook[] roles;
+	Crew[] interestedParties;
+}
+
+/* */
+/* ENTANGLEMENT */
+/* */
+class Entanglement {
+	const ARREST = "arrest"; const COOPERATION = "cooperation"; const DEMONIC_NOTICE = "demonic notice"; const FLIPPED = "flipped"; const GANG_TROUBLE = "gang trouble"; const INTERROGATION = "interrogation"; const QUESTIONING = "questioning"; const REPRISALS = "reprisals"; const RIVALS = "rivals"; const SHOW_OF_FORCE = "show of force"; const UNQUIET_DEAD = "unquiet dead"; const USUAL_SUSPECTS = "usual suspects";
+}
+
+/* */
+/* OBJECTIVE */
+/* */
+class Objective {
+	/* real or symbolic value; relevant _physical_ obstacles; exposure -> suitability of target; ; */
+	
+	Opportunity opportunity;
+	/* value; inertia; visibility; accessibility; */
+	
+	Crew target = { opportunity.getTarget() } 
+	Locale locale = { opportunity.getLocale() } 
+	Situation situation = { opportunity.getSituation() } 
+}
+
+/* */
+/* OBSTACLE */
+/* */
+class Obstacle {
+	const SURVEY = "survey";
+
+	name; rating = SURVEY;
+	/* Hazards, barriers, and distractions are borrowed from FATE: Accelerated. In short, hazards deal damage, barriers must be opposed, and distractions present choices with consequences. */
+	lazy boolean isHazard; lazy boolean isBarrier; lazy boolean isDistraction;
+	/* A disctraction consists of the Dilemma, the Effects, and an Opposition value (if any). */
+}
+
+/* */
+/* OPPORTUNITY */
+/* */
+class Opportunity {
+	depend java.util.stream.Stream;
+
+	/* */
+	unique UUID id; 
+	Crew target;
+	Locale locale;
+	Situation situation;
+	key { id }
+
+	/* */
+	lazy Rogue patron; 
+	lazy Crew[] related;
+	lazy Opportunity[] secrets;
+	/* "backdoor" implies alternate plan vector */
+	lazy String backdoor;
+	
+	/* */
+	public static void prepareOpportunities() {
+		Iterator<Crew> crits = Crew.getCrews().iterator();
+		Iterator<Locale> pits = Locale.getPlaces().iterator();
+		Iterator<Situation> sits = Situation.getSituations(
+			RogueShip.getRogueships(RogueShip.RIVALS).collect(Collectors.toSet())
+		).iterator();
+
+		while (crits.hasNext() && pits.hasNext() && sits.hasNext()) { 
+			new Opportunity(Util.nextUUID(), crits.next(), pits.next(), sits.next()); 
+		}
+	}
+	
+	/* */
+	public static Stream<Opportunity> getOpportunities() { return opportunitysById.values().stream(); }
+	public static Stream<Opportunity> getOpportunities(Crew crew) {
+		return getOpportunities().filter(opp -> crew.getTurf().contains(opp.getLocale()));
+	}
+}
+
+/* */
+/* PLAN */
+/* */
+class Plan {
+	depend java.util.Arrays;
+	depend java.util.List;
+
+	/* */
+	Crew crew; Activity activity;
+	
+	/* */
+	List<Rogue> team = { Arrays.asList(activity.getTeam()) }
+}
+
+/* */
+/* SCORE */
+/* */
+class Score {
+	depend java.util.function.Predicate;
+	depend java.util.stream.Stream;
+
+	/* */
+	unique UUID id;
+	Plan plan; Opportunity opportunity;
+	lazy int coin; lazy int heat;
+
+	key { id }
+
+	/* */
+	name = { String.format("The %s %s", opportunity.getTarget().getName(), plan.getActivity()) };
+	int rep = { 2 - (plan.getCrew().getTier() - opportunity.getTarget().getTier()) };
+
+	/* boolean accepted = false; boolean abandoned = false; boolean active = false; */
+	
+	/* score state machine */
+	sequence {
+		Ready { doReady -> Engagement; }
+		Engagement { 
+			doEngagement -> /{
+				plan.getTeam().forEach(r -> r.setTapped(true));
+			} Operation; 
+		}
+		Operation { doOperation -> Payoff; }
+		Payoff { doPayoff -> Heat; }
+		Heat { doHeat -> Entanglement; }
+		Entanglement { doEntanglement -> Downtime; }
+		Downtime { 
+			doDowntime -> /{
+				int actions = (plan.getCrew().getAtWar()) ? 1 : 2;
+				plan.getTeam().forEach(r -> r.doDowntime(actions));
+			} Final;
+		}
+	}
+	
+	/* */
+	public static Stream<Score> getScores() { return scoresById.values().stream(); }
+}
+
+/* */
+/* SITUATION */
+/* */
+class Situation {
+	depend java.util.Set;
+	depend java.util.stream.Stream;
+
+	/* */
+	unique UUID id;
+	RogueShip ship;
+	Obstacle obstacle;
+	
+	key { id }
+	
+	/* static */
+	public static Stream<Situation> getSituations() { return situationsById.values().stream(); }	
+	public static Stream<Situation> getSituations(RogueShip ship) {
+		return getSituations().filter(sitch -> sitch.getShip().equals(ship));
+	}
+	public static Stream<Situation> getSituations(Set<RogueShip> set) {
+		return getSituations().filter(e -> set.contains(e.getShip()));
+	}
+}

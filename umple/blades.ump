@@ -2,22 +2,13 @@ strictness allow 46;
 strictness allow 1007;
 strictness allow 1008;
 
+use blades_crews.ump;
+use blades_rogues.ump;
+use blades_scores.ump;
 use goap.ump;
 use util.ump;
 
 namespace com.blades.main;
-
-/* */
-/* ACTIVITY */
-/* */
-class Activity {
-	Objective objective;
-	Rogue[] team;
-	Obstacle[] rules;
-	Item[] tools;
-	Playbook[] roles;
-	Crew[] interestedParties;
-}
 
 /* */
 /* CLAIM */
@@ -30,155 +21,6 @@ class Claim {
 	boolean isPrison;
 	
 	key { id }
-}
-
-/* */
-/* CREW */
-/* */
-class Crew {
-	depend java.util.function.Predicate;
-	depend java.util.stream.Stream;
-	
-	depend com.blades.util.Util;
-
-	/* */
-	const AMBITIOUS = "ambitious"; // TODO
-	/* */
-	const ASSASSINS = "assassins"; const BRAVOS = "bravos"; const CULTISTS = "cultists"; const HAWKERS = "hawkers"; const SHADOWS = "shadows"; const SMUGGLERS = "smugglers";
-
-	/* */
-	unique UUID id;
-	name; type;
-	String[] reputation;
-	favoredOp;
-	lazy internal Score score;
-	
-	1 crew <@>- * Rogue rogues;
-	0..1 crew <@>- * Locale turf;
-
-	int rep = 0; int tier; int heat = 0; int wanted = 0; int coin;
-	boolean hold;
-
-	key { id }
-
-	/* derived attributes */	
-	boolean atWar = { CrewShip.atWar(this) }
-	boolean lookingForWork = { Util.unless(score) }
-
-	/** Primary means for determining crew's hold.
-	* @return boolean modified by whether crew is at war. */
-	boolean currentHold = { getAtWar() ? hold ? false : hold : hold }
-
-	/** Primary means for determining crew's tier. 
-	* @return int modified by whether crew is at war and has strong/weak hold. */
-	int currentRep = { getAtWar() ? hold ? rep : rep - 1 : rep }
-	
-	/* instance */
-	public Stream<Rogue> getRoster() { return rogues.stream(); }
-	public Stream<Rogue> getAvailableRogues() { return rogues.stream().filter(Predicate.not(Rogue::getTapped)); }
-	public int turfCount() { return (int) getTurf().stream().filter(Locale::getIsTurf).count(); }
-	public Locale getLair() {  return getTurf().stream().filter(Locale::getIsLair).findFirst().orElse(null);  }
-	
-	public void lookForWork() {
-		Opportunity opp = Opportunity.getOpportunities().findFirst().get();
-		Plan plan = makePlan(opp);
-
-		this.score = new Score(Util.nextUUID(), opp, plan);
-	}
-
-	/* operational tasks */
-	private Objective objectify(Opportunity opp) { return new Objective(); }
-
-	private List<Obstacle> assess(Opportunity opp) {
-		List<Obstacle> list = new ArrayList<Obstacle>();
-		list.add(opp.getSituation().getObstacle());
-		return list;
-	}
-	private List<Item> selectTools(List<Obstacle> obs) { return List.of(); }
-	private List<Playbook> selectRoles(List<Obstacle> obs) { return List.of(); }
-	private List<Rogue> selectTeam(Activity activity) { return List.copyOf(rogues); }
-
-	private Plan makePlan(Opportunity opp) {
-		Crew target = opp.getTarget();
-		List<Obstacle> obs = assess(opp);
-
-		Activity activity = new Activity(objectify(opp));
-		CrewShip.getShips(target).map(ship -> ship.getOther(target)).forEach(activity::addInterestedParty);
-		obs.forEach(activity::addRule);
-		selectTools(obs).forEach(activity::addTool);
-		selectRoles(obs).forEach(activity::addRole);
-		selectTeam(activity).forEach(activity::addTeam);
-
-		return new Plan(this, activity);
-	}
-	
-	/* static */
-	public static Crew getCrewByName(String name) {
-		return getCrews().filter(s -> s.getName().equalsIgnoreCase(name)).findFirst().get();
-	}
-	
-	public static Crew getCrewByReputation(String rep) {
-		return getCrews().filter(s -> s.indexOfReputation(rep) > -1).findFirst().get();
-	}
-
-	public static Crew newFaction(UUID aId, String aName, int aTier, boolean aHold) {
-		return new Crew(aId, aName, null, null, aTier, 0, aHold);
-	}
-
-	/* */
-	public static Stream<Crew> getCrews() { return crewsById.values().stream(); };
-	public static Stream<Crew> getCrewsLookingForWork() { return getCrews().filter(Crew::getLookingForWork); }
-	public static void update() {
-		/* TODO */
-		getCrewsLookingForWork().forEach(Crew::lookForWork);
-	}
-}
-
-/* */
-/* CREWSHIP */
-/* */
-class CrewShip {
-	depend java.util.function.Predicate;
-	depend java.util.stream.Stream;
-	
-	/* */
-	const Predicate<CrewShip> ALLIES = allies();
-	const Predicate<CrewShip> ENEMIES = enemies();
-	const Predicate<CrewShip> RIVALS = rivals();
-	const Predicate<CrewShip> AT_WAR = at_war();
-
-	/* */
-	/* */
-	unique UUID id;
-	* <@>- 2 Crew crews;
-	int value;
-
-	key { id }
-	
-	/* derived attribute */
-	String shipname = { String.format("%s + %s", getCrew(0).getName(), getCrew(1).getName()) }
-	
-	/* */
-	boolean contains(Crew c) { return c.equals(crews.get(0)) || c.equals(crews.get(1)); }
-	Crew getOther(Crew c) { return c.equals(crews.get(0)) ? crews.get(1) : c.equals(crews.get(1)) ? crews.get(0) : null; }
-
-	/* */
-	public static Stream<CrewShip> getShips() { return crewshipsById.values().stream(); }
-	public static Stream<CrewShip> getShips(Crew crew) { return getShips().filter(c -> c.contains(crew)); }
-	public static boolean atWar(Crew crew) { return getShips(crew).anyMatch(AT_WAR); }
-
-	/* */
-	private static Predicate<CrewShip> allies() { return ship -> { return ship.getValue() > 1; }; }
-	private static Predicate<CrewShip> enemies() { return ship -> { return ship.getValue() < -1; }; }
-	private static Predicate<CrewShip> rivals() { return ship -> { return ship.getValue() > -2 && ship.getValue() < 2; }; }
-	private static Predicate<CrewShip> at_war() { return ship -> { return ship.getValue() < -2; }; }
-}
-
-/* */
-/* ENTANGLEMENT */
-/* */
-class Entanglement {
-	const ARREST = "arrest"; const COOPERATION = "cooperation"; const DEMONIC_NOTICE = "demonic notice"; const FLIPPED = "flipped"; const GANG_TROUBLE = "gang trouble"; const INTERROGATION = "interrogation"; const QUESTIONING = "questioning"; const REPRISALS = "reprisals"; const RIVALS = "rivals"; const SHOW_OF_FORCE = "show of force"; const UNQUIET_DEAD = "unquiet dead"; const USUAL_SUSPECTS = "usual suspects";
 }
 
 /* */
@@ -225,7 +67,7 @@ class GameLoop {
 		Locale locale = target.getLair();
 		System.out.println(locale.getName());
 
-		Opportunity opp = new Opportunity(target, locale, sitch);
+		Opportunity opp = new Opportunity(Util.nextUUID(), target, locale, sitch);
 	}
 	
 	private static void testRogueships() {
@@ -290,68 +132,15 @@ class Locale {
 	
 	0..1 parent -- * Locale children;
 	
+	boolean isNeighborhood = { name.matches("neighborhood") }
 	boolean hasZoning = { zoning != null }
 
 	/* */
 	public static Stream<Locale> getLocales() { return localesById.values().stream(); }
+	public static Stream<Locale> getPlaces() { return getLocales().filter(Locale::hasParent); }
 	public static Locale getLocaleByName(String name) {
 		return getLocales().filter(l -> l.getName().matches(name)).findFirst().get();
 	}
-}
-
-/* */
-/* OBJECTIVE */
-/* */
-class Objective {
-	/* real or symbolic value; relevant _physical_ obstacles; exposure -> suitability of target; ; */
-	/* value; inertia; visibility; accessibility; */
-}
-
-/* */
-/* OBSTACLE */
-/* */
-class Obstacle {
-	const SURVEY = "survey";
-
-	name; rating = SURVEY;
-	/* Hazards, barriers, and distractions are borrowed from FATE: Accelerated. In short, hazards deal damage, barriers must be opposed, and distractions present choices with consequences. */
-	lazy boolean isHazard; lazy boolean isBarrier; lazy boolean isDistraction;
-	/* A disctraction consists of the Dilemma, the Effects, and an Opposition value (if any). */
-}
-
-/* */
-/* OPPORTUNITY */
-/* */
-class Opportunity {
-	depend java.util.stream.Stream;
-
-	/* */
-	unique UUID id; 
-	Crew target;
-	Locale locale;
-	Situation situation;
-	key { id }
-
-	/* */
-	lazy Rogue patron; 
-	lazy Crew[] related;
-	lazy Opportunity[] secrets;
-	/* "backdoor" implies alternate plan vector */
-	lazy String backdoor;
-	
-	/* */
-	public static Stream<Opportunity> getOpportunities() { return opportunitysById.values().stream(); } 
-}
-
-/* */
-/* PLAN */
-/* */
-class Plan {
-	/* */
-	Crew crew; Activity activity;
-	
-	/* */
-	List<Rogue> team = { Arrays.asList(activity.getTeam()) }
 }
 
 /* */
@@ -363,131 +152,6 @@ class Playbook {
 	
 	/* */
 	name = CUTTER;
-}
-
-/* */
-/* ROGUE */
-/* */
-class Rogue {
-	depend java.util.function.Predicate;
-	depend java.util.stream.Stream;
-	
-	depend com.blades.util.Util;
-
-	/* vices */
-	const FAITH = "faith"; const GAMBLING = "gambling"; const LUXURY = "luxury"; const OBLIGATION = "obligation"; const PLEASURE = "pleasure"; const STUPOR = "stupor"; const WEIRD = "weird";
-
-	/* */
-	unique UUID id;
-	roguename; Playbook playbook; vice;
-	/* Crew crew; */
-	int stress = 0; int trauma = 0; int coin = 0; int stash = 0;
-	boolean tapped = false;
-
-	key { id }
-	
-	/* instance */
-	void doDowntime(int actions) { setTapped(false); }
-	
-	/* static */
-	public static Rogue newContact(UUID aid, String aRoguename) {
-		return new Rogue(aid, aRoguename, null, null, null);
-	}
-	
-	public static Stream<Rogue> getRogues() { return roguesById.values().stream(); }
-
-	public static Stream<Rogue> getAvailableRogues() { return getRogues().filter(Predicate.not(Rogue::getTapped)); }
-	/* public static Stream<Rogue> getRoguesWithGoals() { return getRogues().filter(Rogue::hasGoals); } */
-	/* public static Stream<Goal> getRogueGoals() { return getRoguesWithGoals().map(Rogue::getGoals).flatMap(Arrays::stream); } */
-}
-
-/* */
-/* ROGUESHIP */
-/* */
-class RogueShip {
-	depend java.util.stream.Stream;
-
-	/* */
-	const ALLY = "ally"; const CONTACT = "contact"; const ENEMY = "enemy"; const RIVAL = "rival";
-
-	/* */
-	unique UUID id;
-	* <@>- 2 Rogue rogues;
-	value = RIVAL;
-
-	key { id }
-
-	/* */
-	shipname = { String.format("%s + %s", rogues.get(0).getRoguename(), rogues.get(1).getRoguename()) }
-
-	/* */
-	boolean contains(Rogue c) { return c.equals(rogues.get(0)) || c.equals(rogues.get(1)); }
-	Rogue getOther(Rogue c) { return c.equals(rogues.get(0)) ? rogues.get(1) : c.equals(rogues.get(1)) ? rogues.get(0) : null; }
-	
-	/* */
-	public static Stream<RogueShip> getRogueships() { return rogueshipsById.values().stream(); }
-}
-
-/* */
-/* SCORE */
-/* */
-class Score {
-	depend java.util.function.Predicate;
-	depend java.util.stream.Stream;
-
-	/* */
-	unique UUID id;
-	Plan plan; Opportunity opportunity;
-	lazy int coin; lazy int heat;
-
-	key { id }
-
-	/* */
-	name = { String.format("The %s %s", opportunity.getTarget().getName(), plan.getActivity()) };
-	int rep = { 2 - (plan.getCrew().getTier() - opportunity.getTarget().getTier()) };
-
-	/* boolean accepted = false; boolean abandoned = false; boolean active = false; */
-	
-	/* score state machine */
-	sequence {
-		Ready { doReady -> Engagement; }
-		Engagement { 
-			doEngagement -> /{
-				plan.getTeam().forEach(r -> r.setTapped(true));
-			} Operation; 
-		}
-		Operation { doOperation -> Payoff; }
-		Payoff { doPayoff -> Heat; }
-		Heat { doHeat -> Entanglement; }
-		Entanglement { doEntanglement -> Downtime; }
-		Downtime { 
-			doDowntime -> /{
-				int actions = (plan.getCrew().getAtWar()) ? 1 : 2;
-				plan.getTeam().forEach(r -> r.doDowntime(actions));
-			} Final;
-		}
-	}
-	
-	/* */
-	public static Stream<Score> getScores() { return scoresById.values().stream(); }
-	public static Stream<Score> getAvailableScores() { return getScores().filter(Predicate.not(Score::getAccepted)); }
-}
-
-/* */
-/* SITUATION */
-/* */
-class Situation {
-	depend java.util.stream.Stream;
-
-	/* */
-	unique UUID id;
-	RogueShip ship;
-	Obstacle obstacle;
-	
-	key { id }
-	
-	/* static */
-	public static Stream<Situation> getSituations() { return situationsById.values().stream(); }	
 }
 
 /* */

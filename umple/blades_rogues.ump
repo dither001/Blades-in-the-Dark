@@ -1,0 +1,80 @@
+
+namespace com.blades.main;
+
+/* */
+/* ROGUE */
+/* */
+class Rogue {
+	depend java.util.function.Predicate;
+	depend java.util.stream.Stream;
+	
+	depend com.blades.util.Util;
+
+	/* vices */
+	const FAITH = "faith"; const GAMBLING = "gambling"; const LUXURY = "luxury"; const OBLIGATION = "obligation"; const PLEASURE = "pleasure"; const STUPOR = "stupor"; const WEIRD = "weird";
+
+	/* */
+	unique UUID id;
+	roguename; Playbook playbook; vice;
+	/* Crew crew; */
+	int stress = 0; int trauma = 0; int coin = 0; int stash = 0;
+	boolean tapped = false;
+
+	key { id }
+	
+	/* instance */
+	void doDowntime(int actions) { setTapped(false); }
+	
+	/* static */
+	public static Rogue newContact(UUID aid, String aRoguename) {
+		return new Rogue(aid, aRoguename, null, null, null);
+	}
+	
+	public static Stream<Rogue> getRogues() { return roguesById.values().stream(); }
+
+	public static Stream<Rogue> getAvailableRogues() { return getRogues().filter(Predicate.not(Rogue::getTapped)); }
+	/* public static Stream<Rogue> getRoguesWithGoals() { return getRogues().filter(Rogue::hasGoals); } */
+	/* public static Stream<Goal> getRogueGoals() { return getRoguesWithGoals().map(Rogue::getGoals).flatMap(Arrays::stream); } */
+}
+
+/* */
+/* ROGUESHIP */
+/* */
+class RogueShip {
+	depend java.util.function.Predicate;
+	depend java.util.stream.Stream;
+
+	const Predicate<RogueShip> ALLIES = allies();
+	const Predicate<RogueShip> CONTACTS = contacts();
+	const Predicate<RogueShip> ENEMIES = enemies();
+	const Predicate<RogueShip> RIVALS = rivals();
+
+	/* */
+	const ALLY = "ally"; const CONTACT = "contact"; const ENEMY = "enemy"; const RIVAL = "rival";
+
+	/* */
+	unique UUID id;
+	* <@>- 2 Rogue rogues;
+	value = RIVAL;
+
+	key { id }
+
+	/* */
+	shipname = { String.format("%s + %s", rogues.get(0).getRoguename(), rogues.get(1).getRoguename()) }
+
+	/* */
+	boolean contains(Rogue c) { return c.equals(rogues.get(0)) || c.equals(rogues.get(1)); }
+	Rogue getOther(Rogue c) { return c.equals(rogues.get(0)) ? rogues.get(1) : c.equals(rogues.get(1)) ? rogues.get(0) : null; }
+	
+	/* */
+	public static Stream<RogueShip> getRogueships() { return rogueshipsById.values().stream(); }
+	public static Stream<RogueShip> getRogueships(Predicate<RogueShip> predicate) {
+		return rogueshipsById.values().stream().filter(ship -> predicate.test(ship));
+	}
+
+	/* */
+	private static Predicate<RogueShip> allies() { return ship -> { return ship.getValue().matches(ALLY); }; }
+	private static Predicate<RogueShip> contacts() { return ship -> { return ship.getValue().matches(CONTACT); }; }
+	private static Predicate<RogueShip> enemies() { return ship -> { return ship.getValue().matches(ENEMY); }; }
+	private static Predicate<RogueShip> rivals() { return ship -> { return ship.getValue().matches(RIVAL); }; }
+}
