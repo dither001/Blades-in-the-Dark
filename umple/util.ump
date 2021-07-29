@@ -38,6 +38,7 @@ class Loader {
 	depend com.blades.main.Zoning;
 
 	after constructor {
+		loadBuildings("res/data/doskvol_common_buildings.csv");
 		loadDistricts("res/data/doskvol_districts.csv");
 		loadFactions("res/data/doskvol_factions.csv");
 		loadCrewShips("res/data/doskvol_crewships.csv");
@@ -49,9 +50,21 @@ class Loader {
 		Util.fileTransformer(path, new Function<String, Locale>() {
 			@Override
 			public Locale apply(String t) {
-				return new Locale(Util.nextUUID(), t);
+				String[] a = t.split(",");
+				Locale l = new Locale(Util.nextUUID(), a[0]);
+				l.setWealth(Integer.parseInt(a[1]));
+				l.setSecurity(Integer.parseInt(a[2]));
+				l.setCrime(Integer.parseInt(a[3]));
+				l.setOccult(Integer.parseInt(a[4]));
+				return l;
 			}
 		});
+	}
+	
+	private static void loadBuildings(String path) {
+		Util.fileTransformer(path, new Function<String, String>() {
+			@Override public String apply(String t) { return t; }
+		}).forEach(Locale.COMMON_BUILDINGS::add);
 	}
 	
 	private static void loadFactions(String path) {

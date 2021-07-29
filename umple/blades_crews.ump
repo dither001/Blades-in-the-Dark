@@ -20,7 +20,7 @@ class Crew {
 	name; type;
 	String[] reputation;
 	favoredOp;
-	lazy internal Score score;
+	lazy Score score;
 	
 	1 crew <@>- * Rogue rogues;
 	0..1 crew <@>- * Locale turf;
@@ -32,7 +32,7 @@ class Crew {
 
 	/* derived attributes */	
 	boolean atWar = { CrewShip.atWar(this) }
-	boolean lookingForWork = { Util.unless(turf.stream().anyMatch(Locale::isNeighborhood)) && Util.unless(score) }
+	boolean lookingForWork = { Util.unless(turf.stream().anyMatch(Locale::getIsNeighborhood)) && Util.unless(score) }
 
 	/** Primary means for determining crew's hold.
 	* @return boolean modified by whether crew is at war. */
@@ -50,8 +50,9 @@ class Crew {
 	public boolean hasLair() { return turf.stream().anyMatch(Locale::getIsLair); }
 	
 	public void lookForWork() {
-		Opportunity opp = Opportunity.getOpportunities(this).findFirst().orElse(null);
+		Opportunity opp = Opportunity.next(this);
 		if (Util.ensure(opp)) {
+			System.out.println(name + " found work");
 			Objective obj = objectify(opp);
 			Plan plan = makePlan(obj);
 			this.score = new Score(Util.nextUUID(), plan, opp);

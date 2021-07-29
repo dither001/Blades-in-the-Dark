@@ -28,6 +28,8 @@ class Claim {
 /* */
 class GameContext {
 	singleton;
+	
+	long turn = 0L;
 }
 
 /* */
@@ -42,6 +44,10 @@ class GameLoop {
 	depend com.blades.util.Util;
 	
 	/* */
+	GameContext context = com.blades.main.GameContext.getInstance();
+	GameLoop g = GameLoop.getInstance();
+	List<Runnable> r = Arrays.asList(g::untap, g::upkeep, g::draw, g::main, g::combat, g::main2, g::cleanup);
+	
 	boolean running = true;
 	
 	/* instance */
@@ -51,8 +57,11 @@ class GameLoop {
 	/* static */
 	public static void main(String...args) {
 		com.blades.util.Loader.getInstance();
-		/* GameLoop.getInstance().loop(); */
+
+		/* */		
+		g.testRogueships();
 		
+		Crew.update();
 	}
 	
 	private static void testScore() {
@@ -101,13 +110,21 @@ class GameLoop {
 	
 	/* game state machine */
 	sequence {
-		Untap { untap() -> Upkeep; }
-		Upkeep { upkeep() -> Draw; }
-		Draw { draw() -> Main; }
-		Main { main() -> Combat; }
-		Combat { combat() -> Main2; }
-		Main2 { main2() -> Cleanup; }
-		Cleanup { cleanup() -> Untap; }
+		Untap { untap() -> /{
+		} Upkeep; }
+		Upkeep { upkeep() -> /{
+			Opportunity.update();
+		} Draw; }
+		Draw { draw() -> /{
+			Crew.update();
+		} Main; }
+		Main { main() -> /{
+		} Combat; }
+		Combat { combat() /{} -> Main2; }
+		Main2 { main2() -> /{} Cleanup; }
+		Cleanup { cleanup() -> /{
+			context.setTurn(context.getTurn() + 1);
+		} Untap; }
 	}
 }
 
@@ -122,9 +139,18 @@ class Item {}
 class Locale {
 	depend java.util.stream.Stream;
 
+	depend com.blades.util.Util;
+
+	/* */
+	public static final List<String> COMMON_BUILDINGS = new ArrayList<String>();
+	public static final List<String> UNCOMMON_BUILDINGS = new ArrayList<String>();
+
 	/* */
 	unique UUID id;
 	name;
+	
+	/* */
+	lazy int wealth; lazy int security; lazy int crime; lazy int occult; 
 	lazy boolean isLair; lazy boolean isHuntingGround; lazy boolean isTurf;
 	lazy Zoning zoning;
 
@@ -132,6 +158,7 @@ class Locale {
 	
 	0..1 parent -- * Locale children;
 	
+	boolean isDistrict = { Util.unless(getHasZoning()) }
 	boolean isNeighborhood = { name.matches("neighborhood") }
 	boolean hasZoning = { zoning != null }
 

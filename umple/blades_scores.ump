@@ -1,6 +1,8 @@
 
 namespace com.blades.main;
 
+external interface Comparator {}
+
 /* */
 /* ACTIVITY */
 /* */
@@ -50,24 +52,37 @@ class Obstacle {
 /* OPPORTUNITY */
 /* */
 class Opportunity {
+	depend java.util.Comparator;
+
+	depend java.util.concurrent.PriorityBlockingQueue;
+	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
+	
+	depend com.blades.util.Util;
+
+	/* */
+	const Comparator<Opportunity> PRIORITY = priority();
+	const PriorityBlockingQueue<Opportunity> QUEUE = new PriorityBlockingQueue<Opportunity>(11, PRIORITY);
 
 	/* */
 	unique UUID id; 
 	Crew target;
 	Locale locale;
 	Situation situation;
+	long turnCreated = com.blades.main.GameContext.getInstance().getTurn();
+
 	key { id }
 
-	/* */
-	lazy Rogue patron; 
-	lazy Crew[] related;
-	lazy Opportunity[] secrets;
 	/* "backdoor" implies alternate plan vector */
-	lazy String backdoor;
+	lazy Rogue patron;  lazy Crew[] related; lazy Opportunity[] secrets; lazy String backdoor;
 	
 	/* */
-	public static void prepareOpportunities() {
+	after constructor { QUEUE.add(this); }
+	
+	/* */
+	/* */
+	/* */
+	public static void update() {
 		Iterator<Crew> crits = Crew.getCrews().iterator();
 		Iterator<Locale> pits = Locale.getPlaces().iterator();
 		Iterator<Situation> sits = Situation.getSituations(
@@ -83,6 +98,15 @@ class Opportunity {
 	public static Stream<Opportunity> getOpportunities() { return opportunitysById.values().stream(); }
 	public static Stream<Opportunity> getOpportunities(Crew crew) {
 		return getOpportunities().filter(opp -> crew.getTurf().contains(opp.getLocale()));
+	}
+	
+	public static Opportunity next(Crew crew) {
+		boolean isTarget = Util.unless(QUEUE.isEmpty()) ? QUEUE.peek().getTarget().equals(crew) : true;
+		return Util.unless(isTarget) ? QUEUE.poll() : null;
+	}
+	
+	private static Comparator<Opportunity> priority() {
+		return (op1, op2) -> Long.compare(op1.turnCreated, op2.turnCreated);
 	}
 }
 
