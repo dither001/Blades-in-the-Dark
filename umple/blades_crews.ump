@@ -42,12 +42,37 @@ class Crew {
 	* @return int modified by whether crew is at war and has strong/weak hold. */
 	int currentRep = { getAtWar() ? hold ? rep : rep - 1 : rep }
 	
+	/* */
+	public static void initialize() {
+		setupLairs();
+		setupHuntingGrounds();
+	}
+	
+	private static void setupLairs() {
+		getCrews().filter(c -> Util.unless(c.hasLair())).forEach(c -> {
+			Locale l = new Locale(Util.nextUUID(), Locale.nextCommonBuilding());
+			l.setZoning(new Zoning(Zoning.PURPOSE));
+			l.setCrew(c);
+			l.setIsLair(true);
+		});
+	}
+	
+	private static void setupHuntingGrounds() {
+		getCrews().filter(c -> Util.unless(c.hasHuntingGround())).forEach(c -> {
+			Locale l = new Locale(Util.nextUUID(), Locale.nextCommonBuilding());
+			l.setZoning(new Zoning(Zoning.PURPOSE));
+			l.setCrew(c);
+			l.setIsHuntingGround(true);
+		});
+	}
+	
 	/* instance */
 	public Stream<Rogue> getRoster() { return rogues.stream(); }
 	public Stream<Rogue> getAvailableRogues() { return rogues.stream().filter(Predicate.not(Rogue::getTapped)); }
 	public int turfCount() { return (int) getTurf().stream().filter(Locale::getIsTurf).count(); }
 	public Locale getLair() {  return getTurf().stream().filter(Locale::getIsLair).findFirst().orElse(null);  }
 	public boolean hasLair() { return turf.stream().anyMatch(Locale::getIsLair); }
+	public boolean hasHuntingGround() { return turf.stream().anyMatch(Locale::getIsHuntingGround); }
 	
 	public void lookForWork() {
 		Opportunity opp = Opportunity.next(this);

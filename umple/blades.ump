@@ -38,6 +38,7 @@ class GameContext {
 class GameLoop {
 	singleton;
 	
+	depend java.util.Arrays;
 	depend java.util.List;
 	depend java.util.stream.Collectors;
 	
@@ -47,20 +48,13 @@ class GameLoop {
 	GameContext context = com.blades.main.GameContext.getInstance();
 	GameLoop g = GameLoop.getInstance();
 	List<Runnable> r = Arrays.asList(g::untap, g::upkeep, g::draw, g::main, g::combat, g::main2, g::cleanup);
-	
-	boolean running = true;
-	
-	/* instance */
-	void loop() { while (running) { update(); } }
-	void update() { Crew.update(); }
-	
+
 	/* static */
 	public static void main(String...args) {
 		com.blades.util.Loader.getInstance();
 
 		/* */		
-		g.testRogueships();
-		
+		GameLoop.testRogueships();
 		Crew.update();
 	}
 	
@@ -138,12 +132,13 @@ class Item {}
 /* */
 class Locale {
 	depend java.util.stream.Stream;
+	depend java.util.stream.Stream;
 
 	depend com.blades.util.Util;
 
 	/* */
-	public static final List<String> COMMON_BUILDINGS = new ArrayList<String>();
-	public static final List<String> UNCOMMON_BUILDINGS = new ArrayList<String>();
+	public static final List<String> COMMON_BUILDINGS = Collections.synchronizedList(new ArrayList<String>());
+	public static final List<String> UNCOMMON_BUILDINGS = Collections.synchronizedList(new ArrayList<String>());
 
 	/* */
 	unique UUID id;
@@ -168,6 +163,9 @@ class Locale {
 	public static Locale getLocaleByName(String name) {
 		return getLocales().filter(l -> l.getName().matches(name)).findFirst().get();
 	}
+	
+	public static synchronized String nextCommonBuilding() { String l = COMMON_BUILDINGS.remove(0); COMMON_BUILDINGS.add(l); return l; }
+	public static synchronized String nextUncommonBuilding() { String l = UNCOMMON_BUILDINGS.remove(0); UNCOMMON_BUILDINGS.add(l); return l; }
 }
 
 /* */
