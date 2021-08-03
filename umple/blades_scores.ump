@@ -130,8 +130,13 @@ class Plan {
 class Score {
 	depend java.util.function.Predicate;
 	depend java.util.stream.Stream;
+	
+	depend com.blades.util.Util;
 
 	/* */
+	internal List<Runnable> r = Arrays.asList(this::doReady, this::doEngagement, this::doOperation, this::doPayoff, this::doHeat,
+			this::doEntanglement, this::doDowntime);
+
 	unique UUID id;
 	Plan plan; Opportunity opportunity;
 	lazy int coin; lazy int heat;
@@ -139,10 +144,27 @@ class Score {
 	key { id }
 
 	/* */
-	name = { String.format("The %s %s", opportunity.getTarget().getName(), plan.getActivity()) };
+	name = { String.format("The %s job", opportunity.getTarget().getName()) };
 	int rep = { 2 - (plan.getCrew().getTier() - opportunity.getTarget().getTier()) };
 
 	/* boolean accepted = false; boolean abandoned = false; boolean active = false; */
+	
+	/* */
+	public void next() {
+		while (Util.unless(sequence.equals(Sequence.Final))) {
+			int phase = sequence.ordinal();
+			r.get(phase).run();
+			System.out.println(String.format("%s pulled the %s job (%s)", crew.getName(),
+					opportunity.getTarget().getName(), sequence));
+			setSequence(Sequence.values()[phase + 1]);
+		}
+
+		System.out.println(String.format("%s completed the %s job", crew.getName(), opportunity.getTarget().getName()));
+		crew.setScore(null);
+	}
+	
+	/* */
+	public static Stream<Score> getScores() { return scoresById.values().stream(); }
 	
 	/* score state machine */
 	sequence {
@@ -162,10 +184,7 @@ class Score {
 				plan.getTeam().forEach(r -> r.doDowntime(actions));
 			} Final;
 		}
-	}
-	
-	/* */
-	public static Stream<Score> getScores() { return scoresById.values().stream(); }
+	}	
 }
 
 /* */

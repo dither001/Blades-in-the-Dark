@@ -46,16 +46,24 @@ class GameLoop {
 	
 	/* */
 	GameContext context = com.blades.main.GameContext.getInstance();
-	GameLoop g = GameLoop.getInstance();
-	List<Runnable> r = Arrays.asList(g::untap, g::upkeep, g::draw, g::main, g::combat, g::main2, g::cleanup);
+	List<Runnable> r = Arrays.asList(this::untap, this::upkeep, this::draw, this::main, this::combat, this::main2, this::cleanup);
 
 	/* static */
 	public static void main(String...args) {
 		com.blades.util.Loader.getInstance();
+		GameLoop loop = GameLoop.getInstance();
 
-		/* */		
+		/* */
 		GameLoop.testRogueships();
-		Crew.update();
+//		Opportunity.update();
+//		Crew.update();
+
+		while (Util.unless(loop.getSequence().equals(Sequence.Cleanup))) {
+			int phase = loop.sequence.ordinal();
+			loop.r.get(phase).run();
+			System.out.println("--> Ran phase " + loop.sequence.name());
+			loop.setSequence(Sequence.values()[phase + 1]);
+		}
 	}
 	
 	private static void testScore() {
@@ -113,6 +121,7 @@ class GameLoop {
 			Crew.update();
 		} Main; }
 		Main { main() -> /{
+			Crew.getCrewsWithScores().forEach(Crew::next);
 		} Combat; }
 		Combat { combat() /{} -> Main2; }
 		Main2 { main2() -> /{} Cleanup; }

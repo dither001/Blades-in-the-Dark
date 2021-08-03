@@ -146,6 +146,8 @@ class Util {
 		return quality == null ? false
 			: quality.getClass().equals(Boolean.class) 
 			? ((Boolean) quality).booleanValue()
+    		: quality.getClass().equals(Integer.class) 
+    		? ((int)quality) > -1
 			: quality.getClass().equals(Optional.class) 
 			? ((Optional<?>) quality).isPresent() 
 			: true;

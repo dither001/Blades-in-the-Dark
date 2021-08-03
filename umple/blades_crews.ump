@@ -67,36 +67,31 @@ class Crew {
 	}
 	
 	/* instance */
+	public boolean hasReputation(String rep) { return Util.ensure(indexOfReputation(rep)); }
 	public Stream<Rogue> getRoster() { return rogues.stream(); }
 	public Stream<Rogue> getAvailableRogues() { return rogues.stream().filter(Predicate.not(Rogue::getTapped)); }
 	public int turfCount() { return (int) getTurf().stream().filter(Locale::getIsTurf).count(); }
 	public Locale getLair() {  return getTurf().stream().filter(Locale::getIsLair).findFirst().orElse(null);  }
 	public boolean hasLair() { return turf.stream().anyMatch(Locale::getIsLair); }
 	public boolean hasHuntingGround() { return turf.stream().anyMatch(Locale::getIsHuntingGround); }
+	public boolean hasScore() { return Util.ensure(score); }
+	public void next() { if (Util.ensure(score)) { score.next(this); } }
 	
 	public void lookForWork() {
 		Opportunity opp = Opportunity.next(this);
 		if (Util.ensure(opp)) {
 			System.out.println(name + " found work");
 			Objective obj = objectify(opp);
-			Plan plan = makePlan(obj);
+			Activity activity = activity(obj);
+			Plan plan = plan(activity);
 			this.score = new Score(Util.nextUUID(), plan, opp);
 		}
 	}
 
 	/* operational tasks */
 	private Objective objectify(Opportunity opp) { return new Objective(opp); }
-
-	private List<Obstacle> assess(Objective obj) {
-		List<Obstacle> list = new ArrayList<Obstacle>();
-		list.add(obj.getSituation().getObstacle());
-		return list;
-	}
-	private List<Item> selectTools(List<Obstacle> obs) { return List.of(); }
-	private List<Playbook> selectRoles(List<Obstacle> obs) { return List.of(); }
-	private List<Rogue> selectTeam(Activity activity) { return List.copyOf(rogues); }
-
-	private Plan makePlan(Objective obj) {
+	
+	private Activity activity(Objective obj) {
 		Crew target = obj.getTarget();
 		List<Obstacle> obs = assess(obj);
 
@@ -107,17 +102,26 @@ class Crew {
 		selectRoles(obs).forEach(activity::addRole);
 		selectTeam(activity).forEach(activity::addTeam);
 
-		return new Plan(this, activity);
+		return activity;
 	}
+	
+	private Plan plan(Activity activity) { return new Plan(this, activity); }
+
+	private List<Obstacle> assess(Objective obj) {
+		List<Obstacle> list = new ArrayList<Obstacle>();
+		list.add(obj.getSituation().getObstacle());
+		return list;
+	}
+	private List<Item> selectTools(List<Obstacle> obs) { return List.of(); }
+	private List<Playbook> selectRoles(List<Obstacle> obs) { return List.of(); }
+	private List<Rogue> selectTeam(Activity activity) { return List.copyOf(rogues); }
 	
 	/* static */
 	public static Crew getCrewByName(String name) {
 		return getCrews().filter(s -> s.getName().equalsIgnoreCase(name)).findFirst().get();
 	}
 	
-	public static Crew getCrewByReputation(String rep) {
-		return getCrews().filter(s -> s.indexOfReputation(rep) > -1).findFirst().get();
-	}
+	public static Crew getCrewByReputation(String rep) { return getCrews().filter(Crew::hasReputation).findFirst().get(); }
 
 	public static Crew newFaction(UUID aId, String aName, int aTier, boolean aHold) {
 		return new Crew(aId, aName, null, null, aTier, 0, aHold);
@@ -126,10 +130,8 @@ class Crew {
 	/* */
 	public static Stream<Crew> getCrews() { return crewsById.values().stream(); };
 	public static Stream<Crew> getCrewsLookingForWork() { return getCrews().filter(Crew::getLookingForWork); }
-	public static void update() {
-		/* TODO */
-		getCrewsLookingForWork().forEach(Crew::lookForWork);
-	}
+	public static Stream<Crew> getCrewsWithScores() { return getCrews().filter(Crew::hasScore); }
+	public static void update() {  /* TODO */ getCrewsLookingForWork().forEach(Crew::lookForWork); }
 }
 
 /* */
