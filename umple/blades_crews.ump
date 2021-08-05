@@ -75,16 +75,16 @@ class Crew {
 	public boolean hasLair() { return turf.stream().anyMatch(Locale::getIsLair); }
 	public boolean hasHuntingGround() { return turf.stream().anyMatch(Locale::getIsHuntingGround); }
 	public boolean hasScore() { return Util.ensure(score); }
-	public void next() { if (Util.ensure(score)) { score.next(this); } }
 	
 	public void lookForWork() {
 		Opportunity opp = Opportunity.next(this);
 		if (Util.ensure(opp)) {
-			System.out.println(name + " found work");
-			Objective obj = objectify(opp);
-			Activity activity = activity(obj);
-			Plan plan = plan(activity);
-			this.score = new Score(Util.nextUUID(), plan, opp);
+			/* System.out.println(name + " found work"); */
+
+			Plan plan = plan(activity(objectify(opp)), Approach.DECEPTION, null);
+			Score newScore = new Score(Util.nextUUID(), opp, plan);
+			newScore.setCrew(this);
+			setScore(newScore);
 		}
 	}
 
@@ -105,7 +105,7 @@ class Crew {
 		return activity;
 	}
 	
-	private Plan plan(Activity activity) { return new Plan(this, activity); }
+	private Plan plan(Activity activity, String approach, Situation detail) { return new Plan(activity, approach, detail); }
 
 	private List<Obstacle> assess(Objective obj) {
 		List<Obstacle> list = new ArrayList<Obstacle>();

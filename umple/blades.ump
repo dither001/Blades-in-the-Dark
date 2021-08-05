@@ -46,23 +46,17 @@ class GameLoop {
 	
 	/* */
 	GameContext context = com.blades.main.GameContext.getInstance();
-	List<Runnable> r = Arrays.asList(this::untap, this::upkeep, this::draw, this::main, this::combat, this::main2, this::cleanup);
+	internal List<Runnable> r = Arrays.asList(this::untap, this::upkeep, this::draw, this::main, this::combat, this::main2, this::cleanup);
 
 	/* static */
 	public static void main(String...args) {
-		com.blades.util.Loader.getInstance();
-		GameLoop loop = GameLoop.getInstance();
 
 		/* */
+		com.blades.util.Loader.getInstance();
 		GameLoop.testRogueships();
-//		Opportunity.update();
-//		Crew.update();
-
-		while (Util.unless(loop.getSequence().equals(Sequence.Cleanup))) {
-			int phase = loop.sequence.ordinal();
-			loop.r.get(phase).run();
-			System.out.println("--> Ran phase " + loop.sequence.name());
-			loop.setSequence(Sequence.values()[phase + 1]);
+		/* */
+		while (true) {
+			GameLoop.getInstance().r.stream().forEach(Runnable::run);
 		}
 	}
 	
@@ -110,25 +104,37 @@ class GameLoop {
 //		Crew.getCrews().forEach(crew -> System.out.println(crew.getName()));
 	}
 	
+	/* */
+	/* GAME STATE MACHINE */
+	/* */
+	before setSequence { 
+		System.out.println("--> Began phase: " + aSequence.name()); 
+	}
+	
 	/* game state machine */
 	sequence {
-		Untap { untap() -> /{
-		} Upkeep; }
-		Upkeep { upkeep() -> /{
-			Opportunity.update();
-		} Draw; }
-		Draw { draw() -> /{
-			Crew.update();
-		} Main; }
-		Main { main() -> /{
-			Crew.getCrewsWithScores().forEach(Crew::next);
-		} Combat; }
-		Combat { combat() /{} -> Main2; }
-		Main2 { main2() -> /{} Cleanup; }
-		Cleanup { cleanup() -> /{
-			context.setTurn(context.getTurn() + 1);
+		Untap { untap -> /{ 
+			System.out.println(String.format("Started turn %d", context.getTurn())); 
+		} Upkeep; } 
+		Upkeep { upkeep -> /{ 
+			Opportunity.update(); 
+		} Draw; } 
+		Draw { draw -> /{ 
+			Crew.update(); 
+		} Main; } 
+		Main { main -> /{ 
+			Crew.getCrewsWithScores().forEach(c -> c.getScore().run());
+		} Combat; } 
+		Combat { combat -> /{
+		} Main2; } 
+		Main2 { main2 -> /{
+		} Cleanup; } 
+		Cleanup { cleanup -> /{ 
+			context.setTurn(context.getTurn() + 1); 
 		} Untap; }
 	}
+	
+	
 }
 
 /* */
