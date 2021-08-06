@@ -98,6 +98,7 @@ class Loader {
 				Crew c1 = Crew.getCrewByName(a[0]);
 				Crew c2 = Crew.getCrewByName(a[1]);
 				int status = Boolean.parseBoolean(a[2]) ? -2 : 2;
+
 				return new CrewShip(Util.nextUUID(), status, c1, c2);
 			}
 		});

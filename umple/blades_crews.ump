@@ -170,12 +170,21 @@ class CrewShip {
 	const Predicate<CrewShip> AT_WAR = at_war();
 
 	/* */
+	after constructor {
+		if (CrewShip.exists(allCrews[0], allCrews[1])) { return; }
+	}
+
 	/* */
 	unique UUID id;
 	* <@>- 2 Crew crews;
 	int value;
+	[value >= -3 && value <= 3]
 
 	key { id }
+	
+	after setValue {
+		if (value == 3 || value == -3) { Thread.sleep(1000); }
+	}
 	
 	/* derived attribute */
 	String shipname = { String.format("%s + %s", getCrew(0).getName(), getCrew(1).getName()) }
@@ -183,8 +192,10 @@ class CrewShip {
 	/* */
 	boolean contains(Crew c) { return c.equals(crews.get(0)) || c.equals(crews.get(1)); }
 	Crew getOther(Crew c) { return c.equals(crews.get(0)) ? crews.get(1) : c.equals(crews.get(1)) ? crews.get(0) : null; }
+	boolean hasStatus(Predicate<CrewShip> pred) { return pred.test(this); }
 
 	/* */
+	public static boolean exists(Crew c1, Crew c2) { return getShips(c1).anyMatch(ship -> ship.contains(c2)); }
 	public static Stream<CrewShip> getShips() { return crewshipsById.values().stream(); }
 	public static Stream<CrewShip> getShips(Crew crew) { return getShips().filter(c -> c.contains(crew)); }
 	public static boolean atWar(Crew crew) { return getShips(crew).anyMatch(AT_WAR); }
