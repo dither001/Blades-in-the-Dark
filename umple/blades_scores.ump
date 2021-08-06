@@ -13,7 +13,7 @@ class Activity {
 	Obstacle[] rules;
 	Item[] tools;
 	Playbook[] roles;
-	Crew[] interestedParties;
+	CrewShip[] interestedParties;
 }
 
 /* */
@@ -130,6 +130,7 @@ class Plan {
 	
 	/* */
 	List<Rogue> team = { Arrays.asList(activity.getTeam()) }
+	List<CrewShip> interestedParties = { Arrays.asList(activity.getInterestedParties()) }
 }
 
 /* */
@@ -159,6 +160,9 @@ class Score {
 	/* boolean accepted = false; boolean abandoned = false; boolean active = false; */
 	
 	/* */
+	List<Rogue> team = { getPlan().getTeam() };
+	
+	/* */
 	@Override void run() { r.stream().forEach(Runnable::run); }
 	
 	/* */
@@ -178,11 +182,23 @@ class Score {
 		} Payoff; }
 		Payoff { payoff -> /{
 			/* */
+			getCrew().setRep(getCrew().getRep() + getRep());
+			/* System.out.println(String.format("%s earned %d rep for %s", getCrew().getName(), getRep(), getName())); */
+			getCrew().payoff(this);
+			/* System.out.println(String.format("%s earned %d coin for %s", getCrew().getName(), getCoin(), getName())); */
 		} Heat; }
 		Heat { heat -> /{
 			/* */
-			Crew c = getCrew();
-			c.setHeat(c.getHeat() + getHeat());
+			int heat = getHeat();
+			if (heat > 0) { getCrew().setHeat(getCrew().getHeat() + heat); }
+			/* System.out.println(String.format("%s earned %d heat for %s", getCrew().getName(), heat, getName())); */
+			getPlan().getInterestedParties().stream().forEach(e -> {
+				int value = e.getValue();
+				Crew other = e.getOther(getOpportunity().getTarget());
+				/* check to see if ship exists between crew & interested party, then make or modify it */
+				
+				/* other.getRoster().forEach(r -> {}); */
+			});
 		} Entanglement; }
 		Entanglement { entanglement -> /{
 			/* */

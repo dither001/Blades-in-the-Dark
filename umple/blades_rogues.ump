@@ -29,7 +29,7 @@ class Rogue {
 	public static Rogue newContact(UUID aid, String aRoguename) {
 		return new Rogue(aid, aRoguename, null, null, null);
 	}
-	
+
 	public static Stream<Rogue> getRogues() { return roguesById.values().stream(); }
 
 	public static Stream<Rogue> getAvailableRogues() { return getRogues().filter(Predicate.not(Rogue::getTapped)); }

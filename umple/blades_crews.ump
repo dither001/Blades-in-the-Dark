@@ -16,6 +16,9 @@ class Crew {
 	const ASSASSINS = "assassins"; const BRAVOS = "bravos"; const CULTISTS = "cultists"; const HAWKERS = "hawkers"; const SHADOWS = "shadows"; const SMUGGLERS = "smugglers";
 
 	/* */
+	const int MAX_HEAT = 9;
+
+	/* */
 	unique UUID id;
 	name; type;
 	String[] reputation;
@@ -41,6 +44,11 @@ class Crew {
 	/** Primary means for determining crew's tier. 
 	* @return int modified by whether crew is at war and has strong/weak hold. */
 	int currentRep = { getAtWar() ? hold ? rep : rep - 1 : rep }
+	
+	/* aspect orientation */
+	after setHeat {
+		if (heat >= MAX_HEAT) { int delta = heat / MAX_HEAT; setWanted(getWanted() + delta); heat -= delta; } 
+	}
 	
 	/* */
 	public static void initialize() {
@@ -76,15 +84,29 @@ class Crew {
 	public boolean hasHuntingGround() { return turf.stream().anyMatch(Locale::getIsHuntingGround); }
 	public boolean hasScore() { return Util.ensure(score); }
 	
-	public void lookForWork() {
+	void lookForWork() {
 		Opportunity opp = Opportunity.next(this);
 		if (Util.ensure(opp)) {
 			/* System.out.println(name + " found work"); */
+			int potentialRep = 2 - (getTier() - opp.getTarget().getTier());
 
 			Plan plan = plan(activity(objectify(opp)), Approach.DECEPTION, null);
 			Score newScore = new Score(Util.nextUUID(), opp, plan);
 			newScore.setCrew(this);
 			setScore(newScore);
+		}
+	}
+	
+	void payoff(Score score) {
+		int coin = score.getCoin();
+		int size = score.getTeam().size();
+
+		if (coin > 0 && size > 0) {
+			int share = coin / size;
+			if (share > 0) {
+				score.getTeam().forEach(r -> r.setCoin(r.getCoin() + share));
+				setCoin(getCoin() + coin - (share * size));
+			}
 		}
 	}
 
@@ -96,7 +118,7 @@ class Crew {
 		List<Obstacle> obs = assess(obj);
 
 		Activity activity = new Activity(obj);
-		CrewShip.getShips(target).map(ship -> ship.getOther(target)).forEach(activity::addInterestedParty);
+		CrewShip.getShips(target).forEach(activity::addInterestedParty);
 		obs.forEach(activity::addRule);
 		selectTools(obs).forEach(activity::addTool);
 		selectRoles(obs).forEach(activity::addRole);
