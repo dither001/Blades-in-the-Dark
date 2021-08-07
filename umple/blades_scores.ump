@@ -91,14 +91,15 @@ class Opportunity {
 	/* */
 	/* */
 	public static void update() {
-		Iterator<Crew> crits = Crew.getCrews().iterator();
-		Iterator<Locale> pits = Locale.getPlaces().iterator();
-		Iterator<Situation> sits = Situation.getSituations(
-			RogueShip.getRogueships(RogueShip.RIVALS).collect(Collectors.toSet())
-		).iterator();
+		if (QUEUE.size() < 6) {
+			Iterator<Crew> crits = Crew.getCrews().iterator();
+			Iterator<Locale> pits = Locale.getPlaces().iterator();
+			Iterator<Situation> sits = Situation
+					.getSituations(RogueShip.getRogueships(RogueShip.RIVALS).collect(Collectors.toSet())).iterator();
 
-		while (crits.hasNext() && pits.hasNext() && sits.hasNext()) { 
-			new Opportunity(Util.nextUUID(), crits.next(), pits.next(), sits.next()); 
+			while (crits.hasNext() && pits.hasNext() && sits.hasNext()) {
+				new Opportunity(Util.nextUUID(), crits.next(), pits.next(), sits.next());
+			}
 		}
 	}
 	
@@ -113,9 +114,7 @@ class Opportunity {
 		return Util.unless(isTarget) ? QUEUE.poll() : null;
 	}
 	
-	private static Comparator<Opportunity> priority() {
-		return (op1, op2) -> Long.compare(op1.turnCreated, op2.turnCreated);
-	}
+	private static Comparator<Opportunity> priority() { return (op1, op2) -> Long.compare(op2.turnCreated, op1.turnCreated); }
 }
 
 /* */
@@ -138,6 +137,7 @@ class Plan {
 /* */
 class Score {
 	depend java.util.function.Predicate;
+	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
 	
 	depend com.blades.util.Util;
@@ -156,6 +156,7 @@ class Score {
 	/* */
 	name = { String.format("The %s job", opportunity.getTarget().getName()) };
 	int rep = { 2 - (getCrew().getTier() - opportunity.getTarget().getTier()) };
+	Crew target = { getOpportunity().getTarget() };
 
 	/* boolean accepted = false; boolean abandoned = false; boolean active = false; */
 	
@@ -188,55 +189,23 @@ class Score {
 			/* System.out.println(String.format("%s earned %d coin for %s", getCrew().getName(), getCoin(), getName())); */
 		} Heat; }
 		Heat { heat -> /{
-			/* */
-			int heat = getHeat();
-			if (heat > 0) {
-				getCrew().setHeat(getCrew().getHeat() + heat);
-			}
-			
-			
-			/*
-			 * System.out.println(String.format("%s earned %d heat for %s",
-			 * getCrew().getName(), heat, getName()));
-			 */
-//			final Crew target = getOpportunity().getTarget();
-//			final List<CrewShip> myShips = CrewShip.getShips(crew).collect(Collectors.toUnmodifiableList());
-//			final Set<CrewShip> parties = getPlan().getInterestedParties().stream().filter(ship -> Util.ensure(ship.contains(crew)))
-//					.collect(Collectors.toUnmodifiableSet());
-//			final Set<Crew> poi = parties.stream().map(s -> s.getOther(target)).collect(Collectors.toUnmodifiableSet());
-			
-			
-			System.out.println("Interested Parties:");
-			
-			if (getPlan().getInterestedParties().size() > 0)
-			getPlan().getInterestedParties().forEach(p -> System.out.println("* " + p.getShipname()));
-			else
-				System.out.println("none");
-			
-			/* FIXME */
-			try { Thread.sleep(200); } catch (InterruptedException e1) { }
-			
-//			if (poi.contains(crew)) {
-//				throw new RuntimeException(String.format("POI contains %s", poi.contains(crew)));
-//			}
-			
+			if (getHeat() > 0) { getCrew().setHeat(getCrew().getHeat() + getHeat()); }
+			final Set<CrewShip> myShips = CrewShip.getShips(crew).collect(Collectors.toUnmodifiableSet());
+			final Set<CrewShip> parties = getPlan().getInterestedParties().stream()
+					.filter(ship -> Util.unless(ship.contains(crew))).collect(Collectors.toUnmodifiableSet());
 
-//			final Set<Crew> poi = CrewShip.getShips(target).map(s -> s.getOther(crew)).collect(Collectors.toSet());
+			parties.stream().forEach(e -> {
+				Crew other = e.getOther(getTarget());
+				boolean exists = CrewShip.exists(crew, other);
+				/* */
+				CrewShip ship = exists ? myShips.stream().filter(s -> s.contains(crew)).findFirst().get()
+						: new CrewShip(Util.nextUUID(), 0, crew, other);
 
-//			parties.stream().filter(p -> Util.unless(p.contains(crew))).forEach(e -> {
-//				Crew other = e.getOther(target);
-//				boolean exists = CrewShip.exists(crew, other);
-//				/* */
-//				CrewShip ship = exists ? myShips.stream().filter(s -> s.contains(other)).findFirst().get()
-//						: new CrewShip(Util.nextUUID(), 0, crew, other);
-//
-//				if (Util.ensure(ship)) {
-//					int value = e.hasStatus(CrewShip.ALLIES) ? -1 : e.hasStatus(CrewShip.ENEMIES) ? 1 : 0;
-//					ship.setValue(ship.getValue() + value);
-//					System.out.println(String.format("New value of ship (%s x %s): %d", crew.getName(), other.getName(),
-//							ship.getValue()));
-//				}
-//			});
+				if (Util.ensure(ship)) {
+					int value = e.hasStatus(CrewShip.ALLIES) ? -1 : e.hasStatus(CrewShip.ENEMIES) ? 1 : 0;
+					ship.setValue(ship.getValue() + value);
+				}
+			});
 		} Entanglement; }
 		Entanglement { entanglement -> /{
 			/* */

@@ -123,7 +123,7 @@ class GameLoop {
 			Crew.update(); 
 		} Main; } 
 		Main { main -> /{ 
-			Crew.getCrewsWithScores().forEach(c -> c.getScore().run());
+			Crew.getCrewsWithScores().limit(6).forEach(c -> c.getScore().run());
 		} Combat; } 
 		Combat { combat -> /{
 		} Main2; } 

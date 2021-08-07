@@ -118,7 +118,7 @@ class Crew {
 		List<Obstacle> obs = assess(obj);
 
 		Activity activity = new Activity(obj);
-		CrewShip.getShips(target).forEach(activity::addInterestedParty);
+		CrewShip.getShips(target).limit(3).forEach(activity::addInterestedParty);
 		obs.forEach(activity::addRule);
 		selectTools(obs).forEach(activity::addTool);
 		selectRoles(obs).forEach(activity::addRole);
@@ -181,10 +181,6 @@ class CrewShip {
 	[value >= -3 && value <= 3]
 
 	key { id }
-	
-	after setValue {
-		if (value == 3 || value == -3) { Thread.sleep(1000); }
-	}
 	
 	/* derived attribute */
 	String shipname = { String.format("%s + %s", getCrew(0).getName(), getCrew(1).getName()) }
