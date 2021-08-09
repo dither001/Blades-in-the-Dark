@@ -54,10 +54,13 @@ class GameLoop {
 		/* */
 		com.blades.util.Loader.getInstance();
 		GameLoop.testRogueships();
+		Crew.initialize();
 		/* */
 		while (true) {
 			GameLoop.getInstance().r.stream().forEach(Runnable::run);
 		}
+		
+		/* Rogue.getAvailableRogues().forEach(rogue -> { Rogue rog = rogue.getRogueShips().stream().filter(RogueShip.RIVALS).findFirst().orElse(null).getOther(rogue); });*/ 
 	}
 	
 	private static void testScore() {
@@ -154,22 +157,22 @@ class Locale {
 	/* */
 	public static final List<String> COMMON_BUILDINGS = Collections.synchronizedList(new ArrayList<String>());
 	public static final List<String> UNCOMMON_BUILDINGS = Collections.synchronizedList(new ArrayList<String>());
+	public static final List<Locale> DISTRICTS = Collections.synchronizedList(new ArrayList<Locale>());
 
 	/* */
 	unique UUID id;
 	name;
 	
 	/* */
-	lazy int wealth; lazy int security; lazy int crime; lazy int occult; 
-	lazy boolean isLair; lazy boolean isHuntingGround; lazy boolean isTurf;
+	lazy int wealth; lazy int security; lazy int crime; lazy int occult;
+	boolean isDistrict = false; boolean isNeighborhood = false;
+	boolean isLair = false; boolean isHuntingGround = false; boolean isTurf = false;
 	lazy Zoning zoning;
 
 	key { id }
 	
 	0..1 parent -- * Locale children;
 	
-	boolean isDistrict = { Util.unless(getHasZoning()) }
-	boolean isNeighborhood = { name.matches("neighborhood") }
 	boolean hasZoning = { zoning != null }
 
 	/* */
@@ -181,6 +184,7 @@ class Locale {
 	
 	public static synchronized String nextCommonBuilding() { String l = COMMON_BUILDINGS.remove(0); COMMON_BUILDINGS.add(l); return l; }
 	public static synchronized String nextUncommonBuilding() { String l = UNCOMMON_BUILDINGS.remove(0); UNCOMMON_BUILDINGS.add(l); return l; }
+	public static synchronized Locale nextDistrict() { Locale l = DISTRICTS.remove(0); DISTRICTS.add(l); return l; }
 }
 
 /* */

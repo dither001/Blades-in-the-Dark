@@ -56,6 +56,8 @@ class Loader {
 				l.setSecurity(Integer.parseInt(a[2]));
 				l.setCrime(Integer.parseInt(a[3]));
 				l.setOccult(Integer.parseInt(a[4]));
+				l.setIsDistrict(true);
+				Locale.DISTRICTS.add(l);
 				return l;
 			}
 		});
@@ -82,8 +84,10 @@ class Loader {
 					Locale l = new Locale(Util.nextUUID(), a[3]);
 					l.setZoning(new Zoning(a[5]));
 					if (a[4] != "") { l.setParent(Locale.getLocaleByName(a[4])); }
+					else { l.setParent(Locale.nextDistrict()); }
 					l.setCrew(c);
 					l.setIsLair(true);
+					if (a[3].matches("neighborhood")) { l.setIsNeighborhood(true); }
 				}
 				return c;
 			}
