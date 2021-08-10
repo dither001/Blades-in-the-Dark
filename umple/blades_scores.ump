@@ -235,11 +235,8 @@ class Situation {
 	key { id }
 	
 	/* static */
-	public static Stream<Situation> getSituations() { return situationsById.values().stream(); }	
-	public static Stream<Situation> getSituations(RogueShip ship) {
-		return getSituations().filter(sitch -> sitch.getShip().equals(ship));
-	}
-	public static Stream<Situation> getSituations(Set<RogueShip> set) {
-		return getSituations().filter(e -> set.contains(e.getShip()));
-	}
+	public static Stream<Situation> getSituations() { return situationsById.values().stream(); }
+	public static Stream<Situation> getSituations(Rogue rogue) { return getSituations().filter(s -> s.getShip().contains(rogue)); }
+	public static Stream<Situation> getSituations(RogueShip ship) { return getSituations().filter(s -> s.getShip().equals(ship)); }
+	public static Stream<Situation> getSituations(Set<RogueShip> set) { return getSituations().filter(e -> set.contains(e.getShip())); }
 }

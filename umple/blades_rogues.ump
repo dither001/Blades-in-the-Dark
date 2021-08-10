@@ -23,6 +23,17 @@ class Rogue {
 	key { id }
 	
 	/* instance */
+	public List<Rogue> getCircle() { return getRogueShips().stream().map(s -> s.getOther(this)).toList(); }
+	
+	public Opportunity lookForWork() {
+		Rogue other = getRogueShips().stream().findFirst().get().getOther(this); if (Util.unless(other)) return null;
+		Situation sitch = Situation.getSituations(other).filter(s -> Util.unless(s.getShip().contains(this))).findFirst().get(); if (Util.unless(sitch)) return null;
+		Crew target = sitch.getShip().getOther(other).getCrew(); if (Util.unless(target)) return null;
+		Locale locale = crew.getHuntingGround().stream().findFirst().get(); if (Util.unless(locale)) return null;
+		
+		return new Opportunity(Util.nextUUID(), target, locale, sitch);
+	}
+	
 	void doDowntime(int actions) { setTapped(false); }
 	
 	/* static */

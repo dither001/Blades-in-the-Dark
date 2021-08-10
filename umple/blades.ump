@@ -52,15 +52,28 @@ class GameLoop {
 	public static void main(String...args) {
 
 		/* */
+		GameLoop.initialize();
+		
+		/* */
+		while (true) { GameLoop.getInstance().r.stream().forEach(Runnable::run); }		
+	}
+	
+	/* */
+	private static void initialize() {
 		com.blades.util.Loader.getInstance();
 		GameLoop.testRogueships();
 		Crew.initialize();
-		/* */
-		while (true) {
-			GameLoop.getInstance().r.stream().forEach(Runnable::run);
-		}
-		
-		/* Rogue.getAvailableRogues().forEach(rogue -> { Rogue rog = rogue.getRogueShips().stream().filter(RogueShip.RIVALS).findFirst().orElse(null).getOther(rogue); });*/ 
+		Ladder.initialize();
+	}
+	
+	private static void testLadders() {
+		Locale.getDistricts().map(d -> Ladder.getWithDistrict(d)).forEach(e -> {
+			System.out.println(String.format("%s (%d : %s): %s", 
+					e.getDistrict().getName(), 
+					e.getBoss().getTier(), 
+					e.getBoss().getName(), 
+					e.getCrews().stream().map(Crew::getName).toList()));
+		});
 	}
 	
 	private static void testScore() {
@@ -144,6 +157,33 @@ class GameLoop {
 /* ITEM */
 /* */
 class Item {}
+
+/* */
+/* LADDER */
+/* */
+class Ladder {
+	depend com.blades.main.Crew;
+	depend com.blades.main.Locale;
+
+	/* */
+	0..1 -- 0..* Crew;
+
+	/* */
+	unique Locale district; 
+	Crew boss;
+	
+	key { district }
+
+	/* */
+	public static void initialize() { 
+		Locale.getDistricts().forEach(e -> laddersByDistrict.put(e, new Ladder(e, null)));
+		Crew.getCrews().flatMap(c -> c.getHuntingGround().stream()).forEach(g -> Ladder.getWithDistrict(g.getParent()).addCrew(g.getCrew()));
+		
+		laddersByDistrict.values().forEach(e -> {
+			e.setBoss(e.getCrews().stream().max(Comparator.comparingInt(Crew::getTier)).get());
+		});
+	}	
+}
 
 /* */
 /* LOCALE */
