@@ -6,6 +6,7 @@ namespace com.blades.main;
 /* */
 class Crew {
 	depend java.util.function.Predicate;
+	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
 	
 	depend com.blades.util.Util;
@@ -84,6 +85,7 @@ class Crew {
 	public Locale getLair() {  return getTurf().stream().filter(Locale::getIsLair).findFirst().orElse(null);  }
 	public boolean hasLair() { return turf.stream().anyMatch(Locale::getIsLair); }
 	public boolean hasHuntingGround() { return turf.stream().anyMatch(Locale::getIsHuntingGround); }
+	public List<Locale> getHuntingGround() { return getTurf().stream().filter(Locale::getIsHuntingGround).collect(Collectors.toList()); }
 	public boolean hasScore() { return Util.ensure(score); }
 	
 	void lookForWork() {

@@ -177,6 +177,7 @@ class Locale {
 
 	/* */
 	public static Stream<Locale> getLocales() { return localesById.values().stream(); }
+	public static Stream<Locale> getDistricts() { return getLocales().filter(Locale::getIsDistrict); }
 	public static Stream<Locale> getPlaces() { return getLocales().filter(Locale::hasParent); }
 	public static Locale getLocaleByName(String name) {
 		return getLocales().filter(l -> l.getName().matches(name)).findFirst().get();
