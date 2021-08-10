@@ -8,7 +8,7 @@ class Crew {
 	depend java.util.function.Predicate;
 	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
-	
+
 	depend com.blades.util.Util;
 
 	/* */
@@ -25,7 +25,8 @@ class Crew {
 	String[] reputation;
 	favoredOp;
 	lazy Score score;
-	
+
+	0..1 patron -- 0..* Crew vassals;
 	1 crew <@>- * Rogue rogues;
 	0..1 crew <@>- * Locale turf;
 
@@ -34,7 +35,10 @@ class Crew {
 
 	key { id }
 
-	/* derived attributes */	
+	/* derived attributes */
+	boolean isBoss = { Util.unless(hasPatron()) || isLocalBoss() }
+	boolean hasBoss = { hasPatron() || Util.unless(getIsBoss()) || Util.unless(isLocalBoss()) }
+
 	boolean atWar = { CrewShip.atWar(this) }
 	boolean lookingForWork = { Util.unless(turf.stream().anyMatch(Locale::getIsNeighborhood)) && Util.unless(score) }
 
@@ -78,6 +82,9 @@ class Crew {
 	}
 	
 	/* instance */
+	private Crew getLocalBoss() { return Util.ensure(hasLadder())? getLadder().getBoss(): null; }
+	private boolean isLocalBoss() { return Util.ensure(getLocalBoss()) ? getLocalBoss().equals(this): false; }
+	
 	public boolean hasReputation(String rep) { return Util.ensure(indexOfReputation(rep)); }
 	public Stream<Rogue> getRoster() { return rogues.stream(); }
 	public Stream<Rogue> getAvailableRogues() { return rogues.stream().filter(Predicate.not(Rogue::getTapped)); }
@@ -166,7 +173,7 @@ class Crew {
 class CrewShip {
 	depend java.util.function.Predicate;
 	depend java.util.stream.Stream;
-	
+
 	/* */
 	const Predicate<CrewShip> ALLIES = allies();
 	const Predicate<CrewShip> ENEMIES = enemies();
@@ -174,21 +181,16 @@ class CrewShip {
 	const Predicate<CrewShip> AT_WAR = at_war();
 
 	/* */
-	after constructor {
-		if (CrewShip.exists(allCrews[0], allCrews[1])) { return; }
-	}
-
-	/* */
 	unique UUID id;
-	* <@>- 2 Crew crews;
+ 	* -- 2 Crew crews;
 	int value;
 	[value >= -3 && value <= 3]
 
 	key { id }
-	
+
 	/* derived attribute */
 	String shipname = { String.format("%s + %s", getCrew(0).getName(), getCrew(1).getName()) }
-	
+
 	/* */
 	boolean contains(Crew c) { return c.equals(crews.get(0)) || c.equals(crews.get(1)); }
 	Crew getOther(Crew c) { return c.equals(crews.get(0)) ? crews.get(1) : c.equals(crews.get(1)) ? crews.get(0) : null; }

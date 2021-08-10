@@ -6,6 +6,7 @@ namespace com.blades.main;
 /* */
 class Rogue {
 	depend java.util.function.Predicate;
+	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
 	
 	depend com.blades.util.Util;
@@ -23,7 +24,7 @@ class Rogue {
 	key { id }
 	
 	/* instance */
-	public List<Rogue> getCircle() { return getRogueShips().stream().map(s -> s.getOther(this)).toList(); }
+	public List<Rogue> getCircle() { return getRogueShips().stream().map(s -> s.getOther(this)).collect(Collectors.toUnmodifiableList()); }
 	
 	public Opportunity lookForWork() {
 		Rogue other = getRogueShips().stream().findFirst().get().getOther(this); if (Util.unless(other)) return null;

@@ -72,7 +72,7 @@ class GameLoop {
 					e.getDistrict().getName(), 
 					e.getBoss().getTier(), 
 					e.getBoss().getName(), 
-					e.getCrews().stream().map(Crew::getName).toList()));
+					e.getCrews().stream().map(Crew::getName).collect(Collectors.toUnmodifiableList())));
 		});
 	}
 	
@@ -202,7 +202,7 @@ class Locale {
 	/* */
 	unique UUID id;
 	name;
-	
+
 	/* */
 	lazy int wealth; lazy int security; lazy int crime; lazy int occult;
 	boolean isDistrict = false; boolean isNeighborhood = false;
