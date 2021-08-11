@@ -69,7 +69,7 @@ class RogueShip {
 	* <@>- 2 Rogue rogues;
 	value = RIVAL;
 
-	key { id }
+	key { id, rogues }
 
 	/* */
 	shipname = { String.format("%s + %s", rogues.get(0).getRoguename(), rogues.get(1).getRoguename()) }

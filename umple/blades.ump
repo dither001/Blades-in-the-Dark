@@ -162,8 +162,8 @@ class Item {}
 /* LADDER */
 /* */
 class Ladder {
-	depend com.blades.main.Crew;
-	depend com.blades.main.Locale;
+	depend java.util.stream.Collectors;
+	depend java.util.stream.Stream;
 
 	/* */
 	0..1 -- 0..* Crew;
@@ -171,25 +171,28 @@ class Ladder {
 	/* */
 	unique Locale district; 
 	Crew boss;
-	
+
 	key { district }
 
 	/* */
 	public static void initialize() { 
 		Locale.getDistricts().forEach(e -> laddersByDistrict.put(e, new Ladder(e, null)));
 		Crew.getCrews().flatMap(c -> c.getHuntingGround().stream()).forEach(g -> Ladder.getWithDistrict(g.getParent()).addCrew(g.getCrew()));
-		
+
 		laddersByDistrict.values().forEach(e -> {
 			e.setBoss(e.getCrews().stream().max(Comparator.comparingInt(Crew::getTier)).get());
 		});
-	}	
+	}
+
+	/* */
+	public static Stream<Ladder> getLadders() { return laddersByDistrict.values().stream(); }
 }
 
 /* */
 /* LOCALE */
 /* */
 class Locale {
-	depend java.util.stream.Stream;
+	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
 
 	depend com.blades.util.Util;
@@ -210,9 +213,9 @@ class Locale {
 	lazy Zoning zoning;
 
 	key { id }
-	
+
 	0..1 parent -- * Locale children;
-	
+
 	boolean hasZoning = { zoning != null }
 
 	/* */
@@ -222,7 +225,11 @@ class Locale {
 	public static Locale getLocaleByName(String name) {
 		return getLocales().filter(l -> l.getName().matches(name)).findFirst().get();
 	}
-	
+
+	/* */
+	public static Stream<Ladder> getLadders() { return Ladder.getLadders(); }
+
+	/* */
 	public static synchronized String nextCommonBuilding() { String l = COMMON_BUILDINGS.remove(0); COMMON_BUILDINGS.add(l); return l; }
 	public static synchronized String nextUncommonBuilding() { String l = UNCOMMON_BUILDINGS.remove(0); UNCOMMON_BUILDINGS.add(l); return l; }
 	public static synchronized Locale nextDistrict() { Locale l = DISTRICTS.remove(0); DISTRICTS.add(l); return l; }

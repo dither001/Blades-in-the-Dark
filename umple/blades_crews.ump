@@ -185,8 +185,10 @@ class CrewShip {
  	* -- 2 Crew crews;
 	int value;
 	[value >= -3 && value <= 3]
-
-	key { id }
+	
+	before constructor { if (allCrews[0].equals(allCrews[1])) return; }
+	
+	key { id, crews }
 
 	/* derived attribute */
 	String shipname = { String.format("%s + %s", getCrew(0).getName(), getCrew(1).getName()) }

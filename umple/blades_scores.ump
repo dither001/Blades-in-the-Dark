@@ -190,7 +190,7 @@ class Score {
 		} Heat; }
 		Heat { heat -> /{
 			if (getHeat() > 0) { getCrew().setHeat(getCrew().getHeat() + getHeat()); }
-			final Set<CrewShip> myShips = CrewShip.getShips(crew).collect(Collectors.toUnmodifiableSet());
+			final List<CrewShip> myShips = crew.getCrewShips();
 			final Set<CrewShip> parties = getPlan().getInterestedParties().stream()
 					.filter(ship -> Util.unless(ship.contains(crew))).collect(Collectors.toUnmodifiableSet());
 
