@@ -12,26 +12,20 @@ class Crew {
 	depend com.blades.util.Util;
 
 	/* */
-	const AMBITIOUS = "ambitious"; // TODO
-	/* */
-	const ASSASSINS = "assassins"; const BRAVOS = "bravos"; const CULTISTS = "cultists"; const HAWKERS = "hawkers"; const SHADOWS = "shadows"; const SMUGGLERS = "smugglers";
-
-	/* */
 	const int MAX_HEAT = 9;
 
 	/* */
 	unique UUID id;
-	name; type;
-	String[] reputation;
-	favoredOp;
+	name;
+	int rep = 0; int tier; int heat = 0; int wanted = 0; int coin;
+	boolean hold;
+
 	lazy Score score;
 
+	0..1 -- 0..* Aspect; 
 	0..1 patron -- 0..* Crew vassals;
 	1 crew <@>- * Rogue rogues;
 	0..1 crew <@>- * Locale turf;
-
-	int rep = 0; int tier; int heat = 0; int wanted = 0; int coin;
-	boolean hold;
 
 	key { id }
 
@@ -85,7 +79,6 @@ class Crew {
 	private Crew getLocalBoss() { return Util.ensure(hasLadder())? getLadder().getBoss(): null; }
 	private boolean isLocalBoss() { return Util.ensure(getLocalBoss()) ? getLocalBoss().equals(this): false; }
 	
-	public boolean hasReputation(String rep) { return Util.ensure(indexOfReputation(rep)); }
 	public Stream<Rogue> getRoster() { return rogues.stream(); }
 	public Stream<Rogue> getAvailableRogues() { return rogues.stream().filter(Predicate.not(Rogue::getTapped)); }
 	public int turfCount() { return (int) getTurf().stream().filter(Locale::getIsTurf).count(); }
@@ -168,10 +161,8 @@ class Crew {
 		return getCrews().filter(s -> s.getName().equalsIgnoreCase(name)).findFirst().get();
 	}
 	
-	public static Crew getCrewByReputation(String rep) { return getCrews().filter(Crew::hasReputation).findFirst().get(); }
-
 	public static Crew newFaction(UUID aId, String aName, int aTier, boolean aHold) {
-		return new Crew(aId, aName, null, null, aTier, 0, aHold);
+		return new Crew(aId, aName, aTier, 0, aHold);
 	}
 
 	/* */

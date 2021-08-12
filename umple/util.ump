@@ -31,13 +31,10 @@ class Loader {
 	
 	depend java.util.function.Function;
 
-	depend com.blades.main.Crew;
-	depend com.blades.main.CrewShip;
-	depend com.blades.main.Locale;
-	depend com.blades.main.Rogue;
-	depend com.blades.main.Zoning;
+	depend com.blades.main.*;
 
 	after constructor {
+		loadCrewAspects("res/data/crew_aspects.csv");
 		loadBuildings("res/data/doskvol_common_buildings.csv");
 		loadDistricts("res/data/doskvol_districts.csv");
 		loadFactions("res/data/doskvol_factions.csv");
@@ -45,7 +42,31 @@ class Loader {
 		/* loadContacts("res/data/crew_contacts.csv"); */
 		/* loadContacts("res/data/rogue_contacts.csv"); */
 	}
-	
+
+	private static void loadBuildings(String path) {
+		Util.fileTransformer(path, new Function<String, String>() {
+			@Override public String apply(String t) { return t; }
+		}).forEach(Locale.COMMON_BUILDINGS::add);
+	}
+
+	private static void loadContacts(String path) {
+		Util.fileTransformer(path, new Function<String, Rogue>() {
+			@Override public Rogue apply(String t) {
+				String[] a = t.split(",");
+				return Rogue.newContact(Util.nextUUID(), a[0]);
+			}
+		});
+	}
+
+	private static void loadCrewAspects(String path) {
+		Util.fileTransformer(path, new Function<String, Aspect>() {
+			@Override public Aspect apply(String t) {
+				String[] a = t.split(",");
+				return new Aspect(a[0], "", a[1]);
+			}
+		});
+	}
+
 	private static void loadDistricts(String path) {
 		Util.fileTransformer(path, new Function<String, Locale>() {
 			@Override
@@ -62,13 +83,7 @@ class Loader {
 			}
 		});
 	}
-	
-	private static void loadBuildings(String path) {
-		Util.fileTransformer(path, new Function<String, String>() {
-			@Override public String apply(String t) { return t; }
-		}).forEach(Locale.COMMON_BUILDINGS::add);
-	}
-	
+
 	private static void loadFactions(String path) {
 		Util.fileTransformer(path, new Function<String, Crew>() {
 			@Override public Crew apply(String t) {
@@ -93,7 +108,7 @@ class Loader {
 			}
 		});
 	}
-	
+
 	private static void loadCrewShips(String path) {
 		Util.fileTransformer(path, new Function<String, CrewShip>() {
 			@Override
@@ -104,15 +119,6 @@ class Loader {
 				int status = Boolean.parseBoolean(a[2]) ? -2 : 2;
 
 				return new CrewShip(Util.nextUUID(), status, c1, c2);
-			}
-		});
-	}
-	
-	private static void loadContacts(String path) {
-		Util.fileTransformer(path, new Function<String, Rogue>() {
-			@Override public Rogue apply(String t) {
-				String[] a = t.split(",");
-				return Rogue.newContact(Util.nextUUID(), a[0]);
 			}
 		});
 	}

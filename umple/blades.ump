@@ -11,16 +11,50 @@ use util.ump;
 namespace com.blades.main;
 
 /* */
-/* CLAIM */
+/* ASPECT */
 /* */
-class Claim {
-	unique UUID id;
-	Crew crew;
-	Locale locale;
-	name; type;
-	boolean isPrison;
+class Aspect {
+	depend java.util.ArrayList;
+	depend java.util.Collections;
+	depend java.util.List;
+	depend java.util.function.Predicate;
+	depend java.util.stream.Collectors;
+	depend java.util.stream.Stream;
+
+	/* */
+	const CONTACT = "contact"; const EXPERT = "expert"; const GANG = "gang"; 
+	const PLAYBOOK = "playbook"; const REPUTATION = "reputation"; const UPGRADE = "upgrade";
+	/* */
+	const HOOK = "hook"; 
+
+	/* */
+	public static final List<Aspect> ASPECTS = Collections.synchronizedList(new ArrayList<Aspect>());
+
+	after constructor { ASPECTS.add(this); }
+	after delete { ASPECTS.remove(this); }
+
+	/* */
+	name; description; type;
+
+	key { name, type }
 	
-	key { id }
+	public static List<Aspect> getReputations() {
+		return get(a -> a.type.matches(REPUTATION)).collect(Collectors.toUnmodifiableList());
+	}
+	
+	public static Stream<Aspect> get(Predicate<Aspect> predicate) {
+		return ASPECTS.stream().filter(a -> predicate.test(a));
+	}
+}
+
+/* */
+/* CREW-ROGUE SHIP */
+/* */
+associationClass CrewRogueShip {
+	value;
+
+	* Crew;
+	* Rogue;
 }
 
 /* */
