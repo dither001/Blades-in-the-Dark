@@ -68,10 +68,11 @@ class GameLoop {
 	
 	private static void testLadders() {
 		Locale.getDistricts().map(d -> Ladder.getWithDistrict(d)).forEach(e -> {
-			System.out.println(String.format("%s (%d : %s): %s", 
+			System.out.println(String.format("%s (%d : %s [%d]): %s", 
 					e.getDistrict().getName(), 
 					e.getBoss().getTier(), 
 					e.getBoss().getName(), 
+					e.getBoss().numberOfCrewShips(), 
 					e.getCrews().stream().map(Crew::getName).collect(Collectors.toUnmodifiableList())));
 		});
 	}
@@ -164,6 +165,8 @@ class Item {}
 class Ladder {
 	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
+	
+	depend com.blades.util.Util;
 
 	/* */
 	0..1 -- 0..* Crew;
@@ -177,10 +180,19 @@ class Ladder {
 	/* */
 	public static void initialize() { 
 		Locale.getDistricts().forEach(e -> laddersByDistrict.put(e, new Ladder(e, null)));
-		Crew.getCrews().flatMap(c -> c.getHuntingGround().stream()).forEach(g -> Ladder.getWithDistrict(g.getParent()).addCrew(g.getCrew()));
+
+		Crew.getCrews().flatMap(c -> c.getHuntingGround().stream())
+				.forEach(g -> Ladder.getWithDistrict(g.getParent()).addCrew(g.getCrew()));
+
+		laddersByDistrict.values().stream().forEach(e -> {
+			e.setBoss(e.getCrews().stream().max(Comparator.comparingInt(Crew::getTier)).get());
+		});
 
 		laddersByDistrict.values().forEach(e -> {
-			e.setBoss(e.getCrews().stream().max(Comparator.comparingInt(Crew::getTier)).get());
+			Crew boss = e.getBoss();
+			e.getCrews().forEach(crew -> {
+				if (Util.unless(crew.equals(boss)) && Util.unless(CrewShip.exists(crew, boss))) { new CrewShip(Util.nextUUID(), 0, boss, crew); }
+			});
 		});
 	}
 

@@ -148,7 +148,7 @@ class Score {
 	unique UUID id;
 	/* A Score is a short story, composed of "means, motive, and opportunity." Here, the individual meaning of the terms changes to accomodate the game mechanics. */
 	Opportunity opportunity; Plan plan;
-	lazy Crew crew; lazy int coin; lazy int heat;
+	lazy Crew crew; int coin = 6; lazy int heat;
 	internal List<Runnable> r = Arrays.asList(this::ready, this::engagement, this::operation, this::payoff, this::heat, this::entanglement, this::downtime);
 
 	key { id }
@@ -157,6 +157,7 @@ class Score {
 	name = { String.format("The %s job", opportunity.getTarget().getName()) }
 	int rep = { 2 - (getCrew().getTier() - opportunity.getTarget().getTier()) }
 	Crew target = { getOpportunity().getTarget() }
+	boolean undercover = { /* TODO */ false }
 
 	/* boolean accepted = false; boolean abandoned = false; boolean active = false; */
 	
@@ -183,7 +184,7 @@ class Score {
 		} Payoff; }
 		Payoff { payoff -> /{
 			/* */
-			getCrew().setRep(getCrew().getRep() + getRep());
+			if (Util.unless(getUndercover())) { getCrew().setRep(getCrew().getRep() + getRep()); }
 			/* System.out.println(String.format("%s earned %d rep for %s", getCrew().getName(), getRep(), getName())); */
 			getCrew().payoff(this);
 			/* System.out.println(String.format("%s earned %d coin for %s", getCrew().getName(), getCoin(), getName())); */
@@ -198,7 +199,7 @@ class Score {
 				Crew other = e.getOther(getTarget());
 				boolean exists = CrewShip.exists(crew, other);
 				/* */
-				CrewShip ship = exists ? myShips.stream().filter(s -> s.contains(crew)).findFirst().get()
+				CrewShip ship = exists ? myShips.stream().filter(s -> s.contains(other)).findFirst().get()
 						: new CrewShip(Util.nextUUID(), 0, crew, other);
 
 				if (Util.ensure(ship)) {

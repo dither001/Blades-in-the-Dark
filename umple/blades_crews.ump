@@ -36,7 +36,7 @@ class Crew {
 	key { id }
 
 	/* derived attributes */
-	boolean isBoss = { Util.unless(hasPatron()) || isLocalBoss() }
+	boolean isBoss = { isLocalBoss() && Util.unless(hasPatron()) }
 	boolean hasBoss = { hasPatron() || Util.unless(getIsBoss()) || Util.unless(isLocalBoss()) }
 
 	boolean atWar = { CrewShip.atWar(this) }
@@ -110,13 +110,27 @@ class Crew {
 	
 	void payoff(Score score) {
 		int coin = score.getCoin();
-		int size = score.getTeam().size();
+		int team = score.getTeam().size();
 
-		if (coin > 0 && size > 0) {
-			int share = coin / size;
+		/* */
+		Crew boss = getHasBoss()? getLadder().getBoss() : null;
+		int tithe = Util.ensure(boss) ? getTier() + 1 : 0;
+		boolean canTithe = Util.ensure(boss) && (coin - tithe) / team > 0 ? true : false;
+
+		if (coin > 0 && team > 0) {
+			tithe = canTithe? tithe : 0;
+			int share = (coin - tithe) / team;
+			int crewshare = (coin - tithe) - (share * team);
+
 			if (share > 0) {
 				score.getTeam().forEach(r -> r.setCoin(r.getCoin() + share));
-				setCoin(getCoin() + coin - (share * size));
+				setCoin(getCoin() + crewshare);
+			}
+		
+			if (tithe > 0) { boss.setCoin(boss.getCoin() + tithe); }
+			else if (Util.ensure(boss)) {
+				CrewShip bossShip = getCrewShips().stream().filter(e -> e.contains(boss)).findFirst().get();
+				bossShip.setValue(bossShip.getValue() - 1);
 			}
 		}
 	}
@@ -202,6 +216,7 @@ class CrewShip {
 	public static boolean exists(Crew c1, Crew c2) { return getShips(c1).anyMatch(ship -> ship.contains(c2)); }
 	public static Stream<CrewShip> getShips() { return crewshipsById.values().stream(); }
 	public static Stream<CrewShip> getShips(Crew crew) { return getShips().filter(c -> c.contains(crew)); }
+	public static CrewShip getShip(Crew c1, Crew c2) { return getShips(c1).filter(ship -> ship.contains(c2)).findFirst().orElse(null); }
 	public static boolean atWar(Crew crew) { return getShips(crew).anyMatch(AT_WAR); }
 
 	/* */
