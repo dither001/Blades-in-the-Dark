@@ -10,7 +10,7 @@ external interface Runnable {}
 class Activity {
 	Objective objective;
 	Rogue[] team;
-	Obstacle[] rules;
+	Aspect[] rules;
 	Item[] tools;
 	Playbook[] roles;
 	CrewShip[] interestedParties;
@@ -48,6 +48,8 @@ class Objective {
 /* OBSTACLE */
 /* */
 class Obstacle {
+	isA Aspect;
+
 	const SURVEY = "survey";
 
 	name; rating = SURVEY;
@@ -231,7 +233,7 @@ class Situation {
 	/* */
 	unique UUID id;
 	RogueShip ship;
-	Obstacle obstacle;
+	Aspect aspect;
 	
 	key { id }
 	

@@ -8,6 +8,8 @@ use blades_scores.ump;
 use goap.ump;
 use util.ump;
 
+external interface Comparable {}
+
 namespace com.blades.main;
 
 /* */
@@ -20,12 +22,15 @@ class Aspect {
 	depend java.util.function.Predicate;
 	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
+	
+	/* */
+	isA Comparable;
 
 	/* */
 	const CONTACT = "contact"; const EXPERT = "expert"; const GANG = "gang"; 
 	const PLAYBOOK = "playbook"; const REPUTATION = "reputation"; const UPGRADE = "upgrade";
 	/* */
-	const HOOK = "hook"; 
+	const HOOK = "hook"; const OBSTACLE = "obstacle";
 
 	/* */
 	public static final List<Aspect> ASPECTS = Collections.synchronizedList(new ArrayList<Aspect>());
@@ -38,13 +43,15 @@ class Aspect {
 
 	key { name, type }
 	
-	public static List<Aspect> getReputations() {
-		return get(a -> a.type.matches(REPUTATION)).collect(Collectors.toUnmodifiableList());
-	}
+	/* */
+	@Override public int compareTo(Aspect o) { return name.compareTo(o.name); }
 	
-	public static Stream<Aspect> get(Predicate<Aspect> predicate) {
-		return ASPECTS.stream().filter(a -> predicate.test(a));
-	}
+	/* */
+	public static List<Aspect> getContacts() { return get(a -> a.type.matches(CONTACT)).collect(Collectors.toUnmodifiableList()); }
+	public static List<Aspect> getReputations() { return get(a -> a.type.matches(REPUTATION)).collect(Collectors.toUnmodifiableList()); }
+	public static List<Aspect> getUpgrades() { return get(a -> a.type.matches(UPGRADE)).collect(Collectors.toUnmodifiableList()); }
+	
+	public static Stream<Aspect> get(Predicate<Aspect> predicate) { return ASPECTS.stream().filter(a -> predicate.test(a)); }
 }
 
 /* */
@@ -138,12 +145,12 @@ class GameLoop {
 
 			a[i] = new Rogue(Util.nextUUID(), "Unnamed rogue " + i, null, null, c);
 			new Situation(Util.nextUUID(), new RogueShip(Util.nextUUID(), a[i], a[i - 1]),
-					new Obstacle("Unnamed " + i));
+					new Obstacle("Unnamed " + i, "", Aspect.OBSTACLE));
 
 			c.addRogue(a[i]);
 //			System.out.println(crews.get(i % numCrews).getName());
 		}
-		new Situation(Util.nextUUID(), new RogueShip(Util.nextUUID(), a[0], a[124]), new Obstacle("Unnamed 0"));
+		new Situation(Util.nextUUID(), new RogueShip(Util.nextUUID(), a[0], a[124]), new Obstacle("Unnamed 0", "", Aspect.OBSTACLE));
 
 		System.out.println("Total Rogues: " + Rogue.getRogues().count());
 		System.out.println("Total 'ships: " + RogueShip.getRogueships().count());
