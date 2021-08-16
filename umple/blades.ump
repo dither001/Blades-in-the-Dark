@@ -8,8 +8,6 @@ use blades_scores.ump;
 use goap.ump;
 use util.ump;
 
-external interface Comparable {}
-
 namespace com.blades.main;
 
 /* */
@@ -23,9 +21,6 @@ class Aspect {
 	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
 	
-	/* */
-	isA Comparable;
-
 	/* */
 	const CONTACT = "contact"; const EXPERT = "expert"; const GANG = "gang"; 
 	const PLAYBOOK = "playbook"; const REPUTATION = "reputation"; const UPGRADE = "upgrade";

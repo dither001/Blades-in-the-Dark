@@ -65,8 +65,21 @@ class Crew {
 	}
 	
 	private static void setupUpgrades() {
-		final BlockingQueue<Aspect> queue = new ArrayBlockingQueue<Aspect>(17, true, Aspect.getReputations());
-		getCrews().forEach(e -> { Aspect aspect = queue.poll(); e.addAspect(aspect); queue.add(aspect); });
+		final BlockingQueue<Aspect> queue = new ArrayBlockingQueue<Aspect>(11, true, Aspect.getUpgrades());
+		queue.forEach(a -> System.out.println(a.getName()));
+		
+		getCrews().forEach(e -> {
+			Set<Crew> crews = e.getCrewShips().stream().map(f -> f.getOther(e)).collect(Collectors.toUnmodifiableSet());
+			List<Crew> available = Crew.getCrews()
+					.filter(f -> Util.unless(crews.contains(f)))
+					.sorted((c1, c2) -> Integer.compare(c1.numberOfCrewShips(), c2.numberOfCrewShips()))
+					.collect(Collectors.toList());
+			
+			Aspect a1 = queue.poll(); e.addAspect(a1); queue.add(a1);
+			new CrewShip(Util.nextUUID(), 1, e, available.remove(0));
+			Aspect a2 = queue.poll(); e.addAspect(a2); queue.add(a2);
+			new CrewShip(Util.nextUUID(), -1, e, available.remove(0));
+		});
 	}
 
 	private static void setupLairs() {
