@@ -1,61 +1,61 @@
-Barrowcleft,2,TRUE,neighborhood,Barrowcleft,purpose,0
-Billhooks,2,FALSE,butcher shop,,purpose,0
-Bluecoats,3,TRUE,,,,0
-Fire Brigade,2,TRUE,,,,0
-Brightstone,4,TRUE,neighborhood,Brightstone,purpose,0
-Cabbies,2,FALSE,,,,0
-Charhollow,1,TRUE,neighborhood,Charhollow,purpose,0
-Charterhall,4,TRUE,neighborhood,Charterhall,purpose,0
-Church of Ecstasy,4,TRUE,Sanctorium,Brightstone,rulespace,0
-Circle of Flame,3,TRUE,Centuralia Club,Six Towers,rulespace,0
-City Council,5,TRUE,council chambers,Charterhall,rulespace,0
-Coalridge,2,FALSE,neighborhood,Coalridge,purpose,0
-Crows,2,FALSE,abandoned tower,Crow's Foot,rulespace,0
-Crow's Foot,2,TRUE,neighborhood,Crow's Foot,purpose,0
-Cyphers,2,TRUE,,,,0
-Dagger Isles Consulate,1,TRUE,,,,0
-Deathlands Scavengers,2,FALSE,,,,0
-Dimmer Sisters,2,TRUE,manor house,,personal,0
-Dockers,3,TRUE,warehouse,The Docks,professional,0
-The Docks,2,TRUE,neighborhood,The Docks,purpose,0
-Dunslough,1,FALSE,,Dunslough,,0
-Fog Hounds,1,FALSE,underground dock,The Docks,rulespace,0
-Forgotten Gods,3,FALSE,,,,0
-Foundation,4,TRUE,,,,0
-Gondoliers,3,TRUE,,,,0
-Gray Cloaks,2,TRUE,abandoned ruin,Six Towers,rulespace,0
-Grinders,2,FALSE,abandoned warehouse,,rulespace,0
-Hive,4,TRUE,,,,0
-Horde,3,TRUE,,,,0
-Imperial Military,6,TRUE,,,,0
-Ink Rakes,2,FALSE,,,,0
-Inspectors,3,TRUE,,,,0
-Ironhook Prison,4,TRUE,Ironhook Prison,Dunslough,rulespace,0
-Iruvian Consulate,3,TRUE,,,,0
-Laborers,3,FALSE,,,,0
-Lampblacks,2,FALSE,coal warehouse,Crow's Foot,professional,0
-Leviathan Hunters,5,TRUE,shipyard,The Docks,professional,0
-Lord Scurlock,3,TRUE,manor house,Six Towers,personal,0
-Lost,1,FALSE,,,,0
-Ministry of Preservation,5,TRUE,,,,0
-Nightmarket,2,TRUE,neighborhood,Nightmarket,purpose,0
-Path of Echoes,3,TRUE,,,,0
-Rail Jacks,2,FALSE,Gaddoc Rail Station,Nightmarket,purpose,0
-Reconciled,3,TRUE,,,,0
-Red Sashes,2,FALSE,fighting school,Crow's Foot,purpose,0
-Sailors,3,FALSE,,,,0
-Servants,2,FALSE,,,,0
-Severosi Consulate,1,TRUE,,,,0
-Silkshore,2,TRUE,neighborhood,Silkshore,purpose,0
-Silver Nails,3,TRUE,The Mustang Inn,,purpose,0
-Six Towers,3,FALSE,neighborhood,Six Towers,purpose,0
-Skovlan Consulate,3,FALSE,,,,0
-Skovlander Refugees,3,FALSE,,,,0
-Sparkwrights,4,TRUE,factory workshop,Coalridge,professional,0
-Spirit Wardens,4,TRUE,Bellweather Crematorium,Whitecrown,purpose,0
-Ulf Ironborn,1,TRUE,The Old Forge tavern,,purpose,0
-Unseen,4,TRUE,,,,0
-Weeping Lady,2,TRUE,,,,0
-Whitecrown,5,TRUE,neighborhood,Whitecrown,purpose,0
-Wraiths,2,FALSE,,,,0
-Vultures,1,FALSE,,,,0
+Barrowcleft,citizenry,2,TRUE,neighborhood,Barrowcleft,purpose,FALSE
+Brightstone,citizenry,4,TRUE,neighborhood,Brightstone,purpose,FALSE
+Charhollow,citizenry,1,TRUE,neighborhood,Charhollow,purpose,FALSE
+Charterhall,citizenry,4,TRUE,neighborhood,Charterhall,purpose,FALSE
+Coalridge,citizenry,2,FALSE,neighborhood,Coalridge,purpose,FALSE
+Crow's Foot,citizenry,2,TRUE,neighborhood,Crow's Foot,purpose,FALSE
+Dunslough,citizenry,1,FALSE,neighborhood,Dunslough,,FALSE
+Nightmarket,citizenry,2,TRUE,neighborhood,Nightmarket,purpose,FALSE
+Silkshore,citizenry,2,TRUE,neighborhood,Silkshore,purpose,FALSE
+Six Towers,citizenry,3,FALSE,neighborhood,Six Towers,purpose,FALSE
+The Docks,citizenry,2,TRUE,neighborhood,The Docks,purpose,FALSE
+Whitecrown,citizenry,5,TRUE,neighborhood,Whitecrown,purpose,FALSE
+Church of Ecstasy,fringe,4,TRUE,Sanctorium,Brightstone,rulespace,FALSE
+Deathlands Scavengers,fringe,2,FALSE,,,,FALSE
+Forgotten Gods,fringe,3,FALSE,,,,FALSE
+Horde,fringe,3,TRUE,,,,FALSE
+Path of Echoes,fringe,3,TRUE,,,,FALSE
+Reconciled,fringe,3,TRUE,,,,FALSE
+Skovlander Refugees,fringe,3,FALSE,,,,FALSE
+Weeping Lady,fringe,2,TRUE,,,,FALSE
+Bluecoats,institution,3,TRUE,,,,FALSE
+City Council,institution,5,TRUE,council chambers,Charterhall,rulespace,FALSE
+Dagger Isles Consulate,institution,1,TRUE,,,,FALSE
+Fire Brigade,institution,2,TRUE,,,,FALSE
+Imperial Military,institution,6,TRUE,,,,FALSE
+Inspectors,institution,3,TRUE,,,,FALSE
+Ironhook Prison,institution,4,TRUE,Ironhook Prison,Dunslough,rulespace,FALSE
+Iruvian Consulate,institution,3,TRUE,,,,FALSE
+Leviathan Hunters,institution,5,TRUE,shipyard,The Docks,professional,FALSE
+Ministry of Preservation,institution,5,TRUE,,,,FALSE
+Severosi Consulate,institution,1,TRUE,,,,FALSE
+Skovlan Consulate,institution,3,FALSE,,,,FALSE
+Sparkwrights,institution,4,TRUE,factory workshop,Coalridge,professional,FALSE
+Spirit Wardens,institution,4,TRUE,Bellweather Crematorium,Whitecrown,purpose,FALSE
+Cabbies,tradesmen,2,FALSE,,,,FALSE
+Cyphers,tradesmen,2,TRUE,,,,FALSE
+Dockers,tradesmen,3,TRUE,warehouse,The Docks,professional,FALSE
+Foundation,tradesmen,4,TRUE,,,,FALSE
+Gondoliers,tradesmen,3,TRUE,,,,FALSE
+Ink Rakes,tradesmen,2,FALSE,,,,FALSE
+Laborers,tradesmen,3,FALSE,,,,FALSE
+Rail Jacks,tradesmen,2,FALSE,Gaddoc Rail Station,Nightmarket,purpose,FALSE
+Sailors,tradesmen,3,FALSE,,,,FALSE
+Servants,tradesmen,2,FALSE,,,,FALSE
+Billhooks,underworld,2,FALSE,butcher shop,,purpose,TRUE
+Circle of Flame,underworld,3,TRUE,Centuralia Club,Six Towers,rulespace,TRUE
+Crows,underworld,2,FALSE,abandoned tower,Crow's Foot,rulespace,TRUE
+Dimmer Sisters,underworld,2,TRUE,manor house,,personal,TRUE
+Fog Hounds,underworld,1,FALSE,underground dock,The Docks,rulespace,TRUE
+Gray Cloaks,underworld,2,TRUE,abandoned ruin,Six Towers,rulespace,TRUE
+Grinders,underworld,2,FALSE,abandoned warehouse,,rulespace,TRUE
+Hive,underworld,4,TRUE,,,,TRUE
+Lampblacks,underworld,2,FALSE,coal warehouse,Crow's Foot,professional,TRUE
+Lord Scurlock,underworld,3,TRUE,manor house,Six Towers,personal,TRUE
+Lost,underworld,1,FALSE,,,,TRUE
+Red Sashes,underworld,2,FALSE,fighting school,Crow's Foot,purpose,TRUE
+Silver Nails,underworld,3,TRUE,Mustang Inn,,purpose,TRUE
+Ulf Ironborn,underworld,1,TRUE,Old Forge tavern,,purpose,TRUE
+Unseen,underworld,4,TRUE,,,,TRUE
+Vultures,underworld,1,FALSE,,,,TRUE
+Wraiths,underworld,2,FALSE,,,,TRUE
