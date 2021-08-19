@@ -62,8 +62,48 @@ class Crew {
 		setupLairs();
 		setupHuntingGrounds();
 		setupUpgrades();
+		setupContacts();
+	}
+	
+	private static void setupContacts() {
+		final AtomicLong skip = new AtomicLong(0);
+		final long count = Rogue.getRogues().count();
+
+		getCrews().forEach(e -> {
+			Set<Rogue> unavailable = e.getRogues().stream()
+					.flatMap(r -> r.getCircle().stream())
+					.collect(Collectors.toSet());
+			e.getRogues().forEach(unavailable::add);
+			long mod = count - unavailable.size();
+			
+			Rogue r1 = Rogue.getRogues().filter(r -> Util.unless(unavailable.contains(r))).skip(skip.incrementAndGet() % mod).findFirst().get();
+			Rogue r2 = Rogue.getRogues().filter(r -> Util.unless(unavailable.contains(r))).skip(skip.incrementAndGet() % mod).findFirst().get();
+
+			new CrewRogueShip(Aspect.CONTACT, e, r1);
+			new CrewRogueShip(Aspect.CONTACT, e, r2);
+		});
 	}
 
+	private static void setupHuntingGrounds() {
+		getCrews().filter(c -> Util.unless(c.hasHuntingGround())).forEach(c -> {
+			Locale l = new Locale(Locale.nextCommonBuilding());
+			l.setZoning(new Zoning(Zoning.PURPOSE));
+			l.setCrew(c);
+			l.setIsHuntingGround(true);
+			l.setParent(Locale.nextDistrict());
+		});
+	}
+	
+	private static void setupLairs() {
+		getCrews().filter(c -> Util.unless(c.hasLair())).forEach(c -> {
+			Locale l = new Locale(Locale.nextCommonBuilding());
+			l.setZoning(new Zoning(Zoning.PURPOSE));
+			l.setCrew(c);
+			l.setIsLair(true);
+			l.setParent(Locale.nextDistrict());
+		});
+	}
+	
 	private static void setupReputation() {
 		final BlockingQueue<Aspect> queue = new ArrayBlockingQueue<Aspect>(17, true, Aspect.getReputations());
 		getCrews().forEach(e -> { Aspect aspect = queue.poll(); e.addAspect(aspect); queue.add(aspect); });
@@ -89,26 +129,6 @@ class Crew {
 		});
 	}
 
-	private static void setupLairs() {
-		getCrews().filter(c -> Util.unless(c.hasLair())).forEach(c -> {
-			Locale l = new Locale(Locale.nextCommonBuilding());
-			l.setZoning(new Zoning(Zoning.PURPOSE));
-			l.setCrew(c);
-			l.setIsLair(true);
-			l.setParent(Locale.nextDistrict());
-		});
-	}
-	
-	private static void setupHuntingGrounds() {
-		getCrews().filter(c -> Util.unless(c.hasHuntingGround())).forEach(c -> {
-			Locale l = new Locale(Locale.nextCommonBuilding());
-			l.setZoning(new Zoning(Zoning.PURPOSE));
-			l.setCrew(c);
-			l.setIsHuntingGround(true);
-			l.setParent(Locale.nextDistrict());
-		});
-	}
-	
 	/* instance */
 	private Crew getLocalBoss() { return Util.ensure(hasLadder())? getLadder().getBoss(): null; }
 	private boolean isLocalBoss() { return Util.ensure(getLocalBoss()) ? getLocalBoss().equals(this): false; }

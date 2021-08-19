@@ -33,14 +33,10 @@ class Rogue {
 	public static void setupRogueShips() {
 		int numRogues = (int) Rogue.getRogues().count();
 
-		Rogue[] a = (Rogue[]) getRogues().toArray();
+		Rogue[] a = getRogues().toArray(Rogue[]::new);
 		for (int i = 1; i < numRogues; ++i) {
 			new Situation(new RogueShip(a[i], a[i - 1]), new Obstacle("Unnamed " + i, "", Aspect.OBSTACLE));
 		} new Situation(new RogueShip(a[0], a[numRogues - 1]), new Obstacle("Unnamed 0", "", Aspect.OBSTACLE));
-
-		System.out.println("Total Rogues: " + Rogue.getRogues().count());
-		System.out.println("Total 'ships: " + RogueShip.getRogueShips().count());
-		System.out.println("Total Crews: " + Crew.getCrews().count());
 	}
 
 	/* instance */

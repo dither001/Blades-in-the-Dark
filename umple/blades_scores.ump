@@ -96,6 +96,7 @@ class Opportunity {
 	/* */
 	/* */
 	public static void update() {
+		/* FIXME - really, I need a better method of generating opportunities */
 		if (QUEUE.size() < 6) {
 			Iterator<Crew> crits = Crew.getCrews().iterator();
 			Iterator<Locale> pits = Locale.getPlaces().iterator();

@@ -100,9 +100,13 @@ class GameLoop {
 	/* */
 	private static void initialize() {
 		com.blades.util.Loader.getInstance();
-		GameLoop.testRogueships();
 		Crew.initialize();
 		Ladder.initialize();
+		Rogue.setupRogueShips();
+
+		System.out.println("Total Rogues: " + Rogue.getRogues().count());
+		System.out.println("Total 'ships: " + RogueShip.getRogueShips().count());
+		System.out.println("Total Crews: " + Crew.getCrews().count());
 	}
 	
 	private static void testCrewRogues() {
@@ -110,6 +114,8 @@ class GameLoop {
 			System.out.println(String.format("(%2d) %s", e.numberOfRogues(), e.getName()));
 			e.getRogues().forEach(f -> System.out.println("> " + f.getRoguename()));
 		});
+		
+		Crew.getCrews().forEach(e -> System.out.println(e.getCrewRogueShips().stream().map(s -> s.getRogue().getRoguename()).collect(Collectors.toList())));
 	}
 
 	private static void testCrewships() {
@@ -149,36 +155,7 @@ class GameLoop {
 
 		Opportunity opp = new Opportunity(target, locale, sitch);
 	}
-	
-	private static void testRogueships() {
-		int numCrews = (int) Crew.getCrews().count();
-		List<Crew> crews = Crew.getCrews().collect(Collectors.toUnmodifiableList());
 
-		Rogue[] a = new Rogue[125];
-		a[0] = new Rogue("Unnamed rogue 0", crews.get(0));
-		for (int i = 1; i < 125; ++i) {
-			Crew c = crews.get(i % numCrews);
-//			System.out.println(c.getName());
-
-			a[i] = new Rogue("Unnamed rogue " + i, c);
-			new Situation(new RogueShip(a[i], a[i - 1]),
-					new Obstacle("Unnamed " + i, "", Aspect.OBSTACLE));
-
-			c.addRogue(a[i]);
-//			System.out.println(crews.get(i % numCrews).getName());
-		}
-		new Situation(new RogueShip(a[0], a[124]), new Obstacle("Unnamed 0", "", Aspect.OBSTACLE));
-
-		System.out.println("Total Rogues: " + Rogue.getRogues().count());
-		System.out.println("Total 'ships: " + RogueShip.getRogueShips().count());
-		System.out.println("Total Crews: " + Crew.getCrews().count());
-//		Crew.getCrews().forEach(c -> System.out.println(c.numberOfRogues()));
-//		CrewShip.getShips().forEach(ship -> System.out.println(String.format("%s %s", ship.getValue(), ship.getGetshipname())));
-
-//		RogueShip.getRogueships().forEach(ship -> System.out.println(ship.getSituation(0).getObstacle().getName()));	   
-//		Crew.getCrews().forEach(crew -> System.out.println(crew.getName()));
-	}
-	
 	/* */
 	/* GAME STATE MACHINE */
 	/* */
