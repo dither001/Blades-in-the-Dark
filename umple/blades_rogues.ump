@@ -8,45 +8,58 @@ class Rogue {
 	depend java.util.function.Predicate;
 	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
-	
+
 	depend com.blades.util.Util;
 
 	/* vices */
 	const FAITH = "faith"; const GAMBLING = "gambling"; const LUXURY = "luxury"; const OBLIGATION = "obligation"; const PLEASURE = "pleasure"; const STUPOR = "stupor"; const WEIRD = "weird";
 
+	/* UNIQUE SET-STREAM */
+	const Set<Rogue> SET = new HashSet<Rogue>();	
+	after constructor { SET.add(this); } after delete { SET.remove(this); }
+	private static Stream<Rogue> getStream() { return SET.stream(); }
+
 	/* */
-	unique UUID id;
-	roguename; Playbook playbook; vice;
-	/* Crew crew; */
+	lazy UUID id; before getId { if (Util.unless(id)) setId(Util.nextUUID()); } key { id }
+	roguename;
+	lazy Playbook playbook;
+	vice = STUPOR;
 	int stress = 0; int trauma = 0; int coin = 0; int stash = 0;
 	boolean tapped = false;
 
-	key { id }
-	
+	0..1 -> 0..* Aspect aspects;
+
+	/* setup */
+	public static void setupRogueShips() {
+		int numRogues = (int) Rogue.getRogues().count();
+
+		Rogue[] a = (Rogue[]) getRogues().toArray();
+		for (int i = 1; i < numRogues; ++i) {
+			new Situation(new RogueShip(a[i], a[i - 1]), new Obstacle("Unnamed " + i, "", Aspect.OBSTACLE));
+		} new Situation(new RogueShip(a[0], a[numRogues - 1]), new Obstacle("Unnamed 0", "", Aspect.OBSTACLE));
+
+		System.out.println("Total Rogues: " + Rogue.getRogues().count());
+		System.out.println("Total 'ships: " + RogueShip.getRogueShips().count());
+		System.out.println("Total Crews: " + Crew.getCrews().count());
+	}
+
 	/* instance */
 	public List<Rogue> getCircle() { return getRogueShips().stream().map(s -> s.getOther(this)).collect(Collectors.toUnmodifiableList()); }
-	
+
 	public Opportunity lookForWork() {
 		Rogue other = getRogueShips().stream().findFirst().get().getOther(this); if (Util.unless(other)) return null;
 		Situation sitch = Situation.getSituations(other).filter(s -> Util.unless(s.getShip().contains(this))).findFirst().get(); if (Util.unless(sitch)) return null;
 		Crew target = sitch.getShip().getOther(other).getCrew(); if (Util.unless(target)) return null;
 		Locale locale = crew.getHuntingGround().stream().findFirst().get(); if (Util.unless(locale)) return null;
-		
-		return new Opportunity(Util.nextUUID(), target, locale, sitch);
+
+		return new Opportunity(target, locale, sitch);
 	}
-	
+
 	void doDowntime(int actions) { setTapped(false); }
-	
+
 	/* static */
-	public static Rogue newContact(UUID aid, String aRoguename) {
-		return new Rogue(aid, aRoguename, null, null, null);
-	}
-
-	public static Stream<Rogue> getRogues() { return roguesById.values().stream(); }
-
+	public static Stream<Rogue> getRogues() { return getStream(); }
 	public static Stream<Rogue> getAvailableRogues() { return getRogues().filter(Predicate.not(Rogue::getTapped)); }
-	/* public static Stream<Rogue> getRoguesWithGoals() { return getRogues().filter(Rogue::hasGoals); } */
-	/* public static Stream<Goal> getRogueGoals() { return getRoguesWithGoals().map(Rogue::getGoals).flatMap(Arrays::stream); } */
 }
 
 /* */
@@ -64,12 +77,17 @@ class RogueShip {
 	/* */
 	const ALLY = "ally"; const CONTACT = "contact"; const ENEMY = "enemy"; const RIVAL = "rival";
 
+	/* UNIQUE SET-STREAM */
+	const Set<RogueShip> SET = new HashSet<RogueShip>();	
+	after constructor { SET.add(this); } after delete { SET.remove(this); }
+	private static Stream<RogueShip> getStream() { return SET.stream(); }
+
 	/* */
-	unique UUID id;
-	* <@>- 2 Rogue rogues;
 	value = RIVAL;
 
-	key { id, rogues }
+	* <@>- 2 Rogue rogues;
+
+	key { rogues }
 
 	/* */
 	shipname = { String.format("%s + %s", rogues.get(0).getRoguename(), rogues.get(1).getRoguename()) }
@@ -79,9 +97,9 @@ class RogueShip {
 	Rogue getOther(Rogue c) { return c.equals(rogues.get(0)) ? rogues.get(1) : c.equals(rogues.get(1)) ? rogues.get(0) : null; }
 	
 	/* */
-	public static Stream<RogueShip> getRogueships() { return rogueshipsById.values().stream(); }
-	public static Stream<RogueShip> getRogueships(Predicate<RogueShip> predicate) {
-		return rogueshipsById.values().stream().filter(ship -> predicate.test(ship));
+	public static Stream<RogueShip> getRogueShips() { return getStream(); }
+	public static Stream<RogueShip> getRogueShips(Predicate<RogueShip> predicate) {
+		return getRogueShips().filter(ship -> predicate.test(ship));
 	}
 
 	/* */

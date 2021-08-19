@@ -39,8 +39,9 @@ class Loader {
 		loadDistricts("res/data/doskvol_districts.csv");
 		loadFactions("res/data/doskvol_factions.csv");
 		loadCrewShips("res/data/doskvol_crewships.csv");
-		/* loadContacts("res/data/crew_contacts.csv"); */
-		/* loadContacts("res/data/rogue_contacts.csv"); */
+		loadContacts("res/data/rogue_names.csv", null);
+		loadContacts("res/data/crew_contacts.csv", Aspect.CONTACT);
+		loadContacts("res/data/rogue_contacts.csv", Aspect.CONTACT);
 	}
 
 	private static void loadBuildings(String path) {
@@ -49,11 +50,13 @@ class Loader {
 		}).forEach(Locale.COMMON_BUILDINGS::add);
 	}
 
-	private static void loadContacts(String path) {
+	private static void loadContacts(String path, String aspect) {
 		Util.fileTransformer(path, new Function<String, Rogue>() {
 			@Override public Rogue apply(String t) {
 				String[] a = t.split(",");
-				return Rogue.newContact(Util.nextUUID(), a[0]);
+				Rogue r = new Rogue(a[0], Crew.nextCrew());
+				if (Util.ensure(aspect)) r.addAspect(new Aspect(aspect, aspect, aspect));
+				return r;
 			}
 		});
 	}
@@ -72,7 +75,7 @@ class Loader {
 			@Override
 			public Locale apply(String t) {
 				String[] a = t.split(",");
-				Locale l = new Locale(Util.nextUUID(), a[0]);
+				Locale l = new Locale(a[0]);
 				l.setWealth(Integer.parseInt(a[1]));
 				l.setSecurity(Integer.parseInt(a[2]));
 				l.setCrime(Integer.parseInt(a[3]));
@@ -89,20 +92,22 @@ class Loader {
 			@Override public Crew apply(String t) {
 				String[] a = t.split(",");
 				Crew c = Crew.newFaction(
-					Util.nextUUID(), 
-					a[0], 
-					Integer.parseInt(a[1]), 
-					Boolean.parseBoolean(a[2])
+					a[0],
+					a[1],
+					Integer.parseInt(a[2]),
+					Boolean.parseBoolean(a[3])
 				);
-				
-				if (a[3] != "") {
-					Locale l = new Locale(Util.nextUUID(), a[3]);
-					l.setZoning(new Zoning(a[5]));
-					if (a[4] != "") { l.setParent(Locale.getLocaleByName(a[4])); }
+
+				c.setAgent(Boolean.parseBoolean(a[7]));
+
+				if (a[4] != "") {
+					Locale l = new Locale(a[4]);
+					l.setZoning(new Zoning(a[6]));
+					if (a[5] != "") { l.setParent(Locale.getLocaleByName(a[5])); }
 					else { l.setParent(Locale.nextDistrict()); }
 					l.setCrew(c);
 					l.setIsLair(true);
-					if (a[3].matches("neighborhood")) { l.setIsNeighborhood(true); }
+					if (a[4].matches("neighborhood")) { l.setIsNeighborhood(true); }
 				}
 				return c;
 			}
@@ -118,7 +123,7 @@ class Loader {
 				Crew c2 = Crew.getCrewByName(a[1]);
 				int status = Boolean.parseBoolean(a[2]) ? -2 : 2;
 
-				return new CrewShip(Util.nextUUID(), status, c1, c2);
+				return new CrewShip(status, c1, c2);
 			}
 		});
 	}
@@ -153,6 +158,20 @@ class Util {
 	depend java.util.stream.Stream;
 	
 	/* */
+	public static void testEnsure() {
+		System.out.println("Test ensure() utility:");
+		System.out.println(String.format("> %-8s null", Util.ensure("")));
+		System.out.println(String.format("> %-8s 0", Util.ensure(0)));
+		System.out.println(String.format("> %-8s -1", Util.ensure(-1)));
+		System.out.println(String.format("> %-8s Optional(null)", Util.ensure(Optional.ofNullable(null))));
+		System.out.println(String.format("> %-8s Optional(true)", Util.ensure(Optional.of(true))));
+		System.out.println(String.format("> %-8s Optional(false)", Util.ensure(Optional.of(false))));
+		System.out.println(String.format("> %-8s 'empty' Optional", Util.ensure(Optional.empty())));
+		System.out.println(String.format("> %-8s 'empty' String \"\"", Util.ensure("")));
+		System.out.println(String.format("> %-8s String \"foo\"", Util.ensure("foo")));
+	}
+	
+	/* */
 	public static <T> boolean ensure(T quality) {
 		return quality == null ? false
 			: quality.getClass().equals(Boolean.class) 
@@ -161,6 +180,8 @@ class Util {
     		? ((int)quality) > -1
 			: quality.getClass().equals(Optional.class) 
 			? ((Optional<?>) quality).isPresent() 
+			: quality.getClass().equals(String.class) 
+			? !((String) quality).matches("") 
 			: true;
 	}
 	

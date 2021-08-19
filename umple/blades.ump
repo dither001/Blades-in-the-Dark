@@ -5,7 +5,7 @@ strictness allow 1008;
 use blades_crews.ump;
 use blades_rogues.ump;
 use blades_scores.ump;
-use goap.ump;
+use suppliers.ump;
 use util.ump;
 
 namespace com.blades.main;
@@ -20,7 +20,9 @@ class Aspect {
 	depend java.util.function.Predicate;
 	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
-	
+
+	depend com.blades.util.Util;
+
 	/* */
 	const CONTACT = "contact"; const EXPERT = "expert"; const GANG = "gang"; 
 	const PLAYBOOK = "playbook"; const REPUTATION = "reputation"; const UPGRADE = "upgrade";
@@ -28,25 +30,23 @@ class Aspect {
 	const HOOK = "hook"; const OBSTACLE = "obstacle";
 
 	/* */
-	public static final List<Aspect> ASPECTS = Collections.synchronizedList(new ArrayList<Aspect>());
-
-	after constructor { ASPECTS.add(this); }
-	after delete { ASPECTS.remove(this); }
+	const Set<Aspect> SET = new HashSet<Aspect>();	
+	after constructor { SET.add(this); }
+	after delete { SET.remove(this); }
+	public static Stream<Aspect> getStream() { return SET.stream(); }
 
 	/* */
 	name; description; type;
 
 	key { name, type }
-	
+
 	/* */
-	@Override public int compareTo(Aspect o) { return name.compareTo(o.name); }
-	
-	/* */
-	public static List<Aspect> getContacts() { return get(a -> a.type.matches(CONTACT)).collect(Collectors.toUnmodifiableList()); }
-	public static List<Aspect> getReputations() { return get(a -> a.type.matches(REPUTATION)).collect(Collectors.toUnmodifiableList()); }
-	public static List<Aspect> getUpgrades() { return get(a -> a.type.matches(UPGRADE)).collect(Collectors.toUnmodifiableList()); }
-	
-	public static Stream<Aspect> get(Predicate<Aspect> predicate) { return ASPECTS.stream().filter(a -> predicate.test(a)); }
+	public static Predicate<Aspect> filter(String type) { return (Aspect a) -> Util.ensure(a.getType()) ? a.getType().matches(type) : false; }
+	public static Stream<Aspect> get(Predicate<Aspect> predicate) { return getStream().filter(a -> predicate.test(a)); }
+
+	public static List<Aspect> getContacts() { return get(filter(CONTACT)).collect(Collectors.toUnmodifiableList()); }
+	public static List<Aspect> getReputations() { return get(filter(REPUTATION)).collect(Collectors.toUnmodifiableList()); }
+	public static List<Aspect> getUpgrades() { return get(filter(UPGRADE)).collect(Collectors.toUnmodifiableList()); }	
 }
 
 /* */
@@ -89,11 +89,14 @@ class GameLoop {
 
 		/* */
 		GameLoop.initialize();
-		
+
 		/* */
-		while (true) { GameLoop.getInstance().r.stream().forEach(Runnable::run); }		
+		/* while (true) { GameLoop.getInstance().r.stream().forEach(Runnable::run); } */
+		for (int i = 0; i < 5; ++i) GameLoop.getInstance().r.stream().forEach(Runnable::run);
+		
+		/* testCrewships(); */
 	}
-	
+
 	/* */
 	private static void initialize() {
 		com.blades.util.Loader.getInstance();
@@ -102,14 +105,33 @@ class GameLoop {
 		Ladder.initialize();
 	}
 	
+	private static void testCrewRogues() {
+		Crew.getCrews().forEach(e -> {
+			System.out.println(String.format("(%2d) %s", e.numberOfRogues(), e.getName()));
+			e.getRogues().forEach(f -> System.out.println("> " + f.getRoguename()));
+		});
+	}
+
+	private static void testCrewships() {
+		Crew.getCrews().forEach(e -> {
+			System.out.println(String.format("%s (ships: %d)", e.getName(), e.numberOfCrewShips()));
+			e.getCrewShips().forEach(f -> {
+				System.out.println(String.format("- (%2d) %s", f.getValue(), f.getShipname()));
+			});
+		});
+	}
+
 	private static void testLadders() {
 		Locale.getDistricts().map(d -> Ladder.getWithDistrict(d)).forEach(e -> {
-			System.out.println(String.format("%s (%d : %s [%d]): %s", 
+			System.out.println(
+				String.format("%s (%d : %s [%d]): %s", 
 					e.getDistrict().getName(), 
 					e.getBoss().getTier(), 
 					e.getBoss().getName(), 
 					e.getBoss().numberOfCrewShips(), 
-					e.getCrews().stream().map(Crew::getName).collect(Collectors.toUnmodifiableList())));
+					e.getCrews().stream().map(Crew::getName).collect(Collectors.toUnmodifiableList()
+				)
+			));
 		});
 	}
 	
@@ -125,7 +147,7 @@ class GameLoop {
 		Locale locale = target.getLair();
 		System.out.println(locale.getName());
 
-		Opportunity opp = new Opportunity(Util.nextUUID(), target, locale, sitch);
+		Opportunity opp = new Opportunity(target, locale, sitch);
 	}
 	
 	private static void testRogueships() {
@@ -133,22 +155,22 @@ class GameLoop {
 		List<Crew> crews = Crew.getCrews().collect(Collectors.toUnmodifiableList());
 
 		Rogue[] a = new Rogue[125];
-		a[0] = new Rogue(Util.nextUUID(), "Unnamed rogue 0", null, null, crews.get(0));
+		a[0] = new Rogue("Unnamed rogue 0", crews.get(0));
 		for (int i = 1; i < 125; ++i) {
 			Crew c = crews.get(i % numCrews);
 //			System.out.println(c.getName());
 
-			a[i] = new Rogue(Util.nextUUID(), "Unnamed rogue " + i, null, null, c);
-			new Situation(Util.nextUUID(), new RogueShip(Util.nextUUID(), a[i], a[i - 1]),
+			a[i] = new Rogue("Unnamed rogue " + i, c);
+			new Situation(new RogueShip(a[i], a[i - 1]),
 					new Obstacle("Unnamed " + i, "", Aspect.OBSTACLE));
 
 			c.addRogue(a[i]);
 //			System.out.println(crews.get(i % numCrews).getName());
 		}
-		new Situation(Util.nextUUID(), new RogueShip(Util.nextUUID(), a[0], a[124]), new Obstacle("Unnamed 0", "", Aspect.OBSTACLE));
+		new Situation(new RogueShip(a[0], a[124]), new Obstacle("Unnamed 0", "", Aspect.OBSTACLE));
 
 		System.out.println("Total Rogues: " + Rogue.getRogues().count());
-		System.out.println("Total 'ships: " + RogueShip.getRogueships().count());
+		System.out.println("Total 'ships: " + RogueShip.getRogueShips().count());
 		System.out.println("Total Crews: " + Crew.getCrews().count());
 //		Crew.getCrews().forEach(c -> System.out.println(c.numberOfRogues()));
 //		CrewShip.getShips().forEach(ship -> System.out.println(String.format("%s %s", ship.getValue(), ship.getGetshipname())));
@@ -227,7 +249,7 @@ class Ladder {
 		laddersByDistrict.values().forEach(e -> {
 			Crew boss = e.getBoss();
 			e.getCrews().forEach(crew -> {
-				if (Util.unless(crew.equals(boss)) && Util.unless(CrewShip.exists(crew, boss))) { new CrewShip(Util.nextUUID(), 0, boss, crew); }
+				if (Util.unless(crew.equals(boss)) && Util.unless(CrewShip.exists(crew, boss))) { new CrewShip(0, boss, crew); }
 			});
 		});
 	}
@@ -240,6 +262,8 @@ class Ladder {
 /* LOCALE */
 /* */
 class Locale {
+	depend java.util.HashSet;
+	depend java.util.Set;
 	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
 
@@ -250,8 +274,13 @@ class Locale {
 	public static final List<String> UNCOMMON_BUILDINGS = Collections.synchronizedList(new ArrayList<String>());
 	public static final List<Locale> DISTRICTS = Collections.synchronizedList(new ArrayList<Locale>());
 
+	/* UNIQUE SET-STREAM */
+	const Set<Locale> SET = new HashSet<Locale>();	
+	after constructor { SET.add(this); } after delete { SET.remove(this); }
+	private static Stream<Locale> getStream() { return SET.stream(); }
+
 	/* */
-	unique UUID id;
+	lazy UUID id; before getId { if (Util.unless(id)) setId(Util.nextUUID()); } key { id }
 	name;
 
 	/* */
@@ -260,14 +289,12 @@ class Locale {
 	boolean isLair = false; boolean isHuntingGround = false; boolean isTurf = false;
 	lazy Zoning zoning;
 
-	key { id }
-
 	0..1 parent -- * Locale children;
 
 	boolean hasZoning = { zoning != null }
 
 	/* */
-	public static Stream<Locale> getLocales() { return localesById.values().stream(); }
+	public static Stream<Locale> getLocales() { return getStream(); }
 	public static Stream<Locale> getDistricts() { return getLocales().filter(Locale::getIsDistrict); }
 	public static Stream<Locale> getPlaces() { return getLocales().filter(Locale::hasParent); }
 	public static Locale getLocaleByName(String name) {

@@ -74,14 +74,17 @@ class Opportunity {
 	const Comparator<Opportunity> PRIORITY = priority();
 	const PriorityBlockingQueue<Opportunity> QUEUE = new PriorityBlockingQueue<Opportunity>(11, PRIORITY);
 
+	/* UNIQUE SET-STREAM */
+	const Set<Opportunity> SET = new HashSet<Opportunity>();	
+	after constructor { SET.add(this); } after delete { SET.remove(this); }
+	private static Stream<Opportunity> getStream() { return SET.stream(); }
+
 	/* */
-	unique UUID id; 
+	lazy UUID id; before getId { if (Util.unless(id)) setId(Util.nextUUID()); } key { id }
 	Crew target;
 	Locale locale;
 	Situation situation;
 	long turnCreated = com.blades.main.GameContext.getInstance().getTurn();
-
-	key { id }
 
 	/* "backdoor" implies alternate plan vector */
 	lazy Rogue patron;  lazy Crew[] related; lazy Opportunity[] secrets; lazy String backdoor;
@@ -97,16 +100,16 @@ class Opportunity {
 			Iterator<Crew> crits = Crew.getCrews().iterator();
 			Iterator<Locale> pits = Locale.getPlaces().iterator();
 			Iterator<Situation> sits = Situation
-					.getSituations(RogueShip.getRogueships(RogueShip.RIVALS).collect(Collectors.toSet())).iterator();
+					.getSituations(RogueShip.getRogueShips(RogueShip.RIVALS).collect(Collectors.toSet())).iterator();
 
 			while (crits.hasNext() && pits.hasNext() && sits.hasNext()) {
-				new Opportunity(Util.nextUUID(), crits.next(), pits.next(), sits.next());
+				new Opportunity(crits.next(), pits.next(), sits.next());
 			}
 		}
 	}
 	
 	/* */
-	public static Stream<Opportunity> getOpportunities() { return opportunitysById.values().stream(); }
+	public static Stream<Opportunity> getOpportunities() { return getStream(); }
 	public static Stream<Opportunity> getOpportunities(Crew crew) {
 		return getOpportunities().filter(opp -> crew.getTurf().contains(opp.getLocale()));
 	}
@@ -138,22 +141,30 @@ class Plan {
 /* SCORE */
 /* */
 class Score {
-	depend java.util.function.Predicate;
+	depend java.util.Arrays;
+	depend java.util.HashSet;
+	depend java.util.List;
+	depend java.util.Set;
+	depend java.util.UUID;
 	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
-	
+
 	depend com.blades.util.Util;
-	
-	isA Runnable;
 
 	/* */
-	unique UUID id;
+	isA Runnable;
+
+	/* UNIQUE SET-STREAM */
+	const Set<Score> SET = new HashSet<Score>();	
+	after constructor { SET.add(this); } after delete { SET.remove(this); }
+	private static Stream<Score> getStream() { return SET.stream(); }
+
 	/* A Score is a short story, composed of "means, motive, and opportunity." Here, the individual meaning of the terms changes to accomodate the game mechanics. */
+	lazy UUID id; before getId { if (Util.unless(id)) setId(Util.nextUUID()); } key { id }
+
 	Opportunity opportunity; Plan plan;
 	lazy Crew crew; int coin = 6; lazy int heat;
 	internal List<Runnable> r = Arrays.asList(this::ready, this::engagement, this::operation, this::payoff, this::heat, this::entanglement, this::downtime);
-
-	key { id }
 
 	/* */
 	name = { String.format("The %s job", opportunity.getTarget().getName()) }
@@ -170,7 +181,7 @@ class Score {
 	@Override void run() { r.stream().forEach(Runnable::run); }
 	
 	/* */
-	public static Stream<Score> getScores() { return scoresById.values().stream(); }
+	public static Stream<Score> getScores() { return getStream(); }
 	
 	/* score state machine */
 	sequence {
@@ -202,7 +213,7 @@ class Score {
 				boolean exists = CrewShip.exists(crew, other);
 				/* */
 				CrewShip ship = exists ? myShips.stream().filter(s -> s.contains(other)).findFirst().get()
-						: new CrewShip(Util.nextUUID(), 0, crew, other);
+						: new CrewShip(0, crew, other);
 
 				if (Util.ensure(ship)) {
 					int value = e.hasStatus(CrewShip.ALLIES) ? -1 : e.hasStatus(CrewShip.ENEMIES) ? 1 : 0;
@@ -227,18 +238,21 @@ class Score {
 /* SITUATION */
 /* */
 class Situation {
+	depend java.util.HashSet;
 	depend java.util.Set;
 	depend java.util.stream.Stream;
 
+	/* UNIQUE SET-STREAM */
+	const Set<Situation> SET = new HashSet<Situation>();	
+	after constructor { SET.add(this); } after delete { SET.remove(this); }
+	private static Stream<Situation> getStream() { return SET.stream(); }
+
 	/* */
-	unique UUID id;
 	RogueShip ship;
 	Aspect aspect;
 	
-	key { id }
-	
 	/* static */
-	public static Stream<Situation> getSituations() { return situationsById.values().stream(); }
+	public static Stream<Situation> getSituations() { return getStream(); }
 	public static Stream<Situation> getSituations(Rogue rogue) { return getSituations().filter(s -> s.getShip().contains(rogue)); }
 	public static Stream<Situation> getSituations(RogueShip ship) { return getSituations().filter(s -> s.getShip().equals(ship)); }
 	public static Stream<Situation> getSituations(Set<RogueShip> set) { return getSituations().filter(e -> set.contains(e.getShip())); }

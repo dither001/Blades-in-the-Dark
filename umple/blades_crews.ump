@@ -1,3 +1,4 @@
+strictness allow 170;
 
 namespace com.blades.main;
 
@@ -5,6 +6,7 @@ namespace com.blades.main;
 /* CREW */
 /* */
 class Crew {
+	depend java.util.concurrent.atomic.AtomicLong;
 	depend java.util.concurrent.ArrayBlockingQueue;
 	depend java.util.concurrent.BlockingQueue;
 	depend java.util.function.Predicate;
@@ -15,21 +17,24 @@ class Crew {
 
 	/* */
 	const int MAX_HEAT = 9;
+	const CITIZENRY = "citizenry"; const FRINGE = "fringe"; const INSTITUTION = "institution"; const TRADEMEN = "tradesmen"; const UNDERWORLD = "underworld";
+
+	/* UNIQUE SET-STREAM */
+	const Set<Crew> SET = new HashSet<Crew>();
+	after constructor { SET.add(this); } after delete { SET.remove(this); }
+	private static Stream<Crew> getStream() { return SET.stream(); }
 
 	/* */
-	unique UUID id;
-	name;
+	lazy UUID id; before getId { if (Util.unless(id)) setId(Util.nextUUID()); } key { id }
+	name; state;
 	int rep = 0; int tier; int heat = 0; int wanted = 0; int coin;
-	boolean hold;
-
+	boolean hold; boolean alive = true; boolean agent = false;
 	lazy Score score;
 
-	0..1 -> 0..* Aspect; 
+	0..1 -> 0..* Aspect aspects;
 	0..1 patron -- 0..* Crew vassals;
 	1 crew <@>- * Rogue rogues;
 	0..1 crew <@>- * Locale turf;
-
-	key { id }
 
 	/* derived attributes */
 	boolean isBoss = { isLocalBoss() && Util.unless(hasPatron()) }
@@ -45,7 +50,7 @@ class Crew {
 	/** Primary means for determining crew's tier. 
 	* @return int modified by whether crew is at war and has strong/weak hold. */
 	int currentRep = { getAtWar() ? hold ? rep : rep - 1 : rep }
-	
+
 	/* aspect orientation */
 	after setHeat {
 		if (heat >= MAX_HEAT) { int delta = heat / MAX_HEAT; setWanted(getWanted() + delta); heat -= delta; } 
@@ -65,26 +70,28 @@ class Crew {
 	}
 	
 	private static void setupUpgrades() {
-		final BlockingQueue<Aspect> queue = new ArrayBlockingQueue<Aspect>(11, true, Aspect.getUpgrades());
-		queue.forEach(a -> System.out.println(a.getName()));
-		
-		getCrews().forEach(e -> {
-			Set<Crew> crews = e.getCrewShips().stream().map(f -> f.getOther(e)).collect(Collectors.toUnmodifiableSet());
+	    final BlockingQueue<Aspect> aspects = new ArrayBlockingQueue<Aspect>(11, true, Aspect.getUpgrades());
+	    getCrews().forEach(e -> {
+			Set<Crew> crews = e.getCrewShips().stream()
+					.map(f -> f.getOther(e))
+					.collect(Collectors.toSet());
+			crews.add(e);
+
 			List<Crew> available = Crew.getCrews()
 					.filter(f -> Util.unless(crews.contains(f)))
 					.sorted((c1, c2) -> Integer.compare(c1.numberOfCrewShips(), c2.numberOfCrewShips()))
 					.collect(Collectors.toList());
 			
-			Aspect a1 = queue.poll(); e.addAspect(a1); queue.add(a1);
-			new CrewShip(Util.nextUUID(), 1, e, available.remove(0));
-			Aspect a2 = queue.poll(); e.addAspect(a2); queue.add(a2);
-			new CrewShip(Util.nextUUID(), -1, e, available.remove(0));
+			Aspect a1 = aspects.poll(); e.addAspect(a1); aspects.add(a1);
+			new CrewShip(1, e, available.remove(0));
+			Aspect a2 = aspects.poll(); e.addAspect(a2); aspects.add(a2);
+			new CrewShip(-1, e, available.remove(0));
 		});
 	}
 
 	private static void setupLairs() {
 		getCrews().filter(c -> Util.unless(c.hasLair())).forEach(c -> {
-			Locale l = new Locale(Util.nextUUID(), Locale.nextCommonBuilding());
+			Locale l = new Locale(Locale.nextCommonBuilding());
 			l.setZoning(new Zoning(Zoning.PURPOSE));
 			l.setCrew(c);
 			l.setIsLair(true);
@@ -94,7 +101,7 @@ class Crew {
 	
 	private static void setupHuntingGrounds() {
 		getCrews().filter(c -> Util.unless(c.hasHuntingGround())).forEach(c -> {
-			Locale l = new Locale(Util.nextUUID(), Locale.nextCommonBuilding());
+			Locale l = new Locale(Locale.nextCommonBuilding());
 			l.setZoning(new Zoning(Zoning.PURPOSE));
 			l.setCrew(c);
 			l.setIsHuntingGround(true);
@@ -122,7 +129,7 @@ class Crew {
 			int potentialRep = 2 - (getTier() - opp.getTarget().getTier());
 
 			Plan plan = plan(activity(objectify(opp)), Approach.DECEPTION, null);
-			Score newScore = new Score(Util.nextUUID(), opp, plan);
+			Score newScore = new Score(opp, plan);
 			newScore.setCrew(this);
 			setScore(newScore);
 		}
@@ -189,13 +196,16 @@ class Crew {
 		return getCrews().filter(s -> s.getName().equalsIgnoreCase(name)).findFirst().get();
 	}
 	
-	public static Crew newFaction(UUID aId, String aName, int aTier, boolean aHold) {
-		return new Crew(aId, aName, aTier, 0, aHold);
+	public static Crew newFaction(aName, aState, int aTier, boolean aHold) {
+		return new Crew(aName, aState, aTier, 0, aHold);
 	}
 
 	/* */
-	public static Stream<Crew> getCrews() { return crewsById.values().stream(); };
-	public static Stream<Crew> getCrewsLookingForWork() { return getCrews().filter(Crew::getLookingForWork); }
+	private static AtomicLong currentCrew = new AtomicLong(0); 
+	public static synchronized Crew nextCrew() { return SET.stream().skip(currentCrew.incrementAndGet() % SET.size()).iterator().next(); }
+	
+	public static Stream<Crew> getCrews() { return getStream(); };
+	public static Stream<Crew> getCrewsLookingForWork() { return getCrews().filter(Crew::getAgent); }
 	public static Stream<Crew> getCrewsWithScores() { return getCrews().filter(Crew::hasScore); }
 	public static void update() {  /* TODO */ getCrewsLookingForWork().forEach(Crew::lookForWork); }
 }
@@ -213,15 +223,27 @@ class CrewShip {
 	const Predicate<CrewShip> RIVALS = rivals();
 	const Predicate<CrewShip> AT_WAR = at_war();
 
+	/* UNIQUE SET-STREAM */
+	const Set<CrewShip> SET = new HashSet<CrewShip>();	
+	after constructor { SET.add(this); } after delete { SET.remove(this); }
+	private static Stream<CrewShip> getStream() { return SET.stream(); }
+
 	/* */
-	unique UUID id;
- 	* -- 2 Crew crews;
+	before constructor { if (allCrews[0].equals(allCrews[1])) return; }
+	/* */
 	int value;
 	[value >= -3 && value <= 3]
+
+	* -- * Aspect;
+	* -- 2 Crew crews;
 	
-	before constructor { if (allCrews[0].equals(allCrews[1])) return; }
-	
-	key { id, crews }
+	key { crews }
+
+	/* custom constructor */
+	CrewShip(int aValue, Aspect aAspect, Crew... allCrews) {
+		CrewShip cs = new CrewShip(aValue, allCrews);
+		if (!cs.addAspect(aAspect)) { cs.delete(); throw new RuntimeException("Could not add Aspect."); }
+	}
 
 	/* derived attribute */
 	String shipname = { String.format("%s + %s", getCrew(0).getName(), getCrew(1).getName()) }
@@ -233,7 +255,7 @@ class CrewShip {
 
 	/* */
 	public static boolean exists(Crew c1, Crew c2) { return getShips(c1).anyMatch(ship -> ship.contains(c2)); }
-	public static Stream<CrewShip> getShips() { return crewshipsById.values().stream(); }
+	public static Stream<CrewShip> getShips() { return getStream(); }
 	public static Stream<CrewShip> getShips(Crew crew) { return getShips().filter(c -> c.contains(crew)); }
 	public static CrewShip getShip(Crew c1, Crew c2) { return getShips(c1).filter(ship -> ship.contains(c2)).findFirst().orElse(null); }
 	public static boolean atWar(Crew crew) { return getShips(crew).anyMatch(AT_WAR); }
