@@ -34,9 +34,14 @@ class Rogue {
 		int numRogues = (int) Rogue.getRogues().count();
 
 		Rogue[] a = getRogues().toArray(Rogue[]::new);
-		for (int i = 1; i < numRogues; ++i) {
-			new Situation(new RogueShip(a[i], a[i - 1]), new Obstacle("Unnamed " + i, "", Aspect.OBSTACLE));
-		} new Situation(new RogueShip(a[0], a[numRogues - 1]), new Obstacle("Unnamed 0", "", Aspect.OBSTACLE));
+		for (int i = 1; i < numRogues; i += 2) {
+			RogueShip r1 = new RogueShip(a[i], a[(i + 1) % numRogues]);
+			r1.setValue(RogueShip.ALLY);
+			RogueShip r2 = new RogueShip(a[i], a[(i - 1) % numRogues]);
+			r2.setValue(RogueShip.ENEMY);
+			new Situation(r1, new Obstacle("Unnamed " + (i-1), "", Aspect.OBSTACLE));
+			new Situation(r2, new Obstacle("Unnamed " + i, "", Aspect.OBSTACLE));
+		}
 	}
 
 	/* instance */

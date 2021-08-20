@@ -101,7 +101,7 @@ class Opportunity {
 			Iterator<Crew> crits = Crew.getCrews().iterator();
 			Iterator<Locale> pits = Locale.getPlaces().iterator();
 			Iterator<Situation> sits = Situation
-					.getSituations(RogueShip.getRogueShips(RogueShip.RIVALS).collect(Collectors.toSet())).iterator();
+					.getSituations(RogueShip.getRogueShips(RogueShip.ENEMIES).collect(Collectors.toSet())).iterator();
 
 			while (crits.hasNext() && pits.hasNext() && sits.hasNext()) {
 				new Opportunity(crits.next(), pits.next(), sits.next());

@@ -91,10 +91,10 @@ class GameLoop {
 		GameLoop.initialize();
 
 		/* */
-		/* while (true) { GameLoop.getInstance().r.stream().forEach(Runnable::run); } */
+		// while (true) { GameLoop.getInstance().r.stream().forEach(Runnable::run); }
 		for (int i = 0; i < 5; ++i) GameLoop.getInstance().r.stream().forEach(Runnable::run);
 		
-		/* testCrewships(); */
+		// testCrewships();
 	}
 
 	/* */
@@ -109,6 +109,16 @@ class GameLoop {
 		System.out.println("Total Crews: " + Crew.getCrews().count());
 	}
 	
+	private static void testCrew() {
+		Crew.getCrews().forEach(e -> {
+			System.out.println(String.format("(%2d) %s", e.numberOfRogues(), e.getName()));
+			e.getRogues().forEach(f -> {
+				System.out.println(String.format("%s %s", f.getRoguename(),
+						f.getRogueShips().stream().map(g -> g.getOther(f).getRoguename()).toList()));
+			});
+		});
+	}
+
 	private static void testCrewRogues() {
 		Crew.getCrews().forEach(e -> {
 			System.out.println(String.format("(%2d) %s", e.numberOfRogues(), e.getName()));
@@ -118,12 +128,18 @@ class GameLoop {
 		Crew.getCrews().forEach(e -> System.out.println(e.getCrewRogueShips().stream().map(s -> s.getRogue().getRoguename()).collect(Collectors.toList())));
 	}
 
-	private static void testCrewships() {
+	private static void testCrewShips() {
 		Crew.getCrews().forEach(e -> {
 			System.out.println(String.format("%s (ships: %d)", e.getName(), e.numberOfCrewShips()));
 			e.getCrewShips().forEach(f -> {
 				System.out.println(String.format("- (%2d) %s", f.getValue(), f.getShipname()));
 			});
+		});
+	}
+
+	private static void testRogueShips() {
+		Rogue.getRogues().forEach(e -> {
+			System.out.println(String.format("%s %s", e.getRoguename(), e.getRogueShips().stream().map(f -> f.getOther(e).getRoguename()).toList()));
 		});
 	}
 
@@ -140,7 +156,7 @@ class GameLoop {
 			));
 		});
 	}
-	
+
 	private static void testScore() {
 		Situation sitch = Situation.getSituations().filter(s -> {
 			return Util.ensure(s.getShip().getRogue(0).getCrew().getLair());
