@@ -9,11 +9,9 @@ external interface Runnable {}
 /* */
 class Activity {
 	Objective objective;
-	Rogue[] team;
 	Aspect[] rules;
 	Item[] tools;
 	Playbook[] roles;
-	CrewShip[] interestedParties;
 }
 
 /* */
@@ -31,17 +29,57 @@ class Entanglement {
 }
 
 /* */
+/* FIASCO */
+/* */
+class Fiasco {
+	depend com.blades.util.Util;
+
+	const int NUM_OF_ACTORS = 6;
+	
+	0..1 -> 6 Rogue;
+	Situation[] situations;
+	
+	after constructor {
+		setup(allRogues);
+	}
+	
+	private void setup(Rogue[] allRogues) {
+		int mod = allRogues.length;
+		for (int i = 1; i < mod; i += 2) {
+			Rogue a = allRogues[i];
+			Rogue b = allRogues[(i + 1) % mod];
+			Rogue c = allRogues[(i - 1) % mod];
+
+			RogueShip ab = a.getShip(b, RogueShip.ALLY);
+			situations.add(new Situation(ab, new Obstacle("Fiasco", "", Aspect.OBSTACLE)));
+
+			RogueShip ac = a.getShip(c, RogueShip.ENEMY);
+			situations.add(new Situation(ac, new Obstacle("Fiasco", "", Aspect.OBSTACLE)));
+		}
+	}
+	
+	public static void update() {
+		new Fiasco(Rogue.getRogues()
+				.sorted((r1, r2) -> Integer.compare(r1.getRogueShips().size(), r2.getRogueShips().size()))
+				.limit(NUM_OF_ACTORS).toArray(Rogue[]::new));
+	}
+}
+
+/* */
 /* OBJECTIVE */
 /* */
 class Objective {
 	/* real or symbolic value; relevant _physical_ obstacles; exposure -> suitability of target; ; */
 	
-	Opportunity opportunity;
+	/* Opportunity opportunity; */
 	/* value; inertia; visibility; accessibility; */
 	
-	Crew target = { opportunity.getTarget() } 
-	Locale locale = { opportunity.getLocale() } 
-	Situation situation = { opportunity.getSituation() } 
+	/* Crew target = { opportunity.getTarget() } */
+	/* Locale locale = { opportunity.getLocale() } */
+	/* Situation situation = { opportunity.getSituation() } */
+	
+	/* */
+	public static Objective objectify(Opportunity opp) { return new Objective(); }
 }
 
 /* */
@@ -81,6 +119,7 @@ class Opportunity {
 
 	/* */
 	lazy UUID id; before getId { if (Util.unless(id)) setId(Util.nextUUID()); } key { id }
+
 	Crew target;
 	Locale locale;
 	Situation situation;
@@ -127,15 +166,15 @@ class Opportunity {
 /* PLAN */
 /* */
 class Plan {
-	depend java.util.Arrays;
-	depend java.util.List;
+	/* */
+	* <@>- 1 Rogue mastermind;
 
 	/* */
-	Activity activity; approach; Situation detail;
-	
+	Activity activity; approach;
+	Rogue[] team;
+	CrewShip[] interestedParties;
+
 	/* */
-	List<Rogue> team = { Arrays.asList(activity.getTeam()) }
-	List<CrewShip> interestedParties = { Arrays.asList(activity.getInterestedParties()) }
 }
 
 /* */
@@ -163,20 +202,26 @@ class Score {
 	/* A Score is a short story, composed of "means, motive, and opportunity." Here, the individual meaning of the terms changes to accomodate the game mechanics. */
 	lazy UUID id; before getId { if (Util.unless(id)) setId(Util.nextUUID()); } key { id }
 
-	Opportunity opportunity; Plan plan;
-	lazy Crew crew; int coin = 6; lazy int heat;
-	internal List<Runnable> r = Arrays.asList(this::ready, this::engagement, this::operation, this::payoff, this::heat, this::entanglement, this::downtime);
+	/* */
+	Crew crew;
+	Opportunity opportunity; /* motive */
+	Plan plan; /* means */
+	Situation detail; /* opportunity */
 
 	/* */
 	name = { String.format("The %s job", opportunity.getTarget().getName()) }
 	int rep = { 2 - (getCrew().getTier() - opportunity.getTarget().getTier()) }
+	int coin = 6; 
+	int heat = 2;
 	Crew target = { getOpportunity().getTarget() }
 	boolean undercover = { /* TODO */ false }
 
+	internal List<Runnable> r = Arrays.asList(this::ready, this::engagement, this::operation, this::payoff, this::heat, this::entanglement, this::downtime);
 	/* boolean accepted = false; boolean abandoned = false; boolean active = false; */
 	
 	/* */
-	List<Rogue> team = { getPlan().getTeam() };
+	List<Rogue> team = { Arrays.asList(getPlan().getTeam()) };
+	List<CrewShip> interestedParties = { Arrays.asList(getPlan().getInterestedParties()) };
 	
 	/* */
 	@Override void run() { r.stream().forEach(Runnable::run); }
@@ -191,7 +236,7 @@ class Score {
 		} Engagement; }
 		Engagement { engagement -> /{
 			/* */
-			plan.getTeam().forEach(r -> r.setTapped(true));
+			getTeam().forEach(r -> r.setTapped(true));
 		} Operation; }
 		Operation { operation -> /{
 			/* */
@@ -206,7 +251,7 @@ class Score {
 		Heat { heat -> /{
 			if (getHeat() > 0) { getCrew().setHeat(getCrew().getHeat() + getHeat()); }
 			final List<CrewShip> myShips = crew.getCrewShips();
-			final Set<CrewShip> parties = getPlan().getInterestedParties().stream()
+			final Set<CrewShip> parties = getInterestedParties().stream()
 					.filter(ship -> Util.unless(ship.contains(crew))).collect(Collectors.toUnmodifiableSet());
 
 			parties.stream().forEach(e -> {
@@ -228,11 +273,11 @@ class Score {
 		Downtime { downtime -> /{
 			/* */
 			int actions = (getCrew().getAtWar()) ? 1 : 2;
-			plan.getTeam().forEach(r -> r.doDowntime(actions));
+			getTeam().forEach(r -> r.doDowntime(actions));
 			System.out.println(String.format("%s completed the %s job", crew.getName(), opportunity.getTarget().getName()));
 			crew.setScore(null);
 		} Final; }
-	}	
+	}
 }
 
 /* */
@@ -252,7 +297,19 @@ class Situation {
 	RogueShip ship;
 	Aspect aspect;
 	
+	/* */
+	long turnCreated = com.blades.main.GameContext.getInstance().getTurn();
+	
+	key { ship, aspect }
+	
 	/* static */
+	public static Situation newSituation(RogueShip ship, Aspect aspect) {
+		return new Situation(ship, aspect);
+	}
+	
+	public static void update() {
+	}
+	
 	public static Stream<Situation> getSituations() { return getStream(); }
 	public static Stream<Situation> getSituations(Rogue rogue) { return getSituations().filter(s -> s.getShip().contains(rogue)); }
 	public static Stream<Situation> getSituations(RogueShip ship) { return getSituations().filter(s -> s.getShip().equals(ship)); }
