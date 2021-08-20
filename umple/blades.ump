@@ -114,7 +114,7 @@ class GameLoop {
 			System.out.println(String.format("(%2d) %s", e.numberOfRogues(), e.getName()));
 			e.getRogues().forEach(f -> {
 				System.out.println(String.format("%s %s", f.getRoguename(),
-						f.getRogueShips().stream().map(g -> g.getOther(f).getRoguename()).toList()));
+						f.getRogueShips().stream().map(g -> g.getOther(f).getRoguename()).collect(Collectors.toList())));
 			});
 		});
 	}
@@ -139,7 +139,8 @@ class GameLoop {
 
 	private static void testRogueShips() {
 		Rogue.getRogues().forEach(e -> {
-			System.out.println(String.format("%s %s", e.getRoguename(), e.getRogueShips().stream().map(f -> f.getOther(e).getRoguename()).toList()));
+			System.out.println(String.format("%s %s", e.getRoguename(),
+					e.getRogueShips().stream().map(f -> f.getOther(e).getRoguename()).collect(Collectors.toList())));
 		});
 	}
 
@@ -181,24 +182,25 @@ class GameLoop {
 	
 	/* game state machine */
 	sequence {
-		Untap { untap -> /{ 
-			System.out.println(String.format("Started turn %d", context.getTurn())); 
-		} Upkeep; } 
-		Upkeep { upkeep -> /{ 
-			Opportunity.update(); 
-		} Draw; } 
-		Draw { draw -> /{ 
-			Crew.update(); 
-		} Main; } 
-		Main { main -> /{ 
+		Untap { untap -> /{
+			System.out.println(String.format("Started turn %d", context.getTurn()));
+		} Upkeep; }
+		Upkeep { upkeep -> /{
+			Opportunity.update();
+		} Draw; }
+		Draw { draw -> /{
+			Crew.update();
+		} Main; }
+		Main { main -> /{
 			Crew.getCrewsWithScores().limit(6).forEach(c -> c.getScore().run());
-		} Combat; } 
+		} Combat; }
 		Combat { combat -> /{
-		} Main2; } 
+		} Main2; }
 		Main2 { main2 -> /{
-		} Cleanup; } 
-		Cleanup { cleanup -> /{ 
-			context.setTurn(context.getTurn() + 1); 
+		} Cleanup; }
+		Cleanup { cleanup -> /{
+			Fiasco.update();
+			context.setTurn(context.getTurn() + 1);
 		} Untap; }
 	}
 	

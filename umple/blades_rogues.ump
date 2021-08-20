@@ -22,12 +22,14 @@ class Rogue {
 	/* */
 	lazy UUID id; before getId { if (Util.unless(id)) setId(Util.nextUUID()); } key { id }
 	roguename;
-	lazy Playbook playbook;
 	vice = STUPOR;
 	int stress = 0; int trauma = 0; int coin = 0; int stash = 0;
 	boolean tapped = false;
 
 	0..1 -> 0..* Aspect aspects;
+	
+	/* */
+	Plan plan(Activity activity, approach) { return new Plan(activity, approach, this); }
 
 	/* setup */
 	public static void setupRogueShips() {
@@ -35,17 +37,17 @@ class Rogue {
 
 		Rogue[] a = getRogues().toArray(Rogue[]::new);
 		for (int i = 1; i < numRogues; i += 2) {
-			RogueShip r1 = new RogueShip(a[i], a[(i + 1) % numRogues]);
-			r1.setValue(RogueShip.ALLY);
-			RogueShip r2 = new RogueShip(a[i], a[(i - 1) % numRogues]);
-			r2.setValue(RogueShip.ENEMY);
-			new Situation(r1, new Obstacle("Unnamed " + (i-1), "", Aspect.OBSTACLE));
-			new Situation(r2, new Obstacle("Unnamed " + i, "", Aspect.OBSTACLE));
+			a[i].getShip(a[(i + 1) % numRogues], RogueShip.ALLY);
+			a[i].getShip(a[(i - 1) % numRogues], RogueShip.ENEMY);
 		}
 	}
 
 	/* instance */
-	public List<Rogue> getCircle() { return getRogueShips().stream().map(s -> s.getOther(this)).collect(Collectors.toUnmodifiableList()); }
+	List<Rogue> getCircle() { return getRogueShips().stream().map(s -> s.getOther(this)).collect(Collectors.toUnmodifiableList()); }
+	RogueShip getShip(Rogue rog, value) {
+		return getRogueShips().stream().filter(ship -> ship.contains(rog)).findFirst().orElse(RogueShip.newRogueShip(value, this, rog));
+	}
+	boolean hasShip(Rogue rog) { return Util.ensure(getRogueShips().stream().anyMatch(ship -> ship.contains(rog))); }
 
 	public Opportunity lookForWork() {
 		Rogue other = getRogueShips().stream().findFirst().get().getOther(this); if (Util.unless(other)) return null;
@@ -94,6 +96,8 @@ class RogueShip {
 	shipname = { String.format("%s + %s", rogues.get(0).getRoguename(), rogues.get(1).getRoguename()) }
 
 	/* */
+	Situation createSituation(Aspect aspect) { return Situation.newSituation(this, aspect); }
+	
 	boolean contains(Rogue c) { return c.equals(rogues.get(0)) || c.equals(rogues.get(1)); }
 	Rogue getOther(Rogue c) { return c.equals(rogues.get(0)) ? rogues.get(1) : c.equals(rogues.get(1)) ? rogues.get(0) : null; }
 	
@@ -101,6 +105,12 @@ class RogueShip {
 	public static Stream<RogueShip> getRogueShips() { return getStream(); }
 	public static Stream<RogueShip> getRogueShips(Predicate<RogueShip> predicate) {
 		return getRogueShips().filter(ship -> predicate.test(ship));
+	}
+	
+	public static RogueShip newRogueShip(String value, Rogue... allRogues) {
+		RogueShip ship = new RogueShip(allRogues);
+		ship.setValue(value);
+		return ship;
 	}
 
 	/* */

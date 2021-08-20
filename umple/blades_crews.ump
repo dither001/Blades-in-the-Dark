@@ -31,10 +31,11 @@ class Crew {
 	boolean hold; boolean alive = true; boolean agent = false;
 	lazy Score score;
 
-	0..1 -> 0..* Aspect aspects;
-	0..1 patron -- 0..* Crew vassals;
 	1 crew <@>- * Rogue rogues;
+	0..1 -> 0..* Aspect aspects;
+	0..1 -> 0..* Activity favoredOps;
 	0..1 crew <@>- * Locale turf;
+	0..1 patron -- 0..* Crew vassals;
 
 	/* derived attributes */
 	boolean isBoss = { isLocalBoss() && Util.unless(hasPatron()) }
@@ -148,13 +149,14 @@ class Crew {
 			/* System.out.println(name + " found work"); */
 			int potentialRep = 2 - (getTier() - opp.getTarget().getTier());
 
-			Plan plan = plan(activity(objectify(opp)), Approach.DECEPTION, null);
-			Score newScore = new Score(opp, plan);
+			Plan plan = plan(activity(objectify(opp)), Approach.DECEPTION);
+			getRogues().forEach(plan::addTeam);
+			Score newScore = new Score(this, opp, plan, null);
 			newScore.setCrew(this);
 			setScore(newScore);
 		}
 	}
-	
+
 	void payoff(Score score) {
 		int coin = score.getCoin();
 		int team = score.getTeam().size();
@@ -173,7 +175,7 @@ class Crew {
 				score.getTeam().forEach(r -> r.setCoin(r.getCoin() + share));
 				setCoin(getCoin() + crewshare);
 			}
-		
+
 			if (tithe > 0) { boss.setCoin(boss.getCoin() + tithe); }
 			else if (Util.ensure(boss)) {
 				CrewShip bossShip = getCrewShips().stream().filter(e -> e.contains(boss)).findFirst().get();
@@ -183,33 +185,35 @@ class Crew {
 	}
 
 	/* operational tasks */
-	private Objective objectify(Opportunity opp) { return new Objective(opp); }
+	private Objective objectify(Opportunity opp) { return Objective.objectify(opp); }
 	
 	private Activity activity(Objective obj) {
-		Crew target = obj.getTarget();
 		List<Aspect> obs = assess(obj);
 
 		Activity activity = new Activity(obj);
-		CrewShip.getShips(target).limit(3).forEach(activity::addInterestedParty);
 		obs.forEach(activity::addRule);
 		selectTools(obs).forEach(activity::addTool);
 		selectRoles(obs).forEach(activity::addRole);
-		selectTeam(activity).forEach(activity::addTeam);
 
 		return activity;
 	}
 	
-	private Plan plan(Activity activity, String approach, Situation detail) { return new Plan(activity, approach, detail); }
+	private Plan plan(Activity activity, String approach) {
+		/* TODO */
+		Rogue mastermind = getRogues().stream().findFirst().get();
+		return mastermind.plan(activity, approach);
+	}
 
 	private List<Aspect> assess(Objective obj) {
+		/* TODO */
 		List<Aspect> list = new ArrayList<Aspect>();
-		list.add(obj.getSituation().getAspect());
+		list.add(new Aspect("Obstacle", "", Aspect.OBSTACLE));
 		return list;
 	}
 
-	private List<Item> selectTools(List<Aspect> obs) { return List.of(); }
-	private List<Playbook> selectRoles(List<Aspect> obs) { return List.of(); }
-	private List<Rogue> selectTeam(Activity activity) { return List.copyOf(rogues); }
+	private List<Item> selectTools(List<Aspect> obs) { /* TODO */ return List.of(); }
+	private List<Playbook> selectRoles(List<Aspect> obs) { /* TODO */ return List.of(); }
+	private List<Rogue> selectTeam(Activity activity) { /* TODO */ return List.copyOf(rogues); }
 	
 	/* static */
 	public static Crew getCrewByName(String name) {
