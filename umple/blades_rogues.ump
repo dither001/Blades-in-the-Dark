@@ -28,6 +28,11 @@ class Rogue {
 
 	0..1 -> 0..* Aspect aspects;
 	
+	/* aspect-oriented */
+	after setCoin {
+		if (coin > 4) { int store = coin - 4; stash += store; coin -= store; }
+	}
+	
 	/* */
 	Plan plan(Activity activity, approach) { return new Plan(activity, approach, this); }
 

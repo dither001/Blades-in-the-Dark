@@ -6,6 +6,7 @@ namespace com.blades.main;
 /* CREW */
 /* */
 class Crew {
+	depend java.util.concurrent.atomic.AtomicInteger;
 	depend java.util.concurrent.atomic.AtomicLong;
 	depend java.util.concurrent.ArrayBlockingQueue;
 	depend java.util.concurrent.BlockingQueue;
@@ -42,7 +43,7 @@ class Crew {
 	boolean hasBoss = { hasPatron() || Util.unless(getIsBoss()) || Util.unless(isLocalBoss()) }
 
 	boolean atWar = { CrewShip.atWar(this) }
-	boolean lookingForWork = { Util.unless(turf.stream().anyMatch(Locale::getIsNeighborhood)) && Util.unless(score) }
+	boolean lookingForWork = { Util.unless(score) }
 
 	/** Primary means for determining crew's hold.
 	* @return boolean modified by whether crew is at war. */
@@ -50,9 +51,20 @@ class Crew {
 
 	/** Primary means for determining crew's tier. 
 	* @return int modified by whether crew is at war and has strong/weak hold. */
-	int currentRep = { getAtWar() ? hold ? rep : rep - 1 : rep }
+	int currentTier = { getAtWar() ? hold ? tier : tier - 1 : tier }
 
 	/* aspect orientation */
+	after setCoin {
+		if (coin > 4) {
+			final AtomicInteger distrib = new AtomicInteger(coin);
+			getRogues().stream().sorted((r1,r2) -> Integer.compare(r1.getCoin(), r2.getCoin())).forEach(e -> {
+				int value = distrib.decrementAndGet() > 0 ? 1 : 0;
+				e.setCoin(e.getCoin() + value);
+			});
+			if (distrib.get() > 0) coin -= distrib.get();
+		}
+	}
+	
 	after setHeat {
 		if (heat >= MAX_HEAT) { int delta = heat / MAX_HEAT; setWanted(getWanted() + delta); heat -= delta; } 
 	}
@@ -131,6 +143,11 @@ class Crew {
 	}
 
 	/* instance */
+	public CrewShip getShip(Crew crew, int value) {
+		return getCrewShips().stream().filter(ship -> ship.contains(crew)).findFirst()
+				.orElse(CrewShip.newCrewShip(value, this, crew));
+	}
+
 	private Crew getLocalBoss() { return Util.ensure(hasLadder())? getLadder().getBoss(): null; }
 	private boolean isLocalBoss() { return Util.ensure(getLocalBoss()) ? getLocalBoss().equals(this): false; }
 	
@@ -147,13 +164,32 @@ class Crew {
 		Opportunity opp = Opportunity.next(this);
 		if (Util.ensure(opp)) {
 			/* System.out.println(name + " found work"); */
-			int potentialRep = 2 - (getTier() - opp.getTarget().getTier());
+			int potentialRep = 2 - (getCurrentTier() - opp.getTarget().getTier());
 
 			Plan plan = plan(activity(objectify(opp)), Approach.DECEPTION);
 			getRogues().forEach(plan::addTeam);
+			opp.getTarget().getCrewShips().forEach(plan::addInterestedParty);
 			Score newScore = new Score(this, opp, plan, null);
 			newScore.setCrew(this);
 			setScore(newScore);
+		}
+	}
+	
+	void advance() {
+		int turf = (int) getTurf().stream().filter(e -> e.getIsTurf()).count();
+		int threshold = 12 - turf;
+		boolean advance = rep >= threshold;
+		int advanceCost = ((1 + getTier()) * 8);
+		boolean kitty = getRogues().stream().map(e -> e.getCoin()).reduce(0, Integer::sum) >= advanceCost;
+
+		if (advance && kitty) {
+			PriorityQueue<Rogue> queue = new PriorityQueue<Rogue>(11, (r1, r2) -> Integer.compare(r2.getCoin(), r1.getCoin()));
+			getRogues().forEach(queue::add);
+
+			if (getHold()) {
+
+				rep -= threshold;
+			}
 		}
 	}
 
@@ -163,23 +199,21 @@ class Crew {
 
 		/* */
 		Crew boss = getHasBoss()? getLadder().getBoss() : null;
-		int tithe = Util.ensure(boss) ? getTier() + 1 : 0;
+		int tithe = Util.ensure(boss) ? getCurrentTier() + 1 : 0;
 		boolean canTithe = Util.ensure(boss) && (coin - tithe) / team > 0 ? true : false;
 
 		if (coin > 0 && team > 0) {
 			tithe = canTithe? tithe : 0;
 			int share = (coin - tithe) / team;
 			int crewshare = (coin - tithe) - (share * team);
+			setCoin(getCoin() + crewshare);
 
-			if (share > 0) {
-				score.getTeam().forEach(r -> r.setCoin(r.getCoin() + share));
-				setCoin(getCoin() + crewshare);
-			}
+			if (share > 0) { score.getTeam().forEach(r -> r.setCoin(r.getCoin() + share)); }
 
 			if (tithe > 0) { boss.setCoin(boss.getCoin() + tithe); }
 			else if (Util.ensure(boss)) {
-				CrewShip bossShip = getCrewShips().stream().filter(e -> e.contains(boss)).findFirst().get();
-				bossShip.setValue(bossShip.getValue() - 1);
+				CrewShip bShip = getShip(boss, -1);
+				bShip.setValue(bShip.getValue() - 1);
 			}
 		}
 	}
@@ -239,6 +273,7 @@ class Crew {
 /* */
 class CrewShip {
 	depend java.util.function.Predicate;
+	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
 
 	/* */
@@ -260,7 +295,7 @@ class CrewShip {
 
 	* -- * Aspect;
 	* -- 2 Crew crews;
-	
+
 	key { crews }
 
 	/* custom constructor */
@@ -273,6 +308,7 @@ class CrewShip {
 	String shipname = { String.format("%s + %s", getCrew(0).getName(), getCrew(1).getName()) }
 
 	/* */
+	List<CrewShip> getCrewShips(Predicate<CrewShip> predicate) { return SET.stream().filter(e -> predicate.test(e)).collect(Collectors.toUnmodifiableList()); }
 	boolean contains(Crew c) { return c.equals(crews.get(0)) || c.equals(crews.get(1)); }
 	Crew getOther(Crew c) { return c.equals(crews.get(0)) ? crews.get(1) : c.equals(crews.get(1)) ? crews.get(0) : null; }
 	boolean hasStatus(Predicate<CrewShip> pred) { return pred.test(this); }
@@ -283,6 +319,8 @@ class CrewShip {
 	public static Stream<CrewShip> getShips(Crew crew) { return getShips().filter(c -> c.contains(crew)); }
 	public static CrewShip getShip(Crew c1, Crew c2) { return getShips(c1).filter(ship -> ship.contains(c2)).findFirst().orElse(null); }
 	public static boolean atWar(Crew crew) { return getShips(crew).anyMatch(AT_WAR); }
+	
+	public static CrewShip newCrewShip(int value, Crew... allCrews) { return new CrewShip(value, allCrews); }
 
 	/* */
 	private static Predicate<CrewShip> allies() { return ship -> { return ship.getValue() > 1; }; }

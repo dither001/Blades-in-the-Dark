@@ -250,21 +250,10 @@ class Score {
 		} Heat; }
 		Heat { heat -> /{
 			if (getHeat() > 0) { getCrew().setHeat(getCrew().getHeat() + getHeat()); }
-			final List<CrewShip> myShips = crew.getCrewShips();
-			final Set<CrewShip> parties = getInterestedParties().stream()
-					.filter(ship -> Util.unless(ship.contains(crew))).collect(Collectors.toUnmodifiableSet());
-
-			parties.stream().forEach(e -> {
-				Crew other = e.getOther(getTarget());
-				boolean exists = CrewShip.exists(crew, other);
-				/* */
-				CrewShip ship = exists ? myShips.stream().filter(s -> s.contains(other)).findFirst().get()
-						: new CrewShip(0, crew, other);
-
-				if (Util.ensure(ship)) {
-					int value = e.hasStatus(CrewShip.ALLIES) ? -1 : e.hasStatus(CrewShip.ENEMIES) ? 1 : 0;
-					ship.setValue(ship.getValue() + value);
-				}
+			getInterestedParties().stream().filter(e -> Util.unless(e.contains(crew))).limit(3).forEach(e -> {
+				int value = e.hasStatus(CrewShip.ALLIES) ? -1 : e.hasStatus(CrewShip.ENEMIES) ? 1 : 0;
+				CrewShip ship = e.getOther(getTarget()).getShip(crew, value);
+				/* System.out.println(String.format("> (%2s) %s", value, ship.getShipname())); */
 			});
 		} Entanglement; }
 		Entanglement { entanglement -> /{

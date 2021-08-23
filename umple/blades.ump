@@ -108,7 +108,18 @@ class GameLoop {
 		System.out.println("Total 'ships: " + RogueShip.getRogueShips().count());
 		System.out.println("Total Crews: " + Crew.getCrews().count());
 	}
-	
+
+	private static void afterScoreReport() {
+		Crew.getCrews().filter(e -> e.getRep() > 0).forEach(e -> {
+			System.out.println(String.format("%s (tier: %s (hold: %s) rep: %s, coin: %s, heat: %s, wanted: %s) ", 
+					e.getName(), e.getCurrentTier(), e.getCurrentHold(), e.getRep(), e.getCoin(), e.getHeat(), e.getWanted()));
+			e.getRogues().forEach(f -> {
+				System.out.println(String.format("> %s (coin: %s, stash: %s, ships: %s)", 
+					f.getRoguename(), f.getCoin(), f.getStash(), f.numberOfRogueShips()));
+			});
+		});
+	}
+
 	private static void testCrew() {
 		Crew.getCrews().forEach(e -> {
 			System.out.println(String.format("(%2d) %s", e.numberOfRogues(), e.getName()));
