@@ -11,9 +11,6 @@ class Rogue {
 
 	depend com.blades.util.Util;
 
-	/* vices */
-	const FAITH = "faith"; const GAMBLING = "gambling"; const LUXURY = "luxury"; const OBLIGATION = "obligation"; const PLEASURE = "pleasure"; const STUPOR = "stupor"; const WEIRD = "weird";
-
 	/* UNIQUE SET-STREAM */
 	const Set<Rogue> SET = new HashSet<Rogue>();	
 	after constructor { SET.add(this); } after delete { SET.remove(this); }
@@ -22,7 +19,6 @@ class Rogue {
 	/* */
 	lazy UUID id; before getId { if (Util.unless(id)) setId(Util.nextUUID()); } key { id }
 	roguename;
-	vice = STUPOR;
 	int stress = 0; int trauma = 0; int coin = 0; int stash = 0;
 	boolean tapped = false;
 
@@ -34,7 +30,7 @@ class Rogue {
 	}
 	
 	/* */
-	Plan plan(Activity activity, approach) { return new Plan(activity, approach, this); }
+	Plan plan(Activity activity, Aspect approach) { return new Plan(activity, approach, this); }
 
 	/* setup */
 	public static void setupRogueShips() {
@@ -123,4 +119,15 @@ class RogueShip {
 	private static Predicate<RogueShip> contacts() { return ship -> { return ship.getValue().matches(CONTACT); }; }
 	private static Predicate<RogueShip> enemies() { return ship -> { return ship.getValue().matches(ENEMY); }; }
 	private static Predicate<RogueShip> rivals() { return ship -> { return ship.getValue().matches(RIVAL); }; }
+}
+
+/* */
+/* VICE */
+/* */
+class Vice {
+	/* vices */
+	const FAITH = "faith"; const GAMBLING = "gambling"; const LUXURY = "luxury"; const OBLIGATION = "obligation"; const PLEASURE = "pleasure"; const STUPOR = "stupor"; const WEIRD = "weird";
+
+	isA Aspect;
+	Vice(aName) { super(aName, "", Aspect.VICE); }
 }

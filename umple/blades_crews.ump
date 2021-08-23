@@ -66,7 +66,11 @@ class Crew {
 	}
 	
 	after setHeat {
-		if (heat >= MAX_HEAT) { int delta = heat / MAX_HEAT; setWanted(getWanted() + delta); heat -= delta; } 
+		if (heat >= MAX_HEAT) {
+			int delta = heat / MAX_HEAT;
+			setWanted(getWanted() + delta);
+			heat -= delta * MAX_HEAT;
+		}
 	}
 	
 	/* */
@@ -166,7 +170,7 @@ class Crew {
 			/* System.out.println(name + " found work"); */
 			int potentialRep = 2 - (getCurrentTier() - opp.getTarget().getTier());
 
-			Plan plan = plan(activity(objectify(opp)), Approach.DECEPTION);
+			Plan plan = plan(activity(objectify(opp)), new Approach(Approach.DECEPTION));
 			getRogues().forEach(plan::addTeam);
 			opp.getTarget().getCrewShips().forEach(plan::addInterestedParty);
 			Score newScore = new Score(this, opp, plan, null);
@@ -175,19 +179,39 @@ class Crew {
 		}
 	}
 	
-	void advance() {
+	public void advance() {
 		int turf = (int) getTurf().stream().filter(e -> e.getIsTurf()).count();
 		int threshold = 12 - turf;
 		boolean advance = rep >= threshold;
-		int advanceCost = ((1 + getTier()) * 8);
-		boolean kitty = getRogues().stream().map(e -> e.getCoin()).reduce(0, Integer::sum) >= advanceCost;
+		int advanceCost = ((getTier()+1) * 8);
+		boolean kitty = getRogues().stream().map(e -> e.getCoin() + (e.getStash()/2)).reduce(0, Integer::sum) >= advanceCost;
 
 		if (advance && kitty) {
-			PriorityQueue<Rogue> queue = new PriorityQueue<Rogue>(11, (r1, r2) -> Integer.compare(r2.getCoin(), r1.getCoin()));
+			System.out.println(String.format("%s is attempting to advance (%s in vault)", getName(), getCoin()));
+			PriorityQueue<Rogue> queue = new PriorityQueue<Rogue>(11,
+					(r1, r2) -> Integer.compare((r2.getCoin()+r2.getStash()) , (r1.getCoin()+r1.getStash())));
 			getRogues().forEach(queue::add);
 
 			if (getHold()) {
-
+				int crewpay = getCoin(); setCoin(0);
+				for (int i = crewpay; i < advanceCost;) {
+					Rogue r = queue.poll();
+					
+					if (r.getCoin() > 0) { 
+						System.out.println(String.format("%s paid 1 from %s coin (%s remaining)", r.getRoguename(), r.getCoin(), advanceCost-i));
+						r.setCoin(r.getCoin() -1); i += 1; }
+					else if (r.getStash() > 1) { 
+						System.out.println(String.format("%s paid 2 from %s stash (%s remaining)", r.getRoguename(), r.getStash(), advanceCost-i));
+						r.setStash(r.getStash() -2); i += 1; }
+					
+					if (r.getCoin() > 0 || r.getStash() > 1) { queue.add(r); }
+				}
+				setTier(getTier() +1);
+				setHold(false);
+				rep -= threshold;
+			} else {
+				System.out.println(String.format("Improved hold", getName()));
+				setHold(true);
 				rep -= threshold;
 			}
 		}
@@ -221,10 +245,10 @@ class Crew {
 	/* operational tasks */
 	private Objective objectify(Opportunity opp) { return Objective.objectify(opp); }
 	
-	private Activity activity(Objective obj) {
-		List<Aspect> obs = assess(obj);
+	private Activity activity(Aspect objective) {
+		List<Aspect> obs = assess(objective);
 
-		Activity activity = new Activity(obj);
+		Activity activity = new Activity(objective);
 		obs.forEach(activity::addRule);
 		selectTools(obs).forEach(activity::addTool);
 		selectRoles(obs).forEach(activity::addRole);
@@ -232,13 +256,13 @@ class Crew {
 		return activity;
 	}
 	
-	private Plan plan(Activity activity, String approach) {
+	private Plan plan(Activity activity, Aspect approach) {
 		/* TODO */
 		Rogue mastermind = getRogues().stream().findFirst().get();
 		return mastermind.plan(activity, approach);
 	}
 
-	private List<Aspect> assess(Objective obj) {
+	private List<Aspect> assess(Aspect objective) {
 		/* TODO */
 		List<Aspect> list = new ArrayList<Aspect>();
 		list.add(new Aspect("Obstacle", "", Aspect.OBSTACLE));

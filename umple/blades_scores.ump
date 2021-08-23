@@ -8,7 +8,7 @@ external interface Runnable {}
 /* ACTIVITY */
 /* */
 class Activity {
-	Objective objective;
+	Aspect objective;
 	Aspect[] rules;
 	Item[] tools;
 	Playbook[] roles;
@@ -19,6 +19,9 @@ class Activity {
 /* */
 class Approach {
 	const ASSAULT = "assault"; const DECEPTION = "deception"; const OCCULT = "occult"; const SOCIAL = "social"; const STEALTH = "stealth"; const TRANSPORT = "transport";
+	
+	isA Aspect;
+	Approach(aName) { super(aName, "", Aspect.APPROACH); }
 }
 
 /* */
@@ -35,14 +38,14 @@ class Fiasco {
 	depend com.blades.util.Util;
 
 	const int NUM_OF_ACTORS = 6;
-	
+
 	0..1 -> 6 Rogue;
 	Situation[] situations;
-	
+
 	after constructor {
 		setup(allRogues);
 	}
-	
+
 	private void setup(Rogue[] allRogues) {
 		int mod = allRogues.length;
 		for (int i = 1; i < mod; i += 2) {
@@ -51,10 +54,10 @@ class Fiasco {
 			Rogue c = allRogues[(i - 1) % mod];
 
 			RogueShip ab = a.getShip(b, RogueShip.ALLY);
-			situations.add(new Situation(ab, new Obstacle("Fiasco", "", Aspect.OBSTACLE)));
+			situations.add(new Situation(ab, new Obstacle(Obstacle.DISTRACTION, Rating.next())));
 
 			RogueShip ac = a.getShip(c, RogueShip.ENEMY);
-			situations.add(new Situation(ac, new Obstacle("Fiasco", "", Aspect.OBSTACLE)));
+			situations.add(new Situation(ac, new Obstacle(Obstacle.DISTRACTION, Rating.next())));
 		}
 	}
 	
@@ -71,6 +74,22 @@ class Fiasco {
 class Objective {
 	/* real or symbolic value; relevant _physical_ obstacles; exposure -> suitability of target; ; */
 	
+	/* Assist: enable another eligible faction to CLIMB */
+	/* Climb: advance up the ladder, or secure your hold */
+	/* Exonerate: reduce the wanted level of a faction */
+	/* Implicate: increase the wanted level of a faction */
+	/* Provoke: worsen relationship between two factions */
+	/* Rapport: improve relationship between two factions */
+	/* Shake: weaken the hold of another group, or make them fall */
+	/* Sponsor: create a new faction or reforge a destroyed faction */
+	
+	const ASSIST = "assist"; const CLIMB = "climb"; 
+	const EXONERATE = "exonerate"; const IMPLICATE = "implicate"; 
+	const PROVOKE = "provoke"; const RAPPORT = "rapport"; 
+	const SHAKE = "shake"; const SPONSOR = "sponsor"; 
+
+	isA Aspect;
+	Objective(aName) { super(aName, "", Aspect.OBJECTIVE); }
 	/* Opportunity opportunity; */
 	/* value; inertia; visibility; accessibility; */
 	
@@ -79,21 +98,26 @@ class Objective {
 	/* Situation situation = { opportunity.getSituation() } */
 	
 	/* */
-	public static Objective objectify(Opportunity opp) { return new Objective(); }
+	
+	/* */
+	public static Objective objectify(Opportunity opp) { return new Objective(""); }
 }
 
 /* */
 /* OBSTACLE */
 /* */
 class Obstacle {
-	isA Aspect;
-
-	const SURVEY = "survey";
-
-	name; rating = SURVEY;
 	/* Hazards, barriers, and distractions are borrowed from FATE: Accelerated. In short, hazards deal damage, barriers must be opposed, and distractions present choices with consequences. */
-	lazy boolean isHazard; lazy boolean isBarrier; lazy boolean isDistraction;
-	/* A disctraction consists of the Dilemma, the Effects, and an Opposition value (if any). */
+	const BARRIER = "barrier"; const DISTRACTION = "distraction"; const HAZARD = "hazard"; 
+	/* A distraction consists of the Dilemma, the Effects, and an Opposition value (if any). */
+
+	isA Aspect;
+	Obstacle(aName, Aspect rating) {
+		super(aName, "", Aspect.OBSTACLE);
+		setRating(rating);
+	}
+
+	Aspect rating;
 }
 
 /* */
@@ -170,11 +194,10 @@ class Plan {
 	* <@>- 1 Rogue mastermind;
 
 	/* */
-	Activity activity; approach;
+	Activity activity;
+	Aspect approach;
 	Rogue[] team;
 	CrewShip[] interestedParties;
-
-	/* */
 }
 
 /* */
@@ -246,6 +269,7 @@ class Score {
 			if (Util.unless(getUndercover())) { getCrew().setRep(getCrew().getRep() + getRep()); }
 			/* System.out.println(String.format("%s earned %d rep for %s", getCrew().getName(), getRep(), getName())); */
 			getCrew().payoff(this);
+			getCrew().advance();
 			/* System.out.println(String.format("%s earned %d coin for %s", getCrew().getName(), getCoin(), getName())); */
 		} Heat; }
 		Heat { heat -> /{

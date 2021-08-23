@@ -25,12 +25,17 @@ class Aspect {
 
 	/* */
 	const CONTACT = "contact"; const EXPERT = "expert"; const GANG = "gang"; 
-	const PLAYBOOK = "playbook"; const REPUTATION = "reputation"; const UPGRADE = "upgrade";
+	const HOOK = "hook";
+	const REPUTATION = "reputation";
+	const VICE = "vice";
+	const UPGRADE = "upgrade";
 	/* */
-	const HOOK = "hook"; const OBSTACLE = "obstacle";
+	const ZONING = "zoning";
+	const APPROACH = "approach"; const PLAYBOOK = "playbook"; const RATING = "rating";
+	const OBJECTIVE = "objective"; const OBSTACLE = "obstacle";
 
 	/* */
-	const Set<Aspect> SET = new HashSet<Aspect>();	
+	const Set<Aspect> SET = new HashSet<Aspect>();
 	after constructor { SET.add(this); }
 	after delete { SET.remove(this); }
 	public static Stream<Aspect> getStream() { return SET.stream(); }
@@ -107,6 +112,7 @@ class GameLoop {
 		System.out.println("Total Rogues: " + Rogue.getRogues().count());
 		System.out.println("Total 'ships: " + RogueShip.getRogueShips().count());
 		System.out.println("Total Crews: " + Crew.getCrews().count());
+		System.out.println("Total places: " + Locale.getPlaces().count());
 	}
 
 	private static void afterScoreReport() {
@@ -320,11 +326,38 @@ class Locale {
 /* PLAYBOOK */
 /* */
 class Playbook {
-	/* playbooks */
 	const CUTTER = "cutter"; const HOUND = "hound"; const LEECH = "leech"; const LURK = "lurk"; const SLIDE = "slide"; const SPIDER = "spider"; const WHISPER = "whisper";
 	
+	isA Aspect;
+	Playbook(aName) { super(aName, "", Aspect.PLAYBOOK); }
+}
+
+/* */
+/* RATING */
+/* */
+class Rating {
+	depend java.util.concurrent.ArrayBlockingQueue;
+	depend java.util.concurrent.BlockingQueue;
+
+	const ATTUNE = "attune"; const COMMAND = "command";
+	const CONSORT = "consort"; const FINESSE = "finesse";
+	const HUNT = "hunt"; const PROWL = "prowl";
+	const SKIRMISH = "skirmish"; const STUDY = "study";
+	const SURVEY = "survey"; const SWAY = "sway";
+	const TINKER = "tinker"; const WRECK = "wreck";
+
 	/* */
-	name = CUTTER;
+	const BlockingQueue<String> QUEUE = new ArrayBlockingQueue<String>(12);
+
+	/* */
+	isA Aspect;
+	Rating(aName) { super(aName, "", Aspect.RATING); }
+
+	/* */	
+	public static synchronized Rating next() {
+		if (QUEUE.isEmpty()) { QUEUE.addAll(Arrays.asList(ATTUNE, COMMAND, CONSORT, FINESSE, HUNT, PROWL, SKIRMISH, STUDY, SURVEY, SWAY, TINKER, WRECK)); }
+		String rating = QUEUE.poll(); QUEUE.add(rating); return new Rating(rating);
+	}
 }
 
 /* */
@@ -334,10 +367,10 @@ class Zoning {
 	/* work, play, movement, waiting, rest */
 	const PURPOSE = "purpose"; const RULESPACE = "rulespace"; const PROFESSIONAL = "professional"; const PERSONAL = "personal";
 
-	/* */
-	type;
+	isA Aspect;
+	Zoning(aName) { super(aName, "", Aspect.ZONING); }
 
 	/* instance */
-	boolean isPublic = { type.matches(PURPOSE) || type.matches(RULESPACE) }
-	boolean isPrivate = { type.matches(PROFESSIONAL) || type.matches(PERSONAL) }
+	boolean isPublic = { getName().matches(PURPOSE) || getName().matches(RULESPACE) }
+	boolean isPrivate = { getName().matches(PROFESSIONAL) || getName().matches(PERSONAL) }
 }
