@@ -345,44 +345,69 @@ class PlaySpace {
 
 	encounter {
 		Start {
+			entry /{}
+			exit /{}
 			chooseA -> /{ visitedA = true; } A;
 			chooseB -> /{ visitedB = true; } B;
 		} A {
-		chooseB [visitedB != true] -> B;
-		chooseC -> C;
-		chooseF -> F;
-     } B {
-		chooseA [visitedA != true] -> A;
-		chooseD -> D;
-		chooseG -> G;
-     } C {
-		chooseK -> K;
-     } D {
-		chooseL -> L;
-     } final E {
-     	/* TODO */
-     } F {
-		chooseE -> E;
-		chooseM -> /{ visitedM = true; } M;
-     } G {
-		chooseJ -> J;
-		chooseN -> /{ visitedN = true; } N;
-     } final J {
-     	/* TODO */
-     } K {
-		chooseM -> /{ visitedM = true; } M;
-     } L {
-		chooseN -> /{ visitedN = true; } N;
-     } M {
-		chooseN [visitedN != true] -> /{ visitedN = true; } N;
-		objective -> Objective;
-     } N {
-		chooseM [visitedM != true] -> /{ visitedM = true; } M;
-		objective -> Objective;
-     } final Objective {
-     	/* TODO */
-     }
-  }
+			entry /{}
+			exit /{}
+			chooseB [visitedB != true] -> B;
+			chooseC -> C;
+			chooseF -> F;
+	     } B {
+			entry /{}
+			exit /{}
+			chooseA [visitedA != true] -> A;
+			chooseD -> D;
+			chooseG -> G;
+	     } C {
+			entry /{}
+			exit /{}
+			chooseK -> K;
+	     } D {
+			entry /{}
+			exit /{}
+			chooseL -> L;
+	     } final E {
+	     	/* TODO */
+			entry /{}
+	     } F {
+			entry /{}
+			exit /{}
+			chooseE -> E;
+			chooseM -> /{ visitedM = true; } M;
+	     } G {
+			entry /{}
+			exit /{}
+			chooseJ -> J;
+			chooseN -> /{ visitedN = true; } N;
+	     } final J {
+	     	/* TODO */
+			entry /{}
+	     } K {
+			entry /{}
+			exit /{}
+			chooseM -> /{ visitedM = true; } M;
+	     } L {
+			entry /{}
+			exit /{}
+			chooseN -> /{ visitedN = true; } N;
+	     } M {
+			entry /{}
+			exit /{}
+			chooseN [visitedN != true] -> /{ visitedN = true; } N;
+			objective -> Objective;
+	     } N {
+			entry /{}
+			exit /{}
+			chooseM [visitedM != true] -> /{ visitedM = true; } M;
+			objective -> Objective;
+	     } final Objective {
+	     	/* TODO */
+			entry /{}
+	     }
+	  }
 }
 
 /* */

@@ -232,6 +232,7 @@ class Score {
 	Situation detail; /* opportunity */
 
 	/* */
+	PlaySpace playspace = new PlaySpace();
 	name = { String.format("The %s job", opportunity.getTarget().getName()) }
 	int rep = { 2 - (getCrew().getTier() - opportunity.getTarget().getTier()) }
 	int coin = 6; 
