@@ -27,7 +27,7 @@ class Aspect {
 	const CONTACT = "contact"; const EXPERT = "expert"; const GANG = "gang"; 
 	const HOOK = "hook";
 	const REPUTATION = "reputation";
-	const VICE = "vice";
+	const TRAUMA = "trauma"; const VICE = "vice";
 	const UPGRADE = "upgrade";
 	/* */
 	const ZONING = "zoning";
@@ -99,6 +99,7 @@ class GameLoop {
 		// while (true) { GameLoop.getInstance().r.stream().forEach(Runnable::run); }
 		for (int i = 0; i < 5; ++i) GameLoop.getInstance().r.stream().forEach(Runnable::run);
 		
+		GameLoop.afterScoreReport();
 		// testCrewships();
 	}
 

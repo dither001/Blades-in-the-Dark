@@ -19,7 +19,7 @@ class Rogue {
 	/* */
 	lazy UUID id; before getId { if (Util.unless(id)) setId(Util.nextUUID()); } key { id }
 	roguename;
-	int stress = 0; int trauma = 0; int coin = 0; int stash = 0;
+	int stress = 0; int coin = 0; int stash = 0;
 	boolean tapped = false;
 
 	0..1 -> 0..* Aspect aspects;
@@ -122,12 +122,53 @@ class RogueShip {
 }
 
 /* */
+/* TRAUMA */
+/* */
+class Trauma {
+	depend java.util.concurrent.ArrayBlockingQueue;
+	depend java.util.concurrent.BlockingQueue;
+
+	/* */
+	const COLD = "cold"; const HAUNTED = "haunted"; 
+	const OBSESSED = "obsessed"; const PARANOID = "paranoid"; 
+	const RECKLESS = "reckless"; const SOFT = "soft"; 
+	const UNSTABLE = "unstable"; const VICIOUS = "vicious";
+
+	isA Aspect;
+	Trauma(aName) { super(aName, "", Aspect.TRAUMA); }
+
+	/* */
+	const BlockingQueue<String> QUEUE = new ArrayBlockingQueue<String>(8);
+
+	/* */	
+	public static synchronized Trauma next() {
+		if (QUEUE.isEmpty()) { QUEUE.addAll(Arrays.asList(COLD, HAUNTED, OBSESSED, PARANOID, RECKLESS, SOFT, UNSTABLE, VICIOUS)); }
+		String aspect = QUEUE.poll(); QUEUE.add(aspect); return new Trauma(aspect);
+	}
+}
+
+/* */
 /* VICE */
 /* */
 class Vice {
-	/* vices */
-	const FAITH = "faith"; const GAMBLING = "gambling"; const LUXURY = "luxury"; const OBLIGATION = "obligation"; const PLEASURE = "pleasure"; const STUPOR = "stupor"; const WEIRD = "weird";
+	depend java.util.concurrent.ArrayBlockingQueue;
+	depend java.util.concurrent.BlockingQueue;
+
+	/* */
+	const FAITH = "faith"; const GAMBLING = "gambling"; 
+	const LUXURY = "luxury"; const OBLIGATION = "obligation"; 
+	const PLEASURE = "pleasure"; const STUPOR = "stupor"; 
+	const WEIRD = "weird";
 
 	isA Aspect;
 	Vice(aName) { super(aName, "", Aspect.VICE); }
+
+	/* */
+	const BlockingQueue<String> QUEUE = new ArrayBlockingQueue<String>(7);
+
+	/* */	
+	public static synchronized Vice next() {
+		if (QUEUE.isEmpty()) { QUEUE.addAll(Arrays.asList(FAITH, GAMBLING, LUXURY, OBLIGATION, PLEASURE, STUPOR, WEIRD)); }
+		String aspect = QUEUE.poll(); QUEUE.add(aspect); return new Vice(aspect);
+	}
 }
