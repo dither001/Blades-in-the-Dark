@@ -25,6 +25,7 @@ class Aspect {
 
 	/* */
 	const CONTACT = "contact"; const EXPERT = "expert"; const GANG = "gang"; 
+	const DOWNTIME = "downtime"; const ENTANGLEMENT = "entanglement";
 	const HOOK = "hook";
 	const REPUTATION = "reputation";
 	const TRAUMA = "trauma"; const VICE = "vice";

@@ -25,10 +25,25 @@ class Approach {
 }
 
 /* */
+/* DOWNTIME */
+/* */
+class Downtime {
+	const ACQUIRE_ASSET = "acquire asset"; const LONG_TERM_PROJECT = "long-term project"; 
+	const RECOVER = "recover"; const REDUCE_HEAT = "reduce heat"; 
+	const TRAIN = "train"; const INDULGE_VICE = "indulge vice"; 
+
+	isA Aspect;
+	Playbook(aName) { super(aName, "", Aspect.DOWNTIME); }
+}
+
+/* */
 /* ENTANGLEMENT */
 /* */
 class Entanglement {
 	const ARREST = "arrest"; const COOPERATION = "cooperation"; const DEMONIC_NOTICE = "demonic notice"; const FLIPPED = "flipped"; const GANG_TROUBLE = "gang trouble"; const INTERROGATION = "interrogation"; const QUESTIONING = "questioning"; const REPRISALS = "reprisals"; const RIVALS = "rivals"; const SHOW_OF_FORCE = "show of force"; const UNQUIET_DEAD = "unquiet dead"; const USUAL_SUSPECTS = "usual suspects";
+
+	isA Aspect;
+	Playbook(aName) { super(aName, "", Aspect.ENTANGLEMENT); }
 }
 
 /* */

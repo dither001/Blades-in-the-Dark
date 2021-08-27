@@ -180,6 +180,7 @@ class Crew {
 	}
 	
 	public void advance() {
+		if (getTier() > 3 && getHold()) return;
 		int turf = (int) getTurf().stream().filter(e -> e.getIsTurf()).count();
 		int threshold = 12 - turf;
 		boolean advance = rep >= threshold;
@@ -198,15 +199,16 @@ class Crew {
 					Rogue r = queue.poll();
 					
 					if (r.getCoin() > 0) { 
-						System.out.println(String.format("%s paid 1 from %s coin (%s remaining)", r.getRoguename(), r.getCoin(), advanceCost-i));
+						/* System.out.println(String.format("%s paid 1 from %s coin (%s remaining)", r.getRoguename(), r.getCoin(), advanceCost-i)); */
 						r.setCoin(r.getCoin() -1); i += 1; }
 					else if (r.getStash() > 1) { 
-						System.out.println(String.format("%s paid 2 from %s stash (%s remaining)", r.getRoguename(), r.getStash(), advanceCost-i));
+						/* System.out.println(String.format("%s paid 2 from %s stash (%s remaining)", r.getRoguename(), r.getStash(), advanceCost-i)); */
 						r.setStash(r.getStash() -2); i += 1; }
 					
 					if (r.getCoin() > 0 || r.getStash() > 1) { queue.add(r); }
 				}
 				setTier(getTier() +1);
+				System.out.println(String.format("Advanced tier (%s)", getTier()));
 				setHold(false);
 				rep -= threshold;
 			} else {
