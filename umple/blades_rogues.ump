@@ -20,7 +20,7 @@ class Rogue {
 	lazy UUID id; before getId { if (Util.unless(id)) setId(Util.nextUUID()); } key { id }
 	roguename;
 	int stress = 0; int coin = 0; int stash = 0;
-	boolean tapped = false;
+	boolean tapped = false; boolean inPrison = false;
 
 	0..1 -> 0..* Aspect aspects;
 	
@@ -31,6 +31,17 @@ class Rogue {
 	
 	/* */
 	Plan plan(Activity activity, Aspect approach) { return new Plan(activity, approach, this); }
+	
+	boolean arrest(Prison prison) {
+		boolean arrest = false;
+		if (Util.unless(getInPrison())) {
+			setInPrison(true);
+			prison.addPrisoner(this);
+			arrest = true;
+		}
+
+		return arrest;
+	}
 
 	/* setup */
 	public static void setupRogueShips() {
@@ -63,7 +74,9 @@ class Rogue {
 
 	/* static */
 	public static Stream<Rogue> getRogues() { return getStream(); }
-	public static Stream<Rogue> getAvailableRogues() { return getRogues().filter(Predicate.not(Rogue::getTapped)); }
+	public static Stream<Rogue> getAvailableRogues() {
+		return getRogues().filter(Predicate.not(Rogue::getTapped).and(Predicate.not(Rogue::getInPrison)));
+	}
 }
 
 /* */

@@ -33,7 +33,7 @@ class Downtime {
 	const TRAIN = "train"; const INDULGE_VICE = "indulge vice"; 
 
 	isA Aspect;
-	Playbook(aName) { super(aName, "", Aspect.DOWNTIME); }
+	Downtime(aName) { super(aName, "", Aspect.DOWNTIME); }
 }
 
 /* */
@@ -43,7 +43,25 @@ class Entanglement {
 	const ARREST = "arrest"; const COOPERATION = "cooperation"; const DEMONIC_NOTICE = "demonic notice"; const FLIPPED = "flipped"; const GANG_TROUBLE = "gang trouble"; const INTERROGATION = "interrogation"; const QUESTIONING = "questioning"; const REPRISALS = "reprisals"; const RIVALS = "rivals"; const SHOW_OF_FORCE = "show of force"; const UNQUIET_DEAD = "unquiet dead"; const USUAL_SUSPECTS = "usual suspects";
 
 	isA Aspect;
-	Playbook(aName) { super(aName, "", Aspect.ENTANGLEMENT); }
+	Entanglement(aName) { super(aName, "", Aspect.ENTANGLEMENT); }
+	
+	/* */
+	public static Entanglement newEntanglement(int heat, int wanted) {
+		String s = ARREST;
+		
+		if (heat < 2 && wanted < 4) s = GANG_TROUBLE;
+		else if (heat < 4 && wanted < 4) s = USUAL_SUSPECTS;
+		else if (heat == 4 && (wanted == 4 || wanted == 5)) s = REPRISALS;
+		else if (heat == 5 && (wanted == 4 || wanted == 5)) s = UNQUIET_DEAD;
+		else if ((heat == 4 || heat == 5) && wanted == 6) s = SHOW_OF_FORCE;
+		else if (heat > 7 && wanted < 4) s = FLIPPED;
+		else if (heat > 5 && wanted < 4) s = INTERROGATION;
+		else if (heat > 5 && wanted == 4) s = DEMONIC_NOTICE;
+		else if (heat > 5 && wanted == 5) s = SHOW_OF_FORCE;
+		else s = ARREST;
+		
+		return new Entanglement(s);
+	}
 }
 
 /* */
@@ -216,6 +234,27 @@ class Plan {
 }
 
 /* */
+/* SCENE */
+/* */
+class Scene {
+	/* */
+	isA Runnable;
+
+	/* */
+	0..1 -> 0..* Aspect aspects;
+	
+	/* */
+	@Override public void run() {}
+
+	/* */
+	public static Scene newScene(Aspect entanglement) {
+		Scene scene = new Scene();
+		scene.addAspect(entanglement);
+		return scene;
+	}
+}
+
+/* */
 /* SCORE */
 /* */
 class Score {
@@ -250,8 +289,8 @@ class Score {
 	PlaySpace playspace = new PlaySpace();
 	name = { String.format("The %s job", opportunity.getTarget().getName()) }
 	int rep = { 2 - (getCrew().getTier() - opportunity.getTarget().getTier()) }
-	int coin = 6; 
-	int heat = 2;
+	boolean hostileTurf = false; boolean highProfile = false;
+	int bodyCount = 0; int coin = 6; int heat = 2;
 	Crew target = { getOpportunity().getTarget() }
 	boolean undercover = { /* TODO */ false }
 
@@ -261,6 +300,15 @@ class Score {
 	/* */
 	List<Rogue> team = { Arrays.asList(getPlan().getTeam()) };
 	List<CrewShip> interestedParties = { Arrays.asList(getPlan().getInterestedParties()) };
+	
+	/* */
+	int getCurrentHeat() {
+		int heat = this.heat; 
+		heat += crew.getAtWar()? 1 : 0; heat += bodyCount > 0? 2 : 0;
+		heat += hostileTurf? 1 : 0; heat += highProfile? 1 : 0;
+		return heat;
+	}
+	
 	
 	/* */
 	@Override void run() { r.stream().forEach(Runnable::run); }
@@ -289,7 +337,8 @@ class Score {
 			/* System.out.println(String.format("%s earned %d coin for %s", getCrew().getName(), getCoin(), getName())); */
 		} Heat; }
 		Heat { heat -> /{
-			if (getHeat() > 0) { getCrew().setHeat(getCrew().getHeat() + getHeat()); }
+			int currentHeat = getCurrentHeat();
+			if (currentHeat > 0) { crew.setHeat(crew.getHeat() + currentHeat); }
 			getInterestedParties().stream().filter(e -> Util.unless(e.contains(crew))).limit(3).forEach(e -> {
 				int value = e.hasStatus(CrewShip.ALLIES) ? -1 : e.hasStatus(CrewShip.ENEMIES) ? 1 : 0;
 				CrewShip ship = e.getOther(getTarget()).getShip(crew, value);
@@ -298,6 +347,7 @@ class Score {
 		} Entanglement; }
 		Entanglement { entanglement -> /{
 			/* */
+			getCrew().entanglement(this);
 		} Downtime; }
 		Downtime { downtime -> /{
 			/* */

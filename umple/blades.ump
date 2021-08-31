@@ -71,6 +71,10 @@ associationClass CrewRogueShip {
 class GameContext {
 	singleton;
 	
+	depend java.util.Random;
+	
+	const Random RANDOM = new Random();
+	
 	long turn = 0L;
 }
 
@@ -126,6 +130,17 @@ class GameLoop {
 					f.getRoguename(), f.getCoin(), f.getStash(), f.numberOfRogueShips()));
 			});
 		});
+	}
+
+	private static void testPrison() {
+		Prison p = (Prison) Locale.getLocaleByName("Ironhook Prison");
+		Rogue.getAvailableRogues().limit(6).forEach(r -> r.arrest(p));
+		System.out.println("Number of prisoners: " + p.numberOfPrisoners());
+		System.out.println("Number available rogues: " + Rogue.getAvailableRogues().count());
+
+//		p.getPrisoners().stream().forEach(r -> {
+//			System.out.println(r.getRoguename() + " in prison: " + r.getInPrison());
+//		});
 	}
 
 	private static void testCrew() {
@@ -273,6 +288,23 @@ class Ladder {
 }
 
 /* */
+/* LOCALES */
+/* */
+class Locales {
+	singleton;
+
+	1 -- 0..* Locale locales;
+	1 group -- 0..* Prison;
+
+	/* */
+	public static final List<Locale> DISTRICTS = Collections.synchronizedList(new ArrayList<Locale>());
+	public static synchronized Locale nextDistrict() { Locale l = DISTRICTS.remove(0); DISTRICTS.add(l); return l; }
+
+	/* */
+	public static Stream<Ladder> getLadders() { return Ladder.getLadders(); }
+}
+
+/* */
 /* LOCALE */
 /* */
 class Locale {
@@ -286,7 +318,6 @@ class Locale {
 	/* */
 	public static final List<String> COMMON_BUILDINGS = Collections.synchronizedList(new ArrayList<String>());
 	public static final List<String> UNCOMMON_BUILDINGS = Collections.synchronizedList(new ArrayList<String>());
-	public static final List<Locale> DISTRICTS = Collections.synchronizedList(new ArrayList<Locale>());
 
 	/* UNIQUE SET-STREAM */
 	const Set<Locale> SET = new HashSet<Locale>();	
@@ -316,12 +347,8 @@ class Locale {
 	}
 
 	/* */
-	public static Stream<Ladder> getLadders() { return Ladder.getLadders(); }
-
-	/* */
 	public static synchronized String nextCommonBuilding() { String l = COMMON_BUILDINGS.remove(0); COMMON_BUILDINGS.add(l); return l; }
 	public static synchronized String nextUncommonBuilding() { String l = UNCOMMON_BUILDINGS.remove(0); UNCOMMON_BUILDINGS.add(l); return l; }
-	public static synchronized Locale nextDistrict() { Locale l = DISTRICTS.remove(0); DISTRICTS.add(l); return l; }
 }
 
 /* */
@@ -410,6 +437,21 @@ class PlaySpace {
 			entry /{}
 	     }
 	  }
+}
+
+/* */
+/* PRISON */
+/* */
+class Prison {
+	isA Locale;
+
+	0..1 -> 0..* Rogue prisoners;
+
+	after constructor {
+		super.setParent(Locale.getLocaleByName("Dunslough"));
+		super.setIsLair(true);
+		super.setZoning(new Zoning(Zoning.RULESPACE));
+	}
 }
 
 /* */

@@ -24,7 +24,7 @@ Dagger Isles Consulate,institution,1,TRUE,,,,FALSE
 Fire Brigade,institution,2,TRUE,,,,FALSE
 Imperial Military,institution,6,TRUE,,,,FALSE
 Inspectors,institution,3,TRUE,,,,FALSE
-Ironhook Prison,institution,4,TRUE,Ironhook Prison,Dunslough,rulespace,FALSE
+Ironhook Prison,institution,4,TRUE,,,,FALSE
 Iruvian Consulate,institution,3,TRUE,,,,FALSE
 Leviathan Hunters,institution,5,TRUE,shipyard,The Docks,professional,FALSE
 Ministry of Preservation,institution,5,TRUE,,,,FALSE

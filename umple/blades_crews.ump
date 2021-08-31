@@ -244,6 +244,15 @@ class Crew {
 		}
 	}
 
+	void entanglement(Score score) {
+		int w = GameContext.RANDOM.ints(1, 7).limit(getWanted()).max()
+				.orElse(GameContext.RANDOM.ints(1, 7).limit(2).min().getAsInt());
+		Scene.newScene(Entanglement.newEntanglement(getHeat(), w));
+		/* TODO */
+		Prison p = (Prison) Locale.getLocaleByName("Ironhook Prison");
+		getRogues().stream().filter(Predicate.not(Rogue::getInPrison)).findFirst().get().arrest(p);
+	}
+
 	/* operational tasks */
 	private Objective objectify(Opportunity opp) { return Objective.objectify(opp); }
 	

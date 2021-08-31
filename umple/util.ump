@@ -37,6 +37,7 @@ class Loader {
 		loadCrewAspects("res/data/crew_aspects.csv");
 		loadBuildings("res/data/doskvol_common_buildings.csv");
 		loadDistricts("res/data/doskvol_districts.csv");
+		new Prison("Ironhook Prison");
 		loadFactions("res/data/doskvol_factions.csv");
 		loadCrewShips("res/data/doskvol_crewships.csv");
 		loadContacts("res/data/rogue_names.csv", null);
@@ -81,7 +82,7 @@ class Loader {
 				l.setCrime(Integer.parseInt(a[3]));
 				l.setOccult(Integer.parseInt(a[4]));
 				l.setIsDistrict(true);
-				Locale.DISTRICTS.add(l);
+				Locales.DISTRICTS.add(l);
 				return l;
 			}
 		});
@@ -104,7 +105,7 @@ class Loader {
 					Locale l = new Locale(a[4]);
 					l.setZoning(new Zoning(a[6]));
 					if (a[5] != "") { l.setParent(Locale.getLocaleByName(a[5])); }
-					else { l.setParent(Locale.nextDistrict()); }
+					else { l.setParent(Locales.nextDistrict()); }
 					l.setCrew(c);
 					l.setIsLair(true);
 					if (a[4].matches("neighborhood")) { l.setIsNeighborhood(true); }
