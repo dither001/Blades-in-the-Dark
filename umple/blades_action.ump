@@ -1,0 +1,86 @@
+
+namespace com.blades.main;
+
+/* */
+/* CONSEQUENCE */
+/* */
+class Consequence {}
+
+/* */
+/* DICE */
+/* */
+class Dice {
+	const CRITICAL = "critical"; const SUCCESS = "success"; const PARTIAL = "partial"; const FAILURE = "failure";
+}
+
+/* */
+/* EFFECT */
+/* */
+class ActionEffect {
+	const int LIMITED = 1; const int STANDARD = 2; const int GREAT = 3;
+
+	/* factors: quality, potency, and scale*/
+	int quality; boolean potency; int scope;
+	int effect = STANDARD;
+
+	/* */
+	int decreaseEffect() { return --effect; }
+	int increaseEffect() { return ++effect; }
+}
+
+/* */
+/* GOAL */
+/* */
+class ActionGoal {}
+
+/* */
+/* HARM */
+/* */
+class Harm {
+	isA Aspect;
+	/* */
+	int level;
+	/* */
+	Harm(aName, int level) { super(aName, "", Aspect.HARM); this.level = level; }
+}
+
+/* */
+/* POSITION */
+/* */
+class ActionPosition {
+	const CONTROLLED = "controlled"; const RISKY = "risky"; const DESPERATE = "desperate";
+	position = RISKY;
+}
+
+/* */
+/* RATING */
+/* */
+class ActionRating {
+	depend java.util.concurrent.ArrayBlockingQueue;
+	depend java.util.concurrent.BlockingQueue;
+
+	const ATTUNE = "attune"; const COMMAND = "command";
+	const CONSORT = "consort"; const FINESSE = "finesse";
+	const HUNT = "hunt"; const PROWL = "prowl";
+	const SKIRMISH = "skirmish"; const STUDY = "study";
+	const SURVEY = "survey"; const SWAY = "sway";
+	const TINKER = "tinker"; const WRECK = "wreck";
+
+	/* */
+	const BlockingQueue<String> QUEUE = new ArrayBlockingQueue<String>(12);
+
+	/* */
+	isA Aspect;
+	ActionRating(aName) { super(aName, "", Aspect.RATING); }
+
+	/* */
+	public static synchronized ActionRating next() {
+		if (QUEUE.isEmpty()) { QUEUE.addAll(Arrays.asList(ATTUNE, COMMAND, CONSORT, FINESSE, HUNT, PROWL, SKIRMISH, STUDY, SURVEY, SWAY, TINKER, WRECK)); }
+		String rating = QUEUE.poll(); QUEUE.add(rating); return new ActionRating(rating);
+	}
+}
+
+/* */
+/* ROLL */
+/* */
+class ActionRoll {}

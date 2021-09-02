@@ -107,7 +107,7 @@ class Crew {
 			l.setZoning(new Zoning(Zoning.PURPOSE));
 			l.setCrew(c);
 			l.setIsHuntingGround(true);
-			l.setParent(Locale.nextDistrict());
+			l.setParent(Locales.nextDistrict());
 		});
 	}
 	
@@ -117,7 +117,7 @@ class Crew {
 			l.setZoning(new Zoning(Zoning.PURPOSE));
 			l.setCrew(c);
 			l.setIsLair(true);
-			l.setParent(Locale.nextDistrict());
+			l.setParent(Locales.nextDistrict());
 		});
 	}
 	

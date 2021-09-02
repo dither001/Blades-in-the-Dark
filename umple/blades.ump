@@ -2,9 +2,10 @@ strictness allow 46;
 strictness allow 1007;
 strictness allow 1008;
 
-use blades_crews.ump;
-use blades_rogues.ump;
-use blades_scores.ump;
+use blades_action.ump;
+use blades_crew.ump;
+use blades_rogue.ump;
+use blades_score.ump;
 use suppliers.ump;
 use util.ump;
 
@@ -28,7 +29,7 @@ class Aspect {
 	const DOWNTIME = "downtime"; const ENTANGLEMENT = "entanglement";
 	const HOOK = "hook";
 	const REPUTATION = "reputation";
-	const TRAUMA = "trauma"; const VICE = "vice";
+	const HARM = "harm"; const TRAUMA = "trauma"; const VICE = "vice";
 	const UPGRADE = "upgrade";
 	/* */
 	const ZONING = "zoning";
@@ -292,8 +293,11 @@ class Ladder {
 /* */
 class Locales {
 	singleton;
+	
+	depend java.util.stream.Stream;
 
-	1 -- 0..* Locale locales;
+	/* */
+	0..1 -- 0..* Locale locales;
 	1 group -- 0..* Prison;
 
 	/* */
@@ -329,6 +333,7 @@ class Locale {
 	name;
 
 	/* */
+	after constructor { Locales.getInstance().addLocale(this); }
 	lazy int wealth; lazy int security; lazy int crime; lazy int occult;
 	boolean isDistrict = false; boolean isNeighborhood = false;
 	boolean isLair = false; boolean isHuntingGround = false; boolean isTurf = false;
@@ -339,11 +344,11 @@ class Locale {
 	boolean hasZoning = { zoning != null }
 
 	/* */
-	public static Stream<Locale> getLocales() { return getStream(); }
-	public static Stream<Locale> getDistricts() { return getLocales().filter(Locale::getIsDistrict); }
-	public static Stream<Locale> getPlaces() { return getLocales().filter(Locale::hasParent); }
+	/* public static Stream<Locale> getLocales() { return getStream(); } */
+	public static Stream<Locale> getDistricts() { return getStream().filter(Locale::getIsDistrict); }
+	public static Stream<Locale> getPlaces() { return getStream().filter(Locale::hasParent); }
 	public static Locale getLocaleByName(String name) {
-		return getLocales().filter(l -> l.getName().matches(name)).findFirst().get();
+		return getStream().filter(l -> l.getName().matches(name)).findFirst().get();
 	}
 
 	/* */
@@ -364,8 +369,6 @@ class Playbook {
 /* */
 /* PLAYSPACE */
 /* */
-
-
 class PlaySpace {
 	internal boolean visitedA = false;
 	internal boolean visitedB = false;
@@ -451,34 +454,6 @@ class Prison {
 		super.setParent(Locale.getLocaleByName("Dunslough"));
 		super.setIsLair(true);
 		super.setZoning(new Zoning(Zoning.RULESPACE));
-	}
-}
-
-/* */
-/* RATING */
-/* */
-class Rating {
-	depend java.util.concurrent.ArrayBlockingQueue;
-	depend java.util.concurrent.BlockingQueue;
-
-	const ATTUNE = "attune"; const COMMAND = "command";
-	const CONSORT = "consort"; const FINESSE = "finesse";
-	const HUNT = "hunt"; const PROWL = "prowl";
-	const SKIRMISH = "skirmish"; const STUDY = "study";
-	const SURVEY = "survey"; const SWAY = "sway";
-	const TINKER = "tinker"; const WRECK = "wreck";
-
-	/* */
-	const BlockingQueue<String> QUEUE = new ArrayBlockingQueue<String>(12);
-
-	/* */
-	isA Aspect;
-	Rating(aName) { super(aName, "", Aspect.RATING); }
-
-	/* */	
-	public static synchronized Rating next() {
-		if (QUEUE.isEmpty()) { QUEUE.addAll(Arrays.asList(ATTUNE, COMMAND, CONSORT, FINESSE, HUNT, PROWL, SKIRMISH, STUDY, SURVEY, SWAY, TINKER, WRECK)); }
-		String rating = QUEUE.poll(); QUEUE.add(rating); return new Rating(rating);
 	}
 }
 

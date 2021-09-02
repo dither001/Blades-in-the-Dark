@@ -87,10 +87,10 @@ class Fiasco {
 			Rogue c = allRogues[(i - 1) % mod];
 
 			RogueShip ab = a.getShip(b, RogueShip.ALLY);
-			situations.add(new Situation(ab, new Obstacle(Obstacle.DISTRACTION, Rating.next())));
+			situations.add(new Situation(ab, new Obstacle(Obstacle.DISTRACTION, ActionRating.next())));
 
 			RogueShip ac = a.getShip(c, RogueShip.ENEMY);
-			situations.add(new Situation(ac, new Obstacle(Obstacle.DISTRACTION, Rating.next())));
+			situations.add(new Situation(ac, new Obstacle(Obstacle.DISTRACTION, ActionRating.next())));
 		}
 	}
 	

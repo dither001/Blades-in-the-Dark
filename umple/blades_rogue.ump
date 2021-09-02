@@ -55,13 +55,30 @@ class Rogue {
 	}
 
 	/* instance */
+	void applyHarm(Harm harm) {
+		int[] tier = {0, 0, 0, 0, 0};
+		getAspects(a -> a.getType().matches(Aspect.HARM)).forEach(e -> ++tier[((Harm) e).getLevel()]);
+		harmHelper(tier, harm);
+	}
+
+	private int[] harmHelper(int[] array, Harm harm) {
+		int level = harm.getLevel();
+		if (level == 3 && array[level] > 0) { harm.setLevel(level+1); return harmHelper(array, harm); } 
+		else if (level < 3 && array[level] > 1) { harm.setLevel(level+1); return harmHelper(array, harm); } 
+		else { array[level] += 1; addAspect(harm); }
+
+		return array;
+	}
+
+	Stream<Aspect> getAspects(Predicate<Aspect> predicate) { return getAspects().stream().filter(predicate); }
+
 	List<Rogue> getCircle() { return getRogueShips().stream().map(s -> s.getOther(this)).collect(Collectors.toUnmodifiableList()); }
 	RogueShip getShip(Rogue rog, value) {
 		return getRogueShips().stream().filter(ship -> ship.contains(rog)).findFirst().orElse(RogueShip.newRogueShip(value, this, rog));
 	}
 	boolean hasShip(Rogue rog) { return Util.ensure(getRogueShips().stream().anyMatch(ship -> ship.contains(rog))); }
 
-	public Opportunity lookForWork() {
+	Opportunity lookForWork() {
 		Rogue other = getRogueShips().stream().findFirst().get().getOther(this); if (Util.unless(other)) return null;
 		Situation sitch = Situation.getSituations(other).filter(s -> Util.unless(s.getShip().contains(this))).findFirst().get(); if (Util.unless(sitch)) return null;
 		Crew target = sitch.getShip().getOther(other).getCrew(); if (Util.unless(target)) return null;

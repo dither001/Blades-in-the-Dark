@@ -3,13 +3,6 @@ strictness allow 1008;
 namespace com.blades.util;
 
 /* */
-/* DICE */
-/* */
-class Dice {
-	const CRITICAL = "critical"; const SUCCESS = "success"; const PARTIAL = "partial"; const FAILURE = "failure";
-}
-
-/* */
 /* LISTS */
 /* */
 class Lists {
@@ -37,7 +30,7 @@ class Loader {
 		loadCrewAspects("res/data/crew_aspects.csv");
 		loadBuildings("res/data/doskvol_common_buildings.csv");
 		loadDistricts("res/data/doskvol_districts.csv");
-		new Prison("Ironhook Prison");
+		new Prison("Ironhook Prison", Locales.getInstance());
 		loadFactions("res/data/doskvol_factions.csv");
 		loadCrewShips("res/data/doskvol_crewships.csv");
 		loadContacts("res/data/rogue_names.csv", null);
