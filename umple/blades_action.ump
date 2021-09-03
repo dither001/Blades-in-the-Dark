@@ -31,7 +31,14 @@ class ActionEffect {
 /* */
 /* GOAL */
 /* */
-class ActionGoal {}
+class ActionGoal {
+	0..* parents -- 0..* ActionGoal children;
+
+	/* */
+	int difficulty; int importance; int specificity; int urgency;
+	/* */
+	int complexity = { children.size() }
+}
 
 /* */
 /* HARM */

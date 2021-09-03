@@ -1,0 +1,35 @@
+
+class Culture {
+  survival; traditional; rational;
+}
+
+class Economy {
+  subsistence; industrial; cybernetic;
+  /* */
+  market; palace; command; planned;
+}
+
+class Geography {}
+
+class Member {
+  social_position;
+}
+
+class Policy {}
+
+class SocialGroup {
+  0..1 -- 0..* Member;
+  
+  boolean marginalized;
+}
+
+associationClass Society {
+  1 Culture;
+  1 Geography;
+  0..1 -- 0..* SocialGroup;
+  0..1 -- 0..* Member;
+
+  values; roles; norms;
+
+  /* void socialize(Member m) {} */
+}
