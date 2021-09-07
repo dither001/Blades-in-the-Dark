@@ -12,5 +12,5 @@ class RogueSupplier {
   isA Supplier;
   isA TRogueSupplier<T = Rogue>;
   
-  Rogue get() { return null; }
+  Rogue get() { return new Rogue(Rogue.nextName()); }
 }

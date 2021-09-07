@@ -14,8 +14,6 @@ class Crew {
 	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
 
-	depend com.blades.util.Util;
-
 	/* */
 	const int MAX_HEAT = 9;
 	const CITIZENRY = "citizenry"; const FRINGE = "fringe"; const INSTITUTION = "institution"; const TRADEMEN = "tradesmen"; const UNDERWORLD = "underworld";
@@ -32,7 +30,7 @@ class Crew {
 	boolean hold; boolean alive = true; boolean agent = false;
 	lazy Score score;
 
-	1 crew <@>- * Rogue rogues;
+	0..1 crew <@>- * Rogue rogues;
 	0..1 -> 0..* Aspect aspects;
 	0..1 -> 0..* Activity favoredOps;
 	0..1 crew <@>- * Locale turf;
@@ -362,4 +360,34 @@ class CrewShip {
 	private static Predicate<CrewShip> enemies() { return ship -> { return ship.getValue() < -1; }; }
 	private static Predicate<CrewShip> rivals() { return ship -> { return ship.getValue() > -2 && ship.getValue() < 2; }; }
 	private static Predicate<CrewShip> at_war() { return ship -> { return ship.getValue() < -2; }; }
+}
+
+/* */
+/* GANG */
+/* */
+class Gang {
+	depend java.util.stream.Stream;
+
+	const int[] GANG_SIZE = { 2, 6, 12, 20, 40, 80, 160 };
+
+	/* */
+	0..* -- 1 Crew;
+
+	/* */
+	int tier; Rogue[] members;
+	[tier >= 0 && tier <= 6]
+
+	/* aspect oriented */
+	before getMembers { if (members.size() == 0) initialize(); }
+
+	/* */
+	private void initialize() {
+		Stream.generate(new RogueSupplier()).limit(GANG_SIZE[tier]).forEach(members::add);
+		int numRogues = members.size();
+		Rogue[] arr = members.toArray(Rogue[]::new);
+		for (int i = 1; i < numRogues; i += 2) {
+			arr[i].getShip(arr[(i + 1) % numRogues], RogueShip.CONTACT);
+			arr[i].getShip(arr[(i - 1) % numRogues], RogueShip.CONTACT);
+		}
+	}
 }

@@ -22,8 +22,6 @@ class Aspect {
 	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
 
-	depend com.blades.util.Util;
-
 	/* */
 	const CONTACT = "contact"; const EXPERT = "expert"; const GANG = "gang"; 
 	const DOWNTIME = "downtime"; const ENTANGLEMENT = "entanglement";
@@ -32,7 +30,7 @@ class Aspect {
 	const HARM = "harm"; const TRAUMA = "trauma"; const VICE = "vice";
 	const UPGRADE = "upgrade";
 	/* */
-	const ZONING = "zoning";
+	const TURF = "turf"; const ZONING = "zoning";
 	const APPROACH = "approach"; const PLAYBOOK = "playbook"; const RATING = "rating";
 	const OBJECTIVE = "objective"; const OBSTACLE = "obstacle";
 
@@ -89,8 +87,6 @@ class GameLoop {
 	depend java.util.List;
 	depend java.util.stream.Collectors;
 	
-	depend com.blades.util.Util;
-	
 	/* */
 	GameContext context = com.blades.main.GameContext.getInstance();
 	internal List<Runnable> r = Arrays.asList(this::untap, this::upkeep, this::draw, this::main, this::combat, this::main2, this::cleanup);
@@ -111,7 +107,7 @@ class GameLoop {
 
 	/* */
 	private static void initialize() {
-		com.blades.util.Loader.getInstance();
+		Loader.getInstance();
 		Crew.initialize();
 		Ladder.initialize();
 		Rogue.setupRogueShips();
@@ -254,8 +250,6 @@ class Ladder {
 	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
 	
-	depend com.blades.util.Util;
-
 	/* */
 	0..1 -- 0..* Crew;
 
@@ -317,8 +311,6 @@ class Locale {
 	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
 
-	depend com.blades.util.Util;
-
 	/* */
 	public static final List<String> COMMON_BUILDINGS = Collections.synchronizedList(new ArrayList<String>());
 	public static final List<String> UNCOMMON_BUILDINGS = Collections.synchronizedList(new ArrayList<String>());
@@ -340,8 +332,12 @@ class Locale {
 	lazy Zoning zoning;
 
 	0..1 parent -- * Locale children;
+	0..1 -- 0..1 Rogue face;
 
 	boolean hasZoning = { zoning != null }
+	
+	/* aspect oriented */
+	before setFace { if (getIsDistrict()) return false; }
 
 	/* */
 	/* public static Stream<Locale> getLocales() { return getStream(); } */

@@ -10,8 +10,6 @@ external String {}
 /* ACTION */
 /* */
 class Action {
-	depend com.blades.util.Dice;
-	
 	const RATING = "rating"; const DOWNTIME = "downtime"; const GROUP = "group";
 	/* downtime actions */
 	const ACQUIRE_ASSET = "acquire asset"; const LONG_TERM_PROJECT = "long term project"; const RECOVER = "recover"; const REDUCE_HEAT = "reduce heat"; const TRAINING = "training"; const INDULGE_VICE = "indulge vice";
@@ -29,10 +27,21 @@ class Actor {}
 /* STATE */
 /* */
 class State {
-	depend java.util.functions.Predicate;
+	depend java.util.function.Predicate;
 
 	/* there isn't an effective English verb for "being somewhere" that doesn't collide with the word "being" which is already in use; I tried put/putting and decided to use place/placing to reflect that it relates to "being placed" */
-	const BEING = "is"; const GETTING = "gets"; const DOING = "does"; const PUTTING = "puts";
+
+	/* BEING relates to achieving some status, often abstract */
+	const BEING = "is";
+	/* HAVING relates to affiliations e.g. race, class, background, culture */
+	const HAVING = "has";
+	/* GETTING/PUTTING relates to the acqusition/delivery of physical goods */
+	const GETTING = "gets";
+	const PUTTING = "puts";
+	/* DOING relates performance of a process or activity */
+	const DOING = "does";
+	/* GOING relates to transforming (moving to a location) */
+	const GOING = "goes";
 
 	const DO_ACTIVITY = "does activity"; 
 	const SHAKE_HOLD = "has hold"; 
@@ -43,9 +52,9 @@ class State {
 	String name; 
 	Predicate predicate;
 	float cost = 1f;
-	
-	/* boolean is() { return predicate.startsWith(BEING); } */
-	/* boolean gets() { return predicate.startsWith(GETTING); } */
-	/* boolean does() { return predicate.startsWith(DOING); } */
-	/* boolean puts() { return predicate.startsWith(PUTTING); } */
+
+	/* boolean is() { return name.startsWith(BEING); } */
+	/* boolean gets() { return name.startsWith(GETTING); } */
+	/* boolean does() { return name.startsWith(DOING); } */
+	/* boolean puts() { return name.startsWith(PUTTING); } */
 }

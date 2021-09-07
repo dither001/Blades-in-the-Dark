@@ -68,8 +68,6 @@ class Entanglement {
 /* FIASCO */
 /* */
 class Fiasco {
-	depend com.blades.util.Util;
-
 	const int NUM_OF_ACTORS = 6;
 
 	0..1 -> 6 Rogue;
@@ -163,8 +161,6 @@ class Opportunity {
 	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
 	
-	depend com.blades.util.Util;
-
 	/* */
 	const Comparator<Opportunity> PRIORITY = priority();
 	const PriorityBlockingQueue<Opportunity> QUEUE = new PriorityBlockingQueue<Opportunity>(11, PRIORITY);
@@ -242,7 +238,11 @@ class Scene {
 
 	/* */
 	0..1 -> 0..* Aspect aspects;
-	
+
+	/* */
+	boolean hasAspect(String aspect) { return getAspects().stream().filter(e -> e.getType().matches(aspect)).count() > 0; }
+	Aspect getAspect(String aspect) { return getAspects().stream().filter(e -> e.getType().matches(aspect)).findFirst().get(); }
+
 	/* */
 	@Override public void run() {}
 
@@ -265,8 +265,6 @@ class Score {
 	depend java.util.UUID;
 	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
-
-	depend com.blades.util.Util;
 
 	/* */
 	isA Runnable;

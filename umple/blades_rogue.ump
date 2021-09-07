@@ -5,16 +5,20 @@ namespace com.blades.main;
 /* ROGUE */
 /* */
 class Rogue {
+	depend java.util.concurrent.atomic.AtomicLong;
 	depend java.util.function.Predicate;
 	depend java.util.stream.Collectors;
 	depend java.util.stream.Stream;
-
-	depend com.blades.util.Util;
 
 	/* UNIQUE SET-STREAM */
 	const Set<Rogue> SET = new HashSet<Rogue>();	
 	after constructor { SET.add(this); } after delete { SET.remove(this); }
 	private static Stream<Rogue> getStream() { return SET.stream(); }
+	
+	/* */
+	public static final List<String> NAMES = Collections.synchronizedList(new ArrayList<String>());
+	private static AtomicLong currentName = new AtomicLong(0); 
+	public static synchronized String nextName() { return NAMES.get((int) (currentName.incrementAndGet() % NAMES.size())); }
 
 	/* */
 	lazy UUID id; before getId { if (Util.unless(id)) setId(Util.nextUUID()); } key { id }
@@ -23,6 +27,13 @@ class Rogue {
 	boolean tapped = false; boolean inPrison = false;
 
 	0..1 -> 0..* Aspect aspects;
+	
+	/* derived */
+	lazy Playbook playbook;
+	before getPlaybook { if (Util.unless(playbook)) setPlaybook((Playbook) getAspect(Aspect.PLAYBOOK)); }
+	
+	boolean hasAspect(String aspect) { return getAspects().stream().filter(e -> e.getType().matches(aspect)).count() > 0; }
+	Aspect getAspect(String aspect) { return getAspects().stream().filter(e -> e.getType().matches(aspect)).findFirst().get(); }
 	
 	/* aspect-oriented */
 	after setCoin {

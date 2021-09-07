@@ -1,6 +1,6 @@
 strictness allow 1008;
 
-namespace com.blades.util;
+namespace com.blades.main;
 
 /* */
 /* LISTS */
@@ -33,9 +33,9 @@ class Loader {
 		new Prison("Ironhook Prison", Locales.getInstance());
 		loadFactions("res/data/doskvol_factions.csv");
 		loadCrewShips("res/data/doskvol_crewships.csv");
-		loadContacts("res/data/rogue_names.csv", null);
-		loadContacts("res/data/crew_contacts.csv", Aspect.CONTACT);
-		loadContacts("res/data/rogue_contacts.csv", Aspect.CONTACT);
+		loadContacts("res/data/rogue_names.csv", true);
+		loadContacts("res/data/crew_contacts.csv", false);
+		loadContacts("res/data/rogue_contacts.csv", false);
 	}
 
 	private static void loadBuildings(String path) {
@@ -44,13 +44,13 @@ class Loader {
 		}).forEach(Locale.COMMON_BUILDINGS::add);
 	}
 
-	private static void loadContacts(String path, String aspect) {
+	private static void loadContacts(String path, boolean assignCrew) {
 		Util.fileTransformer(path, new Function<String, Rogue>() {
 			@Override public Rogue apply(String t) {
 				String[] a = t.split(",");
-				Rogue r = new Rogue(a[0], Crew.nextCrew());
-				if (Util.ensure(aspect)) r.addAspect(new Aspect(aspect, aspect, aspect));
-				return r;
+				Rogue rog = new Rogue(a[0]); Rogue.NAMES.add(a[0]);
+				if (assignCrew) rog.setCrew(Crew.nextCrew());
+				return rog;
 			}
 		});
 	}
