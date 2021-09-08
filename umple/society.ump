@@ -1,35 +1,40 @@
 
 class Culture {
-  survival; traditional; rational;
+	survival; traditional; rational;
 }
 
 class Economy {
-  subsistence; industrial; cybernetic;
-  /* */
-  market; palace; command; planned;
+	subsistence; industrial; cybernetic;
+	/* */
+	market; palace; command; planned;
 }
 
 class Geography {}
 
 class Member {
-  social_position;
+	int honor; int power; int wealth; 
+	status = { Math.cbrt(honor*honor + power*power + wealth*wealth) 
 }
 
 class Policy {}
 
+class SocialClass {}
+
 class SocialGroup {
-  0..1 -- 0..* Member;
-  
-  boolean marginalized;
+	0..1 -- 0..* Member;
+
+	boolean institutionalized;
+	boolean marginalized;
 }
 
 associationClass Society {
-  1 Culture;
-  1 Geography;
-  0..1 -- 0..* SocialGroup;
-  0..1 -- 0..* Member;
+	1 Culture;
+	1 Geography;
+	0..1 -- 0..* SocialGroup;
+	0..1 -- 0..* Member;
 
-  values; roles; norms;
+	values; roles; norms;
 
-  /* void socialize(Member m) {} */
+	/* void institutionalize(SocialGroup sg) {} */
+	/* void socialize(Member m) {} */
 }

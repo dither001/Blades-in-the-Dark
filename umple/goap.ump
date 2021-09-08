@@ -3,9 +3,6 @@ strictness allow 1007;
 
 namespace com.blades.goap;
 
-external Boolean {}
-external String {}
-
 /* */
 /* ACTION */
 /* */
@@ -30,7 +27,9 @@ class State {
 	depend java.util.function.Predicate;
 
 	/* there isn't an effective English verb for "being somewhere" that doesn't collide with the word "being" which is already in use; I tried put/putting and decided to use place/placing to reflect that it relates to "being placed" */
-
+	enum verb { Being, Having, Getting, Putting, Doing, Going }
+	Verb verb;
+	
 	/* BEING relates to achieving some status, often abstract */
 	const BEING = "is";
 	/* HAVING relates to affiliations e.g. race, class, background, culture */
@@ -49,7 +48,7 @@ class State {
 	const ADVANCE = "does advance"; 
 	const EXPOSE = "does expose";
 
-	String name; 
+	name; 
 	Predicate predicate;
 	float cost = 1f;
 

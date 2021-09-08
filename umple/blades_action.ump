@@ -10,7 +10,15 @@ class Consequence {}
 /* DICE */
 /* */
 class Dice {
+	depend java.util.Random;
+
+	/* */
 	const CRITICAL = "critical"; const SUCCESS = "success"; const PARTIAL = "partial"; const FAILURE = "failure";
+	const Random RANDOM = new Random();
+	/* */
+	int result;
+	/* */
+	after constructor { result = (aResult > 0) ? RANDOM.ints(1, 7).limit(aResult).max().getAsInt() : RANDOM.ints(1, 7).limit(2).min().getAsInt(); }
 }
 
 /* */
@@ -77,8 +85,9 @@ class ActionRating {
 	const BlockingQueue<String> QUEUE = new ArrayBlockingQueue<String>(12);
 
 	/* */
-	isA Aspect;
-	ActionRating(aName) { super(aName, "", Aspect.RATING); }
+	name;
+	lazy Rogue rogue; lazy int value; lazy int currentValue;
+	/* key { rogue, name } */
 
 	/* */
 	public static synchronized ActionRating next() {
@@ -90,4 +99,26 @@ class ActionRating {
 /* */
 /* ROLL */
 /* */
-class ActionRoll {}
+class DiceRoll {
+	abstract;
+	isA Runnable;
+
+	Rogue rogue;
+	lazy Dice roll;
+}
+
+class ActionRoll {
+	isA DiceRoll;
+	ActionRating rating;
+	
+	@Override void run() {}
+}
+
+class DowntimeRoll { isA DiceRoll; }
+
+class FortuneRoll { isA DiceRoll; }
+
+class ResistanceRoll {
+	isA DiceRoll;
+	attribute; value;
+}
