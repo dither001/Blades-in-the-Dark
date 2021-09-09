@@ -1,0 +1,59 @@
+
+class Society {
+  0..1 -> 1 Culture;
+  0..1 -> 1 Locale territory;
+  0..1 -- * Crew groups sorted {name};
+  0..1 -- * Rogue members sorted {status};
+}
+
+class Culture {
+  0..1 parent -- 0..* Culture children;
+}
+
+class Locale {
+  1 -- 1 Ladder;
+  0..1 parent -- 0..* Locale children;
+}
+
+class Crew {
+  name;
+  Integer tier = 0; int rep = 0;
+}
+
+class Rogue {
+  name;
+  
+  int publicity = 0;
+  int fame = { Math.abs(publicity) }
+  
+  int knowledge = 0;
+  int power = { knowledge }
+
+  int coin = 0; int stash = 0;
+  int wealth = { coin + stash }
+  Double status = {
+    Math.cbrt(wealth*wealth + fame*fame + power*power)
+  }
+}
+
+class Ladder {
+  0..1 -- * Crew crews sorted {tier};
+}
+
+class Reputation {
+  * sorted {value} -- * Crew;
+  name; Integer value;
+}
+
+class Relationship {
+  int trust = 1; int intimacy = 1; int stress = 0;
+  * -- 2 Rogue rogues;
+  key { rogues }
+  
+  boolean broken = { trust < 1 }
+}
+
+associationClass CrewMember {
+  0..* Crew;
+  0..1 Rogue;
+}
