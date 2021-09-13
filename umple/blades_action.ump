@@ -71,6 +71,7 @@ class ActionPosition {
 /* RATING */
 /* */
 class ActionRating {
+	depend java.util.Arrays;
 	depend java.util.concurrent.ArrayBlockingQueue;
 	depend java.util.concurrent.BlockingQueue;
 
@@ -114,11 +115,20 @@ class ActionRoll {
 	@Override void run() {}
 }
 
-class DowntimeRoll { isA DiceRoll; }
+class DowntimeRoll {
+	depend java.util.function.Consumer;
+	isA DiceRoll;
+	Consumer<Rogue> downtime;
+	@Override void run() { getDowntime().accept(super.getRogue()); }
+}
 
-class FortuneRoll { isA DiceRoll; }
+class FortuneRoll {
+	isA DiceRoll;
+	@Override void run() {}
+}
 
 class ResistanceRoll {
 	isA DiceRoll;
 	attribute; value;
+	@Override void run() {}
 }

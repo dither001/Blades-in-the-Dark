@@ -9,8 +9,12 @@ external interface Supplier {}
 trait TRogueSupplier<T isA Rogue> { depend java.util.function.Supplier; isA Supplier; abstract T get(); }
 
 class RogueSupplier {
-  isA Supplier;
-  isA TRogueSupplier<T = Rogue>;
-  
-  Rogue get() { return new Rogue(Rogue.nextName()); }
+	isA Supplier;
+	isA TRogueSupplier<T = Rogue>;
+
+	Rogue get() {
+		Rogue rogue = new Rogue(Rogue.nextName());
+		rogue.addAspect(Vice.next());
+		return rogue;
+	}
 }

@@ -32,6 +32,8 @@ class Rogue {
 	lazy Playbook playbook;
 	before getPlaybook { if (Util.unless(playbook)) setPlaybook((Playbook) getAspect(Aspect.PLAYBOOK)); }
 	
+	List<Aspect> vices = { getAspects(Aspect.filter(Aspect.VICE)).collect(Collectors.toList()) }
+	
 	boolean hasAspect(String aspect) { return getAspects().stream().filter(e -> e.getType().matches(aspect)).count() > 0; }
 	Aspect getAspect(String aspect) { return getAspects().stream().filter(e -> e.getType().matches(aspect)).findFirst().get(); }
 	
@@ -128,10 +130,9 @@ class RogueShip {
 	private static Stream<RogueShip> getStream() { return SET.stream(); }
 
 	/* */
-	value = RIVAL;
-
-	* <@>- 2 Rogue rogues;
-
+	lazy value;
+	lazy Aspect aspect;
+	* -- 2 Rogue rogues;
 	key { rogues }
 
 	/* */

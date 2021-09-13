@@ -50,6 +50,7 @@ class Loader {
 				String[] a = t.split(",");
 				Rogue rog = new Rogue(a[0]); Rogue.NAMES.add(a[0]);
 				if (assignCrew) rog.setCrew(Crew.nextCrew());
+				rog.addAspect(Vice.next());
 				return rog;
 			}
 		});

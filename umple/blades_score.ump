@@ -97,6 +97,12 @@ class Fiasco {
 				.sorted((r1, r2) -> Integer.compare(r1.getRogueShips().size(), r2.getRogueShips().size()))
 				.limit(NUM_OF_ACTORS).toArray(Rogue[]::new));
 	}
+	
+	public static Fiasco newFiasco() {
+		return new Fiasco(Rogue.getRogues()
+				.sorted((r1, r2) -> Integer.compare(r1.getRogueShips().size(), r2.getRogueShips().size()))
+				.limit(NUM_OF_ACTORS).toArray(Rogue[]::new));
+	}
 }
 
 /* */
@@ -143,12 +149,13 @@ class Obstacle {
 	/* A distraction consists of the Dilemma, the Effects, and an Opposition value (if any). */
 
 	isA Aspect;
-	Obstacle(aName, Aspect rating) {
+
+	ActionRating rating;
+
+	Obstacle(aName, ActionRating rating) {
 		super(aName, "", Aspect.OBSTACLE);
 		setRating(rating);
 	}
-
-	Aspect rating;
 }
 
 /* */

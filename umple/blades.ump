@@ -28,6 +28,7 @@ class Aspect {
 	const HOOK = "hook";
 	const REPUTATION = "reputation";
 	const HARM = "harm"; const TRAUMA = "trauma"; const VICE = "vice";
+	const BACKGROUND = "background"; const FAMILY = "family"; const HERITAGE = "heritage"; const LOVERS = "lovers";
 	const UPGRADE = "upgrade";
 	/* */
 	const TURF = "turf"; const ZONING = "zoning";
