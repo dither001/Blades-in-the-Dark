@@ -1,0 +1,30 @@
+
+namespace goap;
+
+external Predicate {}
+
+class Action {}
+
+class Actor {}
+
+interface State {
+	boolean test();
+}
+
+associationClass PersonState {
+	/* BEING relates to achieving some status, often abstract */
+	/* HAVING relates to affiliations e.g. race, class, background, culture */
+	/* GETTING/PUTTING relates to the acqusition/delivery of physical goods */
+	/* DOING relates performance of a process or activity */
+	/* GOING relates to transforming (moving to a location) */
+	isA State;
+	isA Test <T = Action>;
+	* Predicate;
+	* Actor;
+}
+
+trait Test < T > {
+	Verb { Being, Having, Getting, Putting, Doing, Going }
+	float cost = 1f;
+}
+
