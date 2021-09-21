@@ -1,15 +1,25 @@
 
 namespace goap;
 
-external Predicate {}
+external interface Predicate {}
+
+trait TPredicate < T > {
+	depend java.util.function.Predicate;
+	isA Predicate;
+	@Override public boolean test(T t) { return false; }
+}
 
 class Action {}
 
 class Actor {}
 
-interface State {
-	boolean test();
+class ActorPredicate {
+	depend java.util.function.Predicate;
+	isA Predicate;
+	isA TPredicate < T = Actor >;
 }
+
+interface IState { boolean test(); }
 
 associationClass PersonState {
 	/* BEING relates to achieving some status, often abstract */
@@ -17,14 +27,13 @@ associationClass PersonState {
 	/* GETTING/PUTTING relates to the acqusition/delivery of physical goods */
 	/* DOING relates performance of a process or activity */
 	/* GOING relates to transforming (moving to a location) */
-	isA State;
-	isA Test <T = Action>;
-	* Predicate;
+	isA IState;
+	isA State < S = Action >;
+	* ActorPredicate;
 	* Actor;
 }
 
-trait Test < T > {
+trait State < S > {
 	Verb { Being, Having, Getting, Putting, Doing, Going }
 	float cost = 1f;
 }
-
