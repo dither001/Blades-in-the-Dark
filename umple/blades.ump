@@ -242,7 +242,13 @@ class GameLoop {
 /* */
 /* ITEM */
 /* */
-class Item {}
+class Item {
+	int load;
+}
+
+class ItemStack {
+	isA Item;
+}
 
 /* */
 /* LADDER */
