@@ -1,0 +1,81 @@
+strictness allow 46;
+strictness allow 1007;
+
+namespace goals;
+
+/* */
+class Main {
+	public static void main(String...args) {
+	}
+}
+
+
+/* */
+class Goal {
+	depend java.util.EnumSet;
+
+	enum Flag { Jump, Look, Move, Target }
+	EnumSet<Flag> flags = Goal.newFlagSet();
+
+	abstract boolean canUse();
+
+	boolean canContinueUse() { return this.canUse(); }
+	boolean canInterrupt() { return true; }
+	void start() {}
+	void stop() {}
+	void update(double dt) {}
+
+	@Override String toString() { return getClass().getSimpleName(); }
+	
+	/* */
+	public static EnumSet<Flag> newFlagSet() { return EnumSet.noneOf(Flag.class); }
+}
+
+/* */
+class PriorityGoal {
+	depend java.util.EnumSet;
+	isA Goal;
+
+	/* */
+	const PriorityGoal EMPTY_GOAL = emptyPriorityGoal();
+
+	/* */
+	Goal goal; Integer priority; boolean running = false;
+	key { goal }
+
+	boolean canBeReplaced(PriorityGoal other) { return this.canInterrupt() && other.getPriority() < this.getPriority(); }
+
+	boolean canUse() { return getGoal().canUse(); }
+	void start() { if (!getRunning()) { setRunning(true); getGoal().start(); } }
+	void stop() { if (getRunning()) { setRunning(false); getGoal().stop(); } }
+	void update(double dt) { getGoal().update(dt); }
+	EnumSet<Flag> getFlags() { return getGoal().getFlags(); }
+	boolean setFlags(EnumSet<Flag> aFlags) { return getGoal().setFlags(aFlags); }
+
+	/* */
+	private static PriorityGoal emptyPriorityGoal() { return new PriorityGoal( new Goal() { public boolean canUse() { return false; } }, Integer.MAX_VALUE) { public boolean isRunning() { return false; } }; }
+}
+
+/* */
+class GoalSolver {
+	depend java.util.EnumMap;
+	depend java.util.EnumSet;
+	depend java.util.LinkedHashSet;
+	depend java.util.Map;
+	depend java.util.Set;
+	depend java.util.stream.Stream;
+	
+	isA Goal;
+
+	internal Set<PriorityGoal> available = new LinkedHashSet<PriorityGoal>();
+	internal Map<Flag,PriorityGoal> lockedFlags = new EnumMap<>(Flag.class);
+	internal EnumSet<Flag> disabledFlags = Goal.newFlagSet();
+
+	void update(double dt) { streamRunningGoals().forEach(PriorityGoal::tick); }
+	Stream<PriorityGoal> streamRunningGoals(){ return available.stream().filter(PriorityGoal::getRunning); }
+	boolean disableFlag(Flag aFlag) { return disabledFlags.add(aFlag); }
+	boolean enableFlag(Flag aFlag) { return disabledFlags.remove(aFlag); }
+
+	/* */
+	@Override public boolean canUse() { return false; }
+}
