@@ -153,7 +153,7 @@ class Util {
 	depend java.util.stream.Stream;
 	
 	/* */
-	public static void testEnsure() {
+	static void testEnsure() {
 		System.out.println("Test ensure() utility:");
 		System.out.println(String.format("> %-8s null", Util.ensure("")));
 		System.out.println(String.format("> %-8s 0", Util.ensure(0)));
@@ -165,9 +165,9 @@ class Util {
 		System.out.println(String.format("> %-8s 'empty' String \"\"", Util.ensure("")));
 		System.out.println(String.format("> %-8s String \"foo\"", Util.ensure("foo")));
 	}
-	
+
 	/* */
-	public static <T> boolean ensure(T quality) {
+	static <T> boolean ensure(T quality) {
 		return quality == null ? false
 			: quality.getClass().equals(Boolean.class) 
 			? ((Boolean) quality).booleanValue()
@@ -179,8 +179,8 @@ class Util {
 			? !((String) quality).matches("") 
 			: true;
 	}
-	
-	public static <T> Stream<T> fileTransformer(String pathname, Function<String, T> func) {
+
+	static <T> Stream<T> fileTransformer(String pathname, Function<String, T> func) {
 		Stream.Builder<T> builder = Stream.builder();
 		try (BufferedReader buffer = new BufferedReader(new FileReader(new File(pathname))) ) { 
 			String line;
@@ -189,8 +189,57 @@ class Util {
 		
 		return builder.build();
 	}
-	
-	public static UUID nextUUID() { return UUID.randomUUID(); }
-	
-	public static <T> boolean unless(T quality) { return ! ensure(quality); }
+
+	static UUID nextUUID() { return UUID.randomUUID(); }
+
+	static <T> Predicate<T> equalTo(Function<T, Integer> accessor, int comparator) {
+		return new Predicate<T>() {
+			@Override public boolean test(T t) { 
+				return new BiFunction<Integer, Integer, Boolean>() {
+					@Override public Boolean apply(Integer t, Integer u) { return t == u; }
+				}.apply(accessor.apply(t), comparator);
+			}
+		};
+	}
+
+	static <T> Predicate<T> greaterThan(Function<T, Integer> accessor, int comparator) {
+		return new Predicate<T>() {
+			@Override public boolean test(T t) { 
+				return new BiFunction<Integer, Integer, Boolean>() {
+					@Override public Boolean apply(Integer t, Integer u) { return t > u; }
+				}.apply(accessor.apply(t), comparator);
+			}
+		};
+	}
+
+	static <T> Predicate<T> lessThan(Function<T, Integer> accessor, int comparator) {
+		return new Predicate<T>() {
+			@Override public boolean test(T t) { 
+				return new BiFunction<Integer, Integer, Boolean>() {
+					@Override public Boolean apply(Integer t, Integer u) { return t < u; }
+				}.apply(accessor.apply(t), comparator);
+			}
+		};
+	}
+
+	static void printMethodKeys(Class<?> clazz) {
+		Map<Class<?>, Class<?>> map = Map.of(boolean.class, Boolean.class, double.class, Double.class, int.class,
+				Integer.class);
+
+		Arrays.asList(clazz.getDeclaredMethods()).stream()
+			.filter(m -> m.getParameterCount() == 0)
+			.filter(m -> m.getModifiers() < Modifier.STATIC)
+			.filter(m -> !(m.getReturnType().equals(List.class)))
+			.filter(m -> !(m.getReturnType().equals(void.class)))
+			.map(m -> {
+					String cName = clazz.getSimpleName();
+					String rName = (map.containsKey(m.getReturnType()) ? map.get(m.getReturnType()) : m.getReturnType())
+							.getSimpleName();
+					String fName = m.getName();
+					return String.format("Map.<String, Function<%s, %s>>entry(\"%s\", %s::%s);\n", 
+							cName, rName, fName, cName, fName);
+				}).forEach(System.out::print);
+	}
+
+	static <T> boolean unless(T quality) { return ! ensure(quality); }
 }
