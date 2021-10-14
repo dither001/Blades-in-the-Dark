@@ -51,3 +51,4 @@ src/Tesseract.java
 hs_err_pid*
 res/.DS_Store
 .DS_Store
+*.graffle
