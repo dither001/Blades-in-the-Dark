@@ -1,0 +1,23 @@
+
+strictness allow 1008;
+
+namespace traveller;
+
+class Ensure {
+depend java.util.Optional;
+
+	public static <T> boolean test(T quality) {
+		return quality == null ? false
+			: quality.getClass().equals(Boolean.class) 
+			? ((Boolean) quality).booleanValue()
+    		: quality.getClass().equals(Integer.class) 
+    		? ((int)quality) > -1
+			: quality.getClass().equals(Optional.class) 
+			? ((Optional<?>) quality).isPresent() 
+			: quality.getClass().equals(String.class) 
+			? !((String) quality).matches("") 
+			: true;
+	}
+
+	public static <T> boolean not(T quality) { return ! test(quality); }
+}

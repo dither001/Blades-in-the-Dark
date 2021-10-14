@@ -1,0 +1,150 @@
+
+namespace traveller;
+
+/* */
+class Star {
+	isA IOrbit;
+
+	enum Color { Blue, White, Green, Yellow, Orange, Red, Pink }
+
+	enum Zone { InsideStar, Unavailable, InnerZone, Habitable, OuterZone;
+		static final Zone[] EMPTY = {};
+	
+		static final Zone[] A_BRIGHT_GIANT = { InsideStar, Unavailable, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, Habitable };
+		static final Zone[] F_BRIGHT_GIANT = { InsideStar, Unavailable, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, Habitable };
+		static final Zone[] G_BRIGHT_GIANT = { InsideStar, Unavailable, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, Habitable };
+		static final Zone[] K_BRIGHT_GIANT = { InsideStar, InsideStar, Unavailable, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, Habitable };
+		static final Zone[] M_BRIGHT_GIANT = { InsideStar, InsideStar, InsideStar, InsideStar, InsideStar, InsideStar, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, Habitable };
+	
+		static final Zone[] A_GIANT = { InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, Habitable };
+		static final Zone[] F_GIANT = { InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, Habitable };
+		static final Zone[] G_GIANT = { InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, Habitable };
+		static final Zone[] K_GIANT = { InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, Habitable };
+		static final Zone[] M_GIANT = { InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, Habitable };
+	
+		static final Zone[] A_SUBGIANT = { InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, Habitable };
+		static final Zone[] F_SUBGIANT = { InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, Habitable };
+		static final Zone[] G_SUBGIANT = { InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, Habitable };
+	
+		static final Zone[] A_SEQUENCE = { InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, InnerZone, Habitable };
+		static final Zone[] F_SEQUENCE = { InnerZone, InnerZone, InnerZone, InnerZone, Habitable };
+		static final Zone[] G_SEQUENCE = { InnerZone, InnerZone, Habitable };
+		static final Zone[] K_SEQUENCE = { Habitable };
+		static final Zone[] M_SEQUENCE = EMPTY;
+	
+		static final Zone[] A_DWARF = EMPTY;
+		static final Zone[] F_DWARF = EMPTY;
+		static final Zone[] G_DWARF = EMPTY;
+		static final Zone[] K_DWARF = EMPTY;
+		static final Zone[] M_DWARF = EMPTY;
+	
+		static final Zone[] F_SUBDWARF = { InnerZone, InnerZone, InnerZone, Habitable };
+		static final Zone[] G_SUBDWARF = { InnerZone, Habitable };
+		static final Zone[] K_SUBDWARF = EMPTY;
+		static final Zone[] M_SUBDWARF = EMPTY;
+
+		static Zone[] getZones(char color, char size) {
+			switch (size) {
+			case '2':
+				switch (color) {
+				case 'A':	return A_BRIGHT_GIANT;
+				case 'F':	return F_BRIGHT_GIANT;
+				case 'G':	return G_BRIGHT_GIANT;
+				case 'K':	return K_BRIGHT_GIANT;
+				case 'M':	return M_BRIGHT_GIANT;
+				default:	return EMPTY;
+				}
+			case '3':
+				switch (color) {
+				case 'A':	return A_GIANT;
+				case 'F':	return F_GIANT;
+				case 'G':	return G_GIANT;
+				case 'K':	return K_GIANT;
+				case 'M':	return M_GIANT;
+				default:	return EMPTY;
+				}
+			case '4':
+				switch (color) {
+				case 'A':	return A_SUBGIANT;
+				case 'F':	return F_SUBGIANT;
+				case 'G':	return G_SUBGIANT;
+				default:	return EMPTY;
+				}
+			case '5':
+				switch (color) {
+				case 'A':	return A_SEQUENCE;
+				case 'F':	return F_SEQUENCE;
+				case 'G':	return G_SEQUENCE;
+				case 'K':	return K_SEQUENCE;
+				case 'M':	return M_SEQUENCE;
+				default:	return EMPTY;
+				}
+			case 'D':
+				switch (color) {
+				case 'A':	return A_DWARF;
+				case 'F':	return F_DWARF;
+				case 'G':	return G_DWARF;
+				case 'K':	return K_DWARF;
+				case 'M':	return M_DWARF;
+				default:	return EMPTY;
+				}
+			case '6':
+				switch (color) {
+				case 'F':	return F_SUBDWARF;
+				case 'G':	return G_SUBDWARF;
+				case 'K':	return K_SUBDWARF;
+				case 'M':	return M_SUBDWARF;
+				default:	return EMPTY;
+				}
+			default:	return EMPTY;
+			}
+		}
+	}
+
+	private int[] orbit = { 0, 0 };
+	char color; char size;
+	boolean isMainStar = false;
+
+	Zone[] getZones() { return Zone.getZones(color, size); }
+
+	/* */
+	@Override void setOrbit(int...orbit) { orbit = new int[]{ orbit[0], 0 }; }
+	@Override int[] getOrbit() { return orbit; }
+
+	/* @param roll 2d6 */
+	public static char primaryColor(int roll) { return (roll <= 2)? 'A': (roll <= 7)? 'M': (roll == 8)? 'K': (roll == 9)? 'G': 'F'; }
+	/* @param roll 2d6 */
+	public static char companionColor(int roll) { return (roll <= 2)? 'A': (roll <= 4)? 'F': (roll <= 6)? 'G': (roll <= 8)? 'K': 'M'; }
+	/* @param roll 2d6 */
+	public static char primarySize(int roll) { return (roll == 2)? '2': (roll == 3)? '3': (roll == 4)? '4': (roll <= 10)? '5': (roll <= 11)? '6': 'D'; }
+	/* @param roll 2d6 */
+	public static char companionSize(int roll) { return (roll == 2)? '2': (roll == 3)? '3': (roll == 4)? '4': (roll <= 6)? 'D': (roll <= 8)? '5': (roll == 9)? '6': 'D'; }
+
+	/* @param roll 2d6 */
+	public static int maxNumberOfOrbits(Star star, int roll) {
+		int maxOrbits = roll;
+		char color = star.getColor();
+		maxOrbits -= (color == 'M')? 4: (color == 'K')? 2: 0;
+		char size = star.getSize();
+		maxOrbits += (size == '2')? 8: (size == '3')? 4: 0;
+		return maxOrbits < 0? 0: maxOrbits;
+	}
+
+	/* @param roll 2d6 */
+	public static boolean hasGasGiants(int roll) { return (roll < 10) ? true : false; }
+	/* @param roll 2d6 */
+	public static int numberOfGasGiants(int roll) { return (roll <= 3)? 1: (roll <= 5)? 2: (roll <= 7)? 3: (roll <= 10)? 4: 5; }
+
+	/* @param roll 2d6*/
+	public static boolean hasPlanets(int roll, int numberOfGiants) { return (roll - numberOfGiants) < 7 ? true : false; }
+	/* @param roll 2d6*/
+	public static int numberOfPlanets(int roll, int giants) { return (roll - giants <= 1)? 3: (roll - giants <= 6)? 2: 1; }
+
+
+	/* @param roll 1d6 */
+	public static int numberOfCapturedWorlds(Star star, int roll) {
+		char size = star.getSize();
+		return (roll + ((size != 'A') ? 0 : 1) < 5) ? 0 : roll / 2;
+	}
+
+}

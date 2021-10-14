@@ -1,0 +1,73 @@
+
+class Trade {
+depend java.util.EnumSet;
+
+	Code { AG, AS, BA, DE, FL, HI, IC, IN, LO, NA, NI, PO, RI, VA, WA }
+
+	public static EnumSet<Code> setupTradeCodes(World world) {
+		EnumSet<Code> set = EnumSet.noneOf(Code.class);
+
+		int size = world.getSize();
+		int atmo = world.getAtmosphere();
+		int hydro = world.getHydrosphere();
+		int pop = world.getPopulation();
+		int gov = world.getGovernment();
+		int law = world.getLawLevel();
+
+		/* AGRICULTURE (AG) */
+		boolean idealAtmo = (atmo >= 4 && atmo <= 9)? true: false;
+		boolean idealHydro = (hydro >= 4 && hydro <= 8)? true: false;
+		boolean idealPop = (pop >= 5 && pop <= 7)? true: false;
+		if (idealAtmo && idealHydro && idealPop) set.add(Code.AG);
+
+		/* ASTEROID (AS) */
+		if (size == 0 && atmo == 0 && hydro == 0) set.add(Code.AS);
+
+		/* BARREN (BA) */
+		if (pop == 0 && gov == 0 && law == 0) set.add(Code.BA);
+
+		/* DESERT (DE) */
+		if (atmo >= 2 && hydro == 0) set.add(Code.DE);
+
+		/* FLUID OCEANS (FL) */
+		if (atmo >= 10 && hydro >= 1) set.add(Code.FL);
+
+		/* HIGH POPULATION (HI) */
+		if (pop >= 9) set.add(Code.HI);
+
+		/* ICE-CAPPED (IC) */
+		if (atmo <= 1 && hydro >= 1) set.add(Code.IC);
+
+		/* INDUSTRIAL (IN) */
+		idealAtmo = (atmo <= 2 || atmo == 4 || atmo == 7 || atmo == 9)? true: false;
+		if (idealAtmo && pop >= 9) set.add(Code.IN);
+
+		/* LOW POPULATION (LO) */
+		if (pop <= 3) set.add(Code.LO);
+
+		/* NON-AGRICULTURAL (NA) */
+		idealAtmo = (atmo <= 3)? true: false;
+		idealHydro = (hydro <= 3)? true: false;
+		idealPop = (pop >= 6)? true: false;
+		if (idealAtmo && idealHydro && idealPop) set.add(Code.NA);
+
+		/* POOR WORLD (PO) */
+		idealAtmo = (atmo >= 2 && atmo <= 5)? true: false;
+		idealHydro = (hydro <= 3)? true: false;
+		if (idealAtmo && idealHydro) set.add(Code.PO);
+
+		/* RICH WORLD (RI) */
+		idealAtmo = (atmo == 6 || atmo == 8)? true: false;
+		idealPop = (pop == 6 || pop == 7 || pop == 8)? true: false;
+		boolean idealGov = (gov >= 4 && gov <= 9)? true: false;
+		if (idealAtmo && idealPop && idealGov) set.add(Code.RI);
+
+		/* VACUUM WORLD (VA) */
+		if (atmo == 0) set.add(Code.VA);
+
+		/* WATER WORLD (WA) */
+		if (hydro == 10) set.add(Code.WA);
+
+		return set;
+	}
+}

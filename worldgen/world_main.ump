@@ -1,0 +1,98 @@
+
+strictness allow 1006;
+strictness allow 1007;
+
+use util.ump;
+use world_star.ump;
+use world_trade.ump;
+
+namespace traveller;
+
+/* */
+interface IOrbit {
+	void setOrbit(int...orbit);
+	int[] getOrbit();
+}
+
+/* */
+class StarSystem {
+	0..1 -- 0..* Star;
+	0..1 -- 0..* World;
+
+	/* */
+	Star getMainStar() { return null; }
+	World getMainWorld() { return null; }
+
+	/* @param roll 2d6 */
+	public static int numberOfStars(int roll) { return (roll <= 7)? 1: (roll <= 11)? 2: 3; }
+}
+
+/* */
+class World {
+	isA IOrbit;
+
+	const String[] GOVERNMENT_DESCRIPTION = { "No Government", "Company/Corporation", "Democracy, Participating",
+				"Oligarchy, Self-perpetuating", "Democracy, Representative", "Technocracy, Feudal",
+				"Captive Government", "Balkanization", "Bureaucracy, Civil Service", "Bureaucracy, Impersonal",
+				"Dictatorship, Charismatic", "Dictatorship, Non-charismatic", "Oligarchy, Charismatic",
+				"Dictatorship, Religious" };
+
+	int size; int atmosphere; int hydrosphere; int population; int government; int lawLevel;
+	boolean isMainWorld = false;
+
+	1 -- 1 Spaceport;
+	1 -- 0..* Moon;
+
+	/* */
+	Star getMainStar() { return getStarSystem().getMainStar(); }
+
+	/* @param roll 2d6 */
+	public static int worldSize(World world, int roll) {
+		char starColor = world.getMainStar().getColor();
+		int worldSize = roll - 2; int orbit = world.getOrbit();
+		/* closer orbits produce smaller worlds */
+		worldSize -= (orbit == 0)? 5: (orbit == 1)? 4: (orbit == 2)? 3: 0;
+		/* M-class stars produce smaller worlds */
+		worldSize -= (starColor == 'M')? 2: 0;
+		/* size '0' was formerly reserved for asteroid worlds */
+		return (worldSize < 1)? 0 : worldSize;
+	}
+
+	/* @param roll 2d6 */
+	public static int worldAtmosphere(World world, int roll) {
+		int atmosphere = roll - 7 + world.getSize();
+		char[] zones = world.getMainStar().getZones();
+		int orbit = world.getOrbit();
+
+		// Inner zone -2 || Outer zone -4
+		atmosphere -= (orbit < zones.length) && (zones[orbit] == 'I')? 2
+
+		if (orbit < zones.length) {
+			if (zones[orbit] == 'I')
+				atmosphere -= 2;
+		} else
+			atmosphere -= 4;
+
+		if (orbit - zones.length > 1) {
+			// unique case produces "exotic" atmosphere in Outer zone
+			atmosphere = (Dice.deeRoll(2, 6) == 12) ? 10 : atmosphere;
+		}
+
+		if (atmosphere < 0)
+			atmosphere = 0;
+		if (atmosphere > 15)
+			atmosphere = 15;
+		return atmosphere;
+	}
+}
+
+class Moon {
+	isA World;
+}
+
+/* */
+class Spaceport {
+	char type;
+	boolean isStarport = false;
+}
+
